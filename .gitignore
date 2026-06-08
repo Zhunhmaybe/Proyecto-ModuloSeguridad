@@ -1,0 +1,36 @@
+#Documentacion
+Docs/
+
+# Entorno Virtual
+venv/
+ENV/
+env/
+.env
+
+# Archivos compilados de Python
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Base de Datos local (SQLite por si acaso)
+*.db
+*.sqlite3
+
+# IDEs y Editores
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# Archivos del sistema
+Thumbs.db
+Desktop.ini
+
+# Archivos temporales o de compilación de gRPC (si se generan localmente y no queremos subirlos)
+# *.pb.py
+# *_pb2.py
+# *_pb2_grpc.py

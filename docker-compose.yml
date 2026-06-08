@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  # Módulo de Seguridades (Django)
+  seguridad-api:
+    build: .
+    container_name: seguridad_django
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000" # API GraphQL/REST
+      - "50051:50051" # Puerto gRPC
+    env_file:
+      - .env
+    networks:
+      - app-network
+    # depends_on:
+    #   - db-postgres
+
+  # Opcional: Base de datos si la quieres levantar con Docker también
+  # db-postgres:
+  #   image: postgres:15
+  #   container_name: seguridad_postgres
+  #   environment:
+  #     POSTGRES_DB: seguridad
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: 123
+  #   ports:
+  #     - "5432:5432"
+  #   networks:
+  #     - app-network
+
+networks:
+  app-network:
+    driver: bridge
