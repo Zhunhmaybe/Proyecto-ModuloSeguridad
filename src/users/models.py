@@ -1,4 +1,5 @@
 from django.db import models
+import uuid
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
 class UsuarioManager(BaseUserManager):
@@ -19,6 +20,28 @@ class UsuarioManager(BaseUserManager):
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('estado', True)
         return self.create_user(user_name, email, cedula, password, **extra_fields)
+
+#Tockens para recuperar contraseña
+class PasswordResetToken(models.Model):
+
+    usuario = models.ForeignKey(
+        'Usuario',
+        on_delete=models.CASCADE
+    )
+
+    token = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True
+    )
+
+    usado = models.BooleanField(default=False)
+
+    fecha_creacion = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    class Meta:
+        db_table = 'password_reset_tokens'
 
 class Rol(models.Model):
     id_rol = models.AutoField(primary_key=True)

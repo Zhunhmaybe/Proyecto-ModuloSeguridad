@@ -68,7 +68,17 @@ class LoginResponse:
     token: Optional[str]
     message: Optional[str]
     # actions: List[str] # Lista de permisos para HU7 (Opcional, se puede ampliar)
-
+    
+#Registrar Usuario
+@strawberry.type
+class RegisterResponse:
+    success: bool
+    message: str
+#Recuperar Contraseña
+@strawberry.type
+class ForgotPasswordResponse:
+    success: bool
+    message: str
 @strawberry.type
 class Query:
     @strawberry.field
@@ -128,3 +138,73 @@ class Mutation:
 
         except Usuario.DoesNotExist:
             return LoginResponse(success=False, token=None, message="Usuario no existe en Seguridades")
+    @strawberry.mutation
+    def register_user(
+        self,
+        username:str,
+        email:str,
+        cedula:str,
+        password:str,
+        confirm_password:str
+    )-> RegisterResponse:
+
+        if Usuario.objects.filter(user_name=username).exists():
+            return RegisterResponse(
+                success=False,
+                message="El usuario ya existe"
+            )
+
+        if Usuario.objects.filter(email=email).exists():
+            return RegisterResponse(
+                success=False,
+                message="El correo ya está registrado"
+            )
+        if len(password) < 8:
+            return RegisterResponse(
+                success=False,
+                message="La contraseña debe tener al menos 8 caracteres"
+        )
+        if password != confirm_password:
+            return RegisterResponse(
+                success=False,
+            message="Las contraseñas no coinciden"
+        )
+
+        Usuario.objects.create_user(
+            user_name=username,
+            email=email,
+            cedula=cedula,
+            password=password
+        )
+
+        return RegisterResponse(
+            success=True,
+            message="Usuario registrado correctamente"
+        )
+    @strawberry.mutation
+    def forgot_password(
+        self,
+        email:str
+    ) -> ForgotPasswordResponse:
+
+        try:
+
+            user = Usuario.objects.get(email=email)
+
+            token = PasswordResetToken.objects.create(
+                usuario=user
+            )
+
+            return ForgotPasswordResponse(
+                success=True,
+                message=str(token.token)
+            )
+
+        except Usuario.DoesNotExist:
+
+            return ForgotPasswordResponse(
+                success=False,
+                message="Correo no registrado"
+            )
+
+
