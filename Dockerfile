@@ -18,5 +18,8 @@ COPY . /app/
 EXPOSE 8000
 EXPOSE 50051
 
-# Command to run (We will override this in docker-compose for development)
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Set the working directory to src so Python paths work natively
+WORKDIR /app/src
+
+# Command to run in production (overridden in docker-compose for development)
+CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000"]

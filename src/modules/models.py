@@ -7,6 +7,9 @@ class Modulo(models.Model):
     descripcion_modulo = models.TextField(blank=True, null=True)
     estado_modulo = models.BooleanField(default=True)
 
+    class Meta:
+        db_table = 'modulos'
+
     def __str__(self):
         return self.nombre_modulo
 
@@ -14,6 +17,9 @@ class Funcion(models.Model):
     id_funcion = models.AutoField(primary_key=True)
     nombre_funcion = models.CharField(max_length=100)
     estado_funcion = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'funciones'
     
     # Un módulo puede tener múltiples funciones, y una función puede pertenecer a varios módulos (según ER)
     # Aunque a menudo una función pertenece a un solo módulo. El ER muestra modulos_funciones como M2M.

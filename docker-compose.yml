@@ -5,6 +5,7 @@ services:
   seguridad-api:
     build: .
     container_name: seguridad_django
+    working_dir: /app/src
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/app

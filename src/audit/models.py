@@ -13,5 +13,8 @@ class Auditoria(models.Model):
     estado_auditoria = models.BooleanField(default=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        db_table = 'auditoria'
+
     def __str__(self):
         return f"{self.accion} por {self.username}"

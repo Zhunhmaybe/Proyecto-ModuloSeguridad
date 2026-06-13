@@ -25,6 +25,9 @@ class Rol(models.Model):
     nombre_rol = models.CharField(max_length=100)
     estado_rol = models.BooleanField(default=True)
 
+    class Meta:
+        db_table = 'roles'
+
     def __str__(self):
         return self.nombre_rol
 
@@ -34,6 +37,9 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     estado = models.BooleanField(default=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'usuarios'
     
     # Required for Django admin
     is_staff = models.BooleanField(default=False)
