@@ -2,7 +2,7 @@ import strawberry
 from typing import List, Optional
 from users.models import Usuario, Rol
 from audit.models import Auditoria
-from modules.models import Modulo
+from modules.models import Modulo, Funcion
 import os
 import msal
 import jwt
@@ -11,10 +11,16 @@ import datetime
 # --- JWT Config ---
 JWT_SECRET = os.getenv('SECRET_KEY', 'secret')
 
-def generate_jwt(user_id, user_name):
+def generate_jwt(user):
+    roles = list(user.roles.filter(estado_rol=True).values_list('nombre_rol', flat=True))
+    funciones = list(Funcion.objects.filter(roles__usuarios=user, estado_funcion=True).values_list('nombre_funcion', flat=True).distinct())
+    
     payload = {
-        'user_id': user_id,
-        'user_name': user_name,
+        'user_id': user.id,
+        'user_name': user.user_name,
+        'email': user.email,
+        'roles': roles,
+        'permissions': funciones,
         'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=2) # Token válido por 2 horas
     }
     return jwt.encode(payload, JWT_SECRET, algorithm='HS256')
@@ -29,7 +35,7 @@ def validate_microsoft_token(username, password):
         # MODO DE PRUEBA: Si no se configuran las credenciales, simula que Microsoft aprueba si el password es "123"
         if password == "123":
             return True, "Mock_Token_Prueba"
-        return False, "Credenciales inválidas (Modo Prueba)"
+        return False, "Credenciales inválidas"
 
     authority = f"https://login.microsoftonline.com/{tenant_id}"
     app = msal.ConfidentialClientApplication(
@@ -49,10 +55,17 @@ def validate_microsoft_token(username, password):
         return False, result.get("error_description", "Error de autenticación con Microsoft")
 
 @strawberry.type
+class FuncionType:
+    id_funcion: int
+    nombre_funcion: str
+    estado_funcion: bool
+
+@strawberry.type
 class RolType:
     id_rol: int
     nombre_rol: str
     estado_rol: bool
+    funciones: List[FuncionType]
 
 @strawberry.type
 class UsuarioType:
@@ -61,6 +74,32 @@ class UsuarioType:
     email: str
     cedula: str
     estado: bool
+    roles: List[RolType]
+
+def map_user_to_type(u: Usuario) -> UsuarioType:
+    roles_list = []
+    for r in u.roles.all():
+        func_list = []
+        for f in r.funciones.all():
+            func_list.append(FuncionType(
+                id_funcion=f.id_funcion,
+                nombre_funcion=f.nombre_funcion,
+                estado_funcion=f.estado_funcion
+            ))
+        roles_list.append(RolType(
+            id_rol=r.id_rol,
+            nombre_rol=r.nombre_rol,
+            estado_rol=r.estado_rol,
+            funciones=func_list
+        ))
+    return UsuarioType(
+        id=u.id,
+        user_name=u.user_name,
+        email=u.email,
+        cedula=u.cedula,
+        estado=u.estado,
+        roles=roles_list
+    )
 
 @strawberry.type
 class LoginResponse:
@@ -85,12 +124,26 @@ class Query:
     def usuarios(self) -> List[UsuarioType]:
         # Convierte los modelos ORM a tipos de Strawberry
         users = Usuario.objects.all()
-        return [
-            UsuarioType(
-                id=u.id, user_name=u.user_name, email=u.email, 
-                cedula=u.cedula, estado=u.estado
-            ) for u in users
-        ]
+        return [map_user_to_type(u) for u in users]
+
+    @strawberry.field
+    def me(self, info: strawberry.Info) -> Optional[UsuarioType]:
+        request = info.context.get("request")
+        if not request:
+            return None
+        auth_header = request.headers.get("Authorization")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            return None
+        token = auth_header.split(" ")[1]
+        try:
+            payload = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
+            user_id = payload.get("user_id")
+            u = Usuario.objects.get(id=user_id)
+            if not u.estado:
+                return None
+            return map_user_to_type(u)
+        except (jwt.PyJWTError, Usuario.DoesNotExist):
+            return None
 
 @strawberry.type
 class Mutation:
@@ -111,7 +164,7 @@ class Mutation:
                 except Modulo.DoesNotExist:
                     return LoginResponse(success=False, token=None, message="Módulo no existe")
 
-            # 2. Validar con Microsoft Entra ID (MSAL) - HU8 / HU7
+            # 2. Validar con Microsoft Entra ID (MSAL)
             is_valid, ms_result = validate_microsoft_token(username, password)
             if not is_valid:
                 # HU8: CA2 - Guardar pista de auditoría en intento fallido
@@ -124,7 +177,7 @@ class Mutation:
                 return LoginResponse(success=False, token=None, message=f"Fallo auth MS: {ms_result}")
             
             # 3. Generar JWT propio para los demás módulos
-            token = generate_jwt(user.id, user.user_name)
+            token = generate_jwt(user)
             
             # HU8: CA4 - Guardar pista de auditoría de éxito
             Auditoria.objects.create(

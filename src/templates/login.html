@@ -1,0 +1,314 @@
+{% extends 'base.html' %}
+
+{% block title %}Acceso y Registro - Seguridad Centralizada{% endblock %}
+
+{% block extra_css %}
+    body {
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .auth-wrapper {
+        width: 100%;
+        max-width: 450px;
+        position: relative;
+    }
+
+    .auth-container {
+        padding: 40px;
+        text-align: center;
+        animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        width: 100%;
+    }
+
+    .hidden {
+        display: none !important;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px) scale(0.98);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .logo-area {
+        margin-bottom: 30px;
+    }
+
+    .logo-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, var(--primary-glow) 0%, var(--secondary-glow) 100%);
+        border-radius: 20px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.2rem;
+        color: white;
+        margin-bottom: 15px;
+        box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .logo-icon::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent, rgba(255,255,255,0.2), transparent);
+        transform: rotate(45deg);
+        animation: shine 4s infinite;
+    }
+
+    @keyframes shine {
+        0% { transform: translate(-100%, -100%) rotate(45deg); }
+        100% { transform: translate(100%, 100%) rotate(45deg); }
+    }
+
+    .auth-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        letter-spacing: -0.5px;
+    }
+
+    .auth-subtitle {
+        font-size: 0.95rem;
+        color: var(--text-secondary);
+        margin-top: 5px;
+        margin-bottom: 30px;
+    }
+
+    .alert {
+        padding: 12px 16px;
+        border-radius: 12px;
+        margin-bottom: 25px;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-align: left;
+        animation: shake 0.4s ease-in-out;
+    }
+    
+    .alert-error {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.25);
+        color: #fca5a5;
+    }
+
+    .alert-success {
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        color: #6ee7b7;
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+
+    .msal-badge-footer {
+        margin-top: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        background: rgba(255, 255, 255, 0.02);
+        padding: 8px 16px;
+        border-radius: 30px;
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        display: inline-flex;
+    }
+
+    .msal-icon {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2px;
+        width: 12px;
+        height: 12px;
+    }
+
+    .msal-icon span {
+        width: 5px;
+        height: 5px;
+    }
+    .msal-icon span:nth-child(1) { background-color: #f25022; }
+    .msal-icon span:nth-child(2) { background-color: #7fba00; }
+    .msal-icon span:nth-child(3) { background-color: #00a4ef; }
+    .msal-icon span:nth-child(4) { background-color: #ffb900; }
+
+    .toggle-link {
+        margin-top: 20px;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+    }
+
+    .toggle-link a {
+        color: var(--primary-glow);
+        text-decoration: none;
+        font-weight: 600;
+        margin-left: 5px;
+    }
+
+    .toggle-link a:hover {
+        text-decoration: underline;
+    }
+
+{% endblock %}
+
+{% block content %}
+    <div class="auth-wrapper">
+        <!-- FORMULARIO DE LOGIN -->
+        <div id="login-box" class="auth-container glass-card {% if show_register %}hidden{% endif %}">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h1 class="auth-title">Acceso Centralizado</h1>
+                <p class="auth-subtitle">Módulo de Seguridad Universitaria</p>
+            </div>
+
+            {% if error %}
+                <div class="alert alert-error">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span>{{ error }}</span>
+                </div>
+            {% endif %}
+
+            {% if register_success %}
+                <div class="alert alert-success">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span>{{ register_success }}</span>
+                </div>
+            {% endif %}
+
+            <form method="POST" action="{% url 'login' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="username">Usuario Institucional</label>
+                    <div class="input-wrapper">
+                        <i class="fa-regular fa-user"></i>
+                        <input type="text" id="username" name="username" class="form-input" placeholder="ej. jdoe" required autocomplete="username">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Contraseña</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="password" name="password" class="form-input" placeholder="••••••••" required autocomplete="current-password">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <span>Ingresar al Sistema</span>
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                </button>
+            </form>
+
+            <div class="toggle-link">
+                ¿No tienes una cuenta? <a href="javascript:void(0)" onclick="toggleAuthMode()">Regístrate aquí</a>
+            </div>
+
+            <div class="msal-badge-footer">
+                <div class="msal-icon">
+                    <span></span><span></span><span></span><span></span>
+                </div>
+                <span>Soporta Microsoft Entra ID</span>
+            </div>
+        </div>
+
+        <!-- FORMULARIO DE REGISTRO -->
+        <div id="register-box" class="auth-container glass-card {% if not show_register %}hidden{% endif %}">
+            <div class="logo-area" style="margin-bottom: 20px;">
+                <div class="logo-icon" style="width: 55px; height: 55px; font-size: 1.5rem;">
+                    <i class="fa-solid fa-user-plus"></i>
+                </div>
+                <h1 class="auth-title" style="font-size: 1.5rem;">Nuevo Usuario</h1>
+                <p class="auth-subtitle">Regístrate en el Sistema Central</p>
+            </div>
+
+            {% if register_error %}
+                <div class="alert alert-error">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span>{{ register_error }}</span>
+                </div>
+            {% endif %}
+
+            <form method="POST" action="{% url 'register' %}">
+                {% csrf_token %}
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <div class="input-wrapper">
+                        <i class="fa-regular fa-user"></i>
+                        <input type="text" name="username" class="form-input" placeholder="Nombre de Usuario (ej. jdoe)" required>
+                    </div>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <div class="input-wrapper">
+                        <i class="fa-regular fa-envelope"></i>
+                        <input type="email" name="email" class="form-input" placeholder="Correo Electrónico" required>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <div class="input-wrapper">
+                        <i class="fa-regular fa-id-card"></i>
+                        <input type="text" name="cedula" class="form-input" placeholder="Cédula / ID" required>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" name="password" class="form-input" placeholder="Contraseña" required>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" name="confirm_password" class="form-input" placeholder="Confirmar Contraseña" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-secondary">
+                    <span>Crear Cuenta</span>
+                    <i class="fa-solid fa-user-check"></i>
+                </button>
+            </form>
+
+            <div class="toggle-link">
+                ¿Ya tienes una cuenta? <a href="javascript:void(0)" onclick="toggleAuthMode()">Inicia Sesión</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleAuthMode() {
+            const loginBox = document.getElementById('login-box');
+            const registerBox = document.getElementById('register-box');
+            
+            if (loginBox.classList.contains('hidden')) {
+                loginBox.classList.remove('hidden');
+                registerBox.classList.add('hidden');
+            } else {
+                loginBox.classList.add('hidden');
+                registerBox.classList.remove('hidden');
+            }
+        }
+    </script>
+{% endblock %}

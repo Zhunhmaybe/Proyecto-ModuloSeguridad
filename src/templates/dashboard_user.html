@@ -1,0 +1,287 @@
+{% extends 'base.html' %}
+
+{% block title %}Panel de Usuario - Seguridad Centralizada{% endblock %}
+
+{% block extra_css %}
+    body {
+        padding: 40px 20px;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .container {
+        width: 100%;
+        max-width: 650px;
+        animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 30px;
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .avatar {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, var(--primary-glow) 0%, var(--secondary-glow) 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.2rem;
+        color: white;
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    }
+
+    .welcome-text h1 {
+        font-size: 1.4rem;
+        font-weight: 600;
+    }
+
+    .welcome-text p {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+
+    .logout-btn {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        color: #fca5a5;
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .logout-btn:hover {
+        background: var(--danger);
+        color: white;
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+    }
+
+    .content-box {
+        padding: 30px;
+        margin-bottom: 25px;
+    }
+
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #e2e8f0;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .info-item {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 15px;
+        border-radius: 12px;
+    }
+
+    .info-item span {
+        display: block;
+    }
+
+    .info-item .label {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        margin-bottom: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .info-item .value {
+        font-size: 1rem;
+        font-weight: 500;
+    }
+
+    .role-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .token-section {
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 20px;
+        border-radius: 12px;
+        position: relative;
+    }
+
+    .token-area {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 8px;
+        padding: 12px;
+        font-family: monospace;
+        font-size: 0.8rem;
+        color: #818cf8;
+        word-break: break-all;
+        max-height: 120px;
+        overflow-y: auto;
+        margin-top: 10px;
+    }
+
+    .copy-btn {
+        background: var(--primary-glow);
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 12px;
+    }
+
+    .copy-btn:hover {
+        background: #4f46e5;
+    }
+
+    .alert-banner {
+        background: rgba(245, 158, 11, 0.08);
+        border: 1px solid rgba(245, 158, 11, 0.2);
+        color: #fde047;
+        padding: 15px;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-top: 20px;
+    }
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <div class="user-info">
+                <div class="avatar">
+                    {{ user.user_name|slice:":2"|upper }}
+                </div>
+                <div class="welcome-text">
+                    <p>Sesión activa</p>
+                    <h1>@{{ user.user_name }}</h1>
+                </div>
+            </div>
+            <a href="{% url 'logout' %}" class="logout-btn">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                <span>Cerrar Sesión</span>
+            </a>
+        </div>
+
+        <!-- Details Card -->
+        <div class="content-box glass-card">
+            <h2 class="section-title">
+                <i class="fa-regular fa-address-card"></i>
+                <span>Información Personal</span>
+            </h2>
+            
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="label">Correo Electrónico</span>
+                    <span class="value">{{ user.email }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Identificación (Cédula)</span>
+                    <span class="value">{{ user.cedula }}</span>
+                </div>
+            </div>
+
+            <h2 class="section-title">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span>Roles Asignados</span>
+            </h2>
+            
+            <div class="role-container">
+                {% for rol in user.roles.all %}
+                    {% if rol.estado_rol %}
+                        <span class="badge badge-info">
+                            <i class="fa-solid fa-user-shield" style="margin-right: 5px;"></i>
+                            {{ rol.nombre_rol }}
+                        </span>
+                    {% endif %}
+                {% empty %}
+                    <span class="badge badge-danger">Sin roles asignados</span>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Token Card -->
+        <div class="content-box glass-card">
+            <h2 class="section-title">
+                <i class="fa-solid fa-key"></i>
+                <span>Tu Token JWT de Acceso</span>
+            </h2>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">
+                Este token ha sido generado por el Módulo de Seguridad Central y es el que debes enviar en las cabeceras HTTP de los demás microservicios (Compras, Inventario, etc.) para que validen tu identidad.
+            </p>
+            
+            <div class="token-section">
+                <div class="token-area" id="tokenText">{{ token }}</div>
+                <button class="copy-btn" onclick="copyToken()">
+                    <i class="fa-regular fa-copy"></i>
+                    <span id="btnText">Copiar Token</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Admin Alert Block -->
+        <div class="alert-banner">
+            <i class="fa-solid fa-circle-info" style="font-size: 1.2rem; margin-top: 2px;"></i>
+            <div>
+                <strong style="display: block; margin-bottom: 4px;">Acceso Estándar Limitado</strong>
+                No posees permisos de administrador de seguridad. Por ello, solo puedes visualizar tus credenciales y token JWT. Si requieres gestionar usuarios, roles o módulos, contacta con el Administrador de Seguridad de la Universidad.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function copyToken() {
+            const tokenText = document.getElementById('tokenText').innerText;
+            navigator.clipboard.writeText(tokenText).then(() => {
+                const btnText = document.getElementById('btnText');
+                btnText.innerText = '¡Copiado!';
+                setTimeout(() => {
+                    btnText.innerText = 'Copiar Token';
+                }, 2000);
+            }).catch(err => {
+                console.error('Error al copiar el token: ', err);
+            });
+        }
+    </script>
+{% endblock %}
