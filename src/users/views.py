@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from users.models import Usuario, Rol, PasswordResetToken
@@ -7,6 +7,8 @@ from modules.models import Modulo
 from django.core.mail import send_mail
 from django.urls import reverse
 from django.conf import settings
+from django.core.paginator import Paginator
+from django.db.models import Q
 from .schema import validate_microsoft_token, generate_jwt
 
 def login_view(request):
@@ -244,6 +246,32 @@ def dashboard_admin_view(request):
         
     token = request.COOKIES.get('jwt_token')
     
+    # Manejo de acciones POST (CRUD)
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        user_id = request.POST.get('user_id')
+        
+        if action == 'toggle_status' and user_id:
+            try:
+                target_user = Usuario.objects.get(id=user_id)
+                # No permitir desactivarse a sí mismo
+                if target_user.id != request.user.id:
+                    target_user.estado = not target_user.estado
+                    target_user.save()
+            except Usuario.DoesNotExist:
+                pass
+                
+        elif action == 'edit_roles' and user_id:
+            try:
+                target_user = Usuario.objects.get(id=user_id)
+                roles_ids = request.POST.getlist('roles')
+                target_user.roles.set(roles_ids)
+                target_user.save()
+            except Usuario.DoesNotExist:
+                pass
+                
+        return redirect('/dashboard/admin/?tab=users')
+
     # Estadísticas para el panel de control
     stats = {
         'total_users': Usuario.objects.count(),
@@ -256,9 +284,34 @@ def dashboard_admin_view(request):
     # Obtener últimas 10 pistas de auditoría
     logs = Auditoria.objects.all().order_by('-fecha_creacion')[:10]
     
+    # Búsqueda y Paginación de Usuarios
+    search_query = request.GET.get('q', '')
+    users_list = Usuario.objects.all().prefetch_related('roles').order_by('-fecha_creacion')
+    
+    if search_query:
+        users_list = users_list.filter(
+            Q(user_name__icontains=search_query) | 
+            Q(email__icontains=search_query) |
+            Q(cedula__icontains=search_query)
+        )
+        
+    paginator = Paginator(users_list, 10) # 10 usuarios por página
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Obtener todos los roles para los modales
+    roles_list = Rol.objects.all()
+    
+    # Pestaña activa
+    active_tab = request.GET.get('tab', 'dashboard')
+    
     return render(request, 'dashboard_admin.html', {
         'user': request.user,
         'token': token,
         'stats': stats,
-        'logs': logs
+        'logs': logs,
+        'page_obj': page_obj,
+        'roles_list': roles_list,
+        'search_query': search_query,
+        'active_tab': active_tab
     })

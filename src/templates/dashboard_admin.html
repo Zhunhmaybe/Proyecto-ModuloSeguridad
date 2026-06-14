@@ -24,6 +24,12 @@
                         <span>Panel General</span>
                     </a>
                 </li>
+                <li class="nav-item" id="nav-users" onclick="switchTab('users')">
+                    <a href="javascript:void(0)">
+                        <i class="fa-solid fa-users-gear"></i>
+                        <span>Gestión de Usuarios</span>
+                    </a>
+                </li>
                 <li class="nav-item" id="nav-dev" onclick="switchTab('developers')">
                     <a href="javascript:void(0)">
                         <i class="fa-solid fa-code"></i>
@@ -167,6 +173,119 @@
             </div>
         </div>
 
+        <!-- TAB: GESTIÓN DE USUARIOS -->
+        <div id="tab-users" class="tab-content">
+            <div class="panel-box glass-card" style="min-height: auto; margin-bottom: 30px;">
+                <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <span class="panel-title">Directorio de Usuarios</span>
+                    <form method="GET" action="" style="display: flex; gap: 10px;">
+                        <input type="hidden" name="tab" value="users">
+                        <input type="text" name="q" class="form-input" placeholder="Buscar por nombre, correo, o cédula..." value="{{ search_query }}" style="padding: 10px 15px; width: 300px;">
+                        <button type="submit" class="btn btn-primary" style="padding: 10px 20px; width: auto;"><i class="fa-solid fa-search"></i></button>
+                        {% if search_query %}
+                            <a href="?tab=users" class="btn btn-secondary" style="padding: 10px 15px; width: auto;" title="Limpiar"><i class="fa-solid fa-xmark"></i></a>
+                        {% endif %}
+                    </form>
+                </div>
+                
+                <div class="table-container">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Usuario</th>
+                                <th>Cédula</th>
+                                <th>Correo</th>
+                                <th>Roles</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in page_obj %}
+                                <tr>
+                                    <td>
+                                        <strong>@{{ u.user_name }}</strong>
+                                        {% if u.is_superuser %}
+                                            <i class="fa-solid fa-crown" style="color: #fbbf24; font-size: 0.8rem; margin-left: 5px;" title="Super Admin"></i>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ u.cedula }}</td>
+                                    <td>{{ u.email }}</td>
+                                    <td>
+                                        <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                                            {% for rol in u.roles.all %}
+                                                <span class="badge badge-info">{{ rol.nombre_rol }}</span>
+                                            {% empty %}
+                                                <span style="color: var(--text-secondary); font-size: 0.8rem;">Sin roles</span>
+                                            {% endfor %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if u.estado %}
+                                            <span class="badge badge-success">Activo</span>
+                                        {% else %}
+                                            <span class="badge badge-danger">Inactivo</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div style="display: flex; gap: 10px;">
+                                            <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; width: auto;" onclick="openRolesModal('{{ u.id }}', '{{ u.user_name }}', [{% for r in u.roles.all %}'{{ r.id_rol }}'{% if not forloop.last %},{% endif %}{% endfor %}])" title="Editar Roles">
+                                                <i class="fa-solid fa-user-pen"></i>
+                                            </button>
+                                            
+                                            {% if u.id != user.id %}
+                                                <form method="POST" style="margin: 0;">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="action" value="toggle_status">
+                                                    <input type="hidden" name="user_id" value="{{ u.id }}">
+                                                    {% if u.estado %}
+                                                        <button type="submit" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; width: auto; color: var(--danger); border-color: rgba(239, 68, 68, 0.3);" title="Dar de Baja (Inactivar)">
+                                                            <i class="fa-solid fa-ban"></i>
+                                                        </button>
+                                                    {% else %}
+                                                        <button type="submit" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; width: auto; color: var(--success); border-color: rgba(16, 185, 129, 0.3);" title="Reactivar Usuario">
+                                                            <i class="fa-solid fa-check"></i>
+                                                        </button>
+                                                    {% endif %}
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="6" style="text-align: center; color: var(--text-secondary);">No se encontraron usuarios.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Paginación -->
+                {% if page_obj.has_other_pages %}
+                <div class="pagination" style="display: flex; justify-content: center; gap: 5px; margin-top: 20px;">
+                    {% if page_obj.has_previous %}
+                        <a href="?tab=users&page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn btn-secondary" style="width: auto; padding: 5px 15px;">&laquo; Ant</a>
+                    {% endif %}
+                    
+                    {% for i in page_obj.paginator.page_range %}
+                        {% if page_obj.number == i %}
+                            <span class="btn btn-primary" style="width: auto; padding: 5px 15px; background: rgba(99, 102, 241, 0.5);">{{ i }}</span>
+                        {% else %}
+                            <a href="?tab=users&page={{ i }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn btn-secondary" style="width: auto; padding: 5px 15px;">{{ i }}</a>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <a href="?tab=users&page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn btn-secondary" style="width: auto; padding: 5px 15px;">Sig &raquo;</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+
+
         <!-- TAB: DEVELOPERS -->
         <div id="tab-developers" class="tab-content">
             <div class="panel-box glass-card" style="min-height: auto; margin-bottom: 30px;">
@@ -245,6 +364,37 @@ query {
         </div>
     </div>
 
+    <!-- Modal Edit Roles -->
+    <div id="rolesModal" class="modal-backdrop hidden">
+        <div class="modal-box glass-card animate">
+            <div class="panel-header" style="display: flex; justify-content: space-between;">
+                <span class="panel-title">Editar Roles de <span id="modal-username" style="color: var(--primary-glow);"></span></span>
+                <i class="fa-solid fa-xmark" style="cursor: pointer; color: var(--text-secondary);" onclick="closeRolesModal()"></i>
+            </div>
+            <form method="POST" action="">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="edit_roles">
+                <input type="hidden" name="user_id" id="modal-userid">
+                
+                <div style="margin-top: 15px; margin-bottom: 25px; max-height: 250px; overflow-y: auto;">
+                    {% for rol in roles_list %}
+                        <label class="custom-checkbox" style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; cursor: pointer;">
+                            <input type="checkbox" name="roles" value="{{ rol.id_rol }}" id="role-{{ rol.id_rol }}" style="width: 18px; height: 18px; cursor: pointer;">
+                            <span>{{ rol.nombre_rol }}</span>
+                        </label>
+                    {% empty %}
+                        <p style="color: var(--text-secondary);">No hay roles creados en el sistema.</p>
+                    {% endfor %}
+                </div>
+                
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button" class="btn btn-secondary" style="width: auto;" onclick="closeRolesModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" style="width: auto;">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         function switchTab(tabName) {
             // Hide all tabs
@@ -264,11 +414,41 @@ query {
                 document.getElementById('nav-dash').classList.add('active');
                 document.getElementById('main-title').innerText = 'Panel de Control de Seguridad';
                 document.getElementById('main-subtitle').innerText = 'Consola de auditoría y monitoreo centralizado de microservicios';
+            } else if (tabName === 'users') {
+                document.getElementById('nav-users').classList.add('active');
+                document.getElementById('main-title').innerText = 'Gestión de Usuarios (CRUD)';
+                document.getElementById('main-subtitle').innerText = 'Administra cuentas, roles, y estados lógicos de los usuarios';
             } else if (tabName === 'developers') {
                 document.getElementById('nav-dev').classList.add('active');
                 document.getElementById('main-title').innerText = 'Guía de Integración para Desarrolladores';
                 document.getElementById('main-subtitle').innerText = 'Cómo conectar los microservicios externos al Módulo de Seguridad';
             }
+        }
+
+        // Funciones para Modal de Roles
+        function openRolesModal(userId, username, userRoles) {
+            document.getElementById('modal-userid').value = userId;
+            document.getElementById('modal-username').innerText = '@' + username;
+            
+            // Desmarcar todos primero
+            document.querySelectorAll('input[name="roles"]').forEach(cb => cb.checked = false);
+            
+            // Marcar los que tiene el usuario
+            userRoles.forEach(roleId => {
+                const cb = document.getElementById('role-' + roleId);
+                if(cb) cb.checked = true;
+            });
+            
+            document.getElementById('rolesModal').classList.remove('hidden');
+        }
+
+        function closeRolesModal() {
+            document.getElementById('rolesModal').classList.add('hidden');
+        }
+
+        // Iniciar en la pestaña correcta
+        window.onload = function() {
+            switchTab('{{ active_tab }}');
         }
     </script>
 {% endblock %}

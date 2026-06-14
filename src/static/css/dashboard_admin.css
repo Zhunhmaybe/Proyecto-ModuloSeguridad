@@ -330,3 +330,37 @@ body {
 .tab-content.active {
     display: block;
 }
+
+/* Modals */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.modal-backdrop.hidden {
+    display: none;
+}
+
+.modal-box {
+    width: 450px;
+    max-width: 90%;
+    padding: 30px;
+}
+
+/* Pagination */
+.pagination a, .pagination span {
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+.pagination a:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
