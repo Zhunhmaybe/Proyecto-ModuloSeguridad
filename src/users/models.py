@@ -43,6 +43,15 @@ class PasswordResetToken(models.Model):
     class Meta:
         db_table = 'password_reset_tokens'
 
+class EmailVerificationToken(models.Model):
+    usuario = models.ForeignKey('Usuario', on_delete=models.CASCADE)
+    token = models.UUIDField(default=uuid.uuid4, unique=True)
+    usado = models.BooleanField(default=False)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'email_verification_tokens'
+
 class Rol(models.Model):
     id_rol = models.AutoField(primary_key=True)
     nombre_rol = models.CharField(max_length=100)
@@ -58,6 +67,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     user_name = models.CharField(max_length=16, unique=True)
     cedula = models.CharField(max_length=10, unique=True)
     email = models.EmailField(unique=True)
+    correo_verificado = models.BooleanField(default=False)
     estado = models.BooleanField(default=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
 
