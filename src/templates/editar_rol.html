@@ -1,0 +1,293 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+
+<style>
+
+
+.container{
+
+    padding:30px;
+
+}
+
+
+
+.card{
+
+    background:#111827;
+
+    padding:30px;
+
+    border-radius:15px;
+
+    color:white;
+
+    max-width:700px;
+
+}
+
+
+
+input[type="text"]{
+
+    width:100%;
+
+    padding:12px;
+
+    border-radius:8px;
+
+    margin-top:8px;
+
+}
+
+
+
+button{
+
+    background:#2563eb;
+
+    color:white;
+
+    border:none;
+
+    padding:12px 25px;
+
+    border-radius:8px;
+
+    margin-top:20px;
+
+}
+
+
+
+.btn-back{
+
+    display:inline-block;
+
+    margin-top:20px;
+
+    background:#475569;
+
+    padding:10px 20px;
+
+    border-radius:8px;
+
+    color:white;
+
+    text-decoration:none;
+
+}
+
+
+
+.funciones{
+
+    margin-top:20px;
+
+    background:#1e293b;
+
+    padding:20px;
+
+    border-radius:10px;
+
+}
+
+
+
+</style>
+
+
+
+
+
+<div class="container">
+
+
+<h1>
+
+Editar Rol
+
+</h1>
+
+
+
+
+<div class="card">
+
+
+<form method="POST">
+
+
+{% csrf_token %}
+
+
+
+
+<label>
+
+Nombre del rol
+
+</label>
+
+
+
+<input
+
+type="text"
+
+name="nombre_rol"
+
+value="{{rol.nombre_rol}}"
+
+required>
+
+
+
+
+
+<br>
+
+
+<label>
+
+Estado
+
+</label>
+
+
+
+<input
+
+type="checkbox"
+
+name="estado_rol"
+
+
+{% if rol.estado_rol %}
+
+checked
+
+{% endif %}
+
+>
+
+
+Activo
+
+
+
+
+
+<div class="funciones">
+
+
+<h3>
+
+Asignar funciones
+
+</h3>
+
+
+
+
+{% for funcion in funciones %}
+
+
+
+
+<div>
+
+
+<input
+
+type="checkbox"
+
+name="funciones"
+
+value="{{funcion.id_funcion}}"
+
+
+
+{% if funcion in rol.funciones.all %}
+
+checked
+
+{% endif %}
+
+
+>
+
+
+{{funcion.nombre_funcion}}
+
+
+
+</div>
+
+
+
+<br>
+
+
+
+{% empty %}
+
+
+<p>
+
+No existen funciones
+
+</p>
+
+
+
+{% endfor %}
+
+
+
+</div>
+
+
+
+
+
+
+
+<button type="submit">
+
+💾 Guardar cambios
+
+</button>
+
+
+
+
+</form>
+
+
+
+
+<a href="{% url 'roles' %}"
+
+class="btn-back">
+
+
+⬅ Volver a roles
+
+
+</a>
+
+
+
+
+</div>
+
+
+</div>
+
+
+
+{% endblock %}

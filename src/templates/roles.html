@@ -1,0 +1,468 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+
+<style>
+
+.container{
+
+    padding:30px;
+
+}
+
+
+
+.card{
+
+    background:#111827;
+
+    padding:25px;
+
+    border-radius:15px;
+
+    color:white;
+
+    margin-bottom:20px;
+
+}
+
+
+
+input{
+
+    width:100%;
+
+    padding:10px;
+
+    margin:8px 0;
+
+    border-radius:8px;
+
+    border:none;
+
+}
+
+
+
+button{
+
+    background:#2563eb;
+
+    color:white;
+
+    border:none;
+
+    padding:10px 20px;
+
+    border-radius:8px;
+
+    cursor:pointer;
+
+}
+
+
+
+table{
+
+    width:100%;
+
+    color:white;
+
+    border-collapse:collapse;
+
+}
+
+
+
+td,th{
+
+    padding:12px;
+
+    border-bottom:1px solid #334155;
+
+}
+
+
+
+a{
+
+    color:white;
+
+    text-decoration:none;
+
+}
+
+
+
+.btn-edit{
+
+    background:#16a34a;
+
+    padding:8px 15px;
+
+    border-radius:8px;
+
+}
+
+
+
+.btn-back{
+
+    display:inline-block;
+
+    margin-top:20px;
+
+    background:#475569;
+
+    padding:10px 20px;
+
+    border-radius:8px;
+
+}
+
+
+
+.funcion{
+
+    display:block;
+
+    margin:8px 0;
+
+}
+
+
+
+</style>
+
+
+
+
+
+
+<div class="container">
+
+
+
+<h1 style="color:white">
+
+🔐 Gestión de Roles
+
+</h1>
+
+
+
+
+
+<!-- CREAR ROL -->
+
+
+<div class="card">
+
+
+<h3>
+
+Crear Rol
+
+</h3>
+
+
+
+
+<form method="POST">
+
+
+{% csrf_token %}
+
+
+
+<label>
+
+Nombre del rol
+
+</label>
+
+
+<input
+
+type="text"
+
+name="nombre_rol"
+
+placeholder="Ej: ADMIN"
+
+required>
+
+
+
+
+
+
+<h4>
+
+Asignar funciones
+
+</h4>
+
+
+
+{% for funcion in funciones %}
+
+
+
+<label class="funcion">
+
+
+<input
+
+type="checkbox"
+
+name="funciones"
+
+value="{{funcion.id_funcion}}">
+
+
+{{funcion.nombre_funcion}}
+
+
+
+</label>
+
+
+
+{% empty %}
+
+
+<p>
+
+No existen funciones creadas
+
+</p>
+
+
+
+{% endfor %}
+
+
+
+
+
+
+<br>
+
+
+<button type="submit">
+
+💾 Guardar rol
+
+</button>
+
+
+
+</form>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<!-- LISTA ROLES -->
+
+
+<div class="card">
+
+
+<h3>
+
+Roles existentes
+
+</h3>
+
+
+
+
+<table>
+
+
+<tr>
+
+
+<th>
+
+Nombre
+
+</th>
+
+
+
+<th>
+
+Funciones
+
+</th>
+
+
+
+<th>
+
+Acción
+
+</th>
+
+
+</tr>
+
+
+
+
+
+
+{% for rol in roles %}
+
+
+
+
+<tr>
+
+
+
+<td>
+
+{{rol.nombre_rol}}
+
+</td>
+
+
+
+
+
+<td>
+
+
+{% for f in rol.funciones.all %}
+
+
+{{f.nombre_funcion}}
+
+
+{% if not forloop.last %}
+
+,
+
+{% endif %}
+
+
+{% empty %}
+
+
+Sin funciones
+
+
+{% endfor %}
+
+
+
+</td>
+
+
+
+
+
+
+<td>
+
+
+<a 
+
+href="{% url 'editar_rol' rol.id_rol %}"
+
+class="btn-edit">
+
+
+✏ Editar
+
+
+</a>
+
+
+
+</td>
+
+
+
+
+
+
+</tr>
+
+
+
+
+{% empty %}
+
+
+
+
+<tr>
+
+
+<td colspan="3">
+
+
+No existen roles registrados
+
+
+</td>
+
+
+</tr>
+
+
+
+
+{% endfor %}
+
+
+
+
+
+</table>
+
+
+
+
+
+<a href="{% url 'dashboard_admin' %}"
+
+class="btn-back">
+
+
+Volver al Dashboard
+
+
+</a>
+
+
+
+
+
+</div>
+
+
+
+
+
+
+</div>
+
+
+
+{% endblock %}

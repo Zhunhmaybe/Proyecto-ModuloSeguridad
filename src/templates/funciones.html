@@ -1,0 +1,256 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+
+<style>
+
+.container{
+
+padding:30px;
+
+}
+
+
+.card{
+
+background:#111827;
+
+padding:25px;
+
+border-radius:15px;
+
+color:white;
+
+margin-bottom:20px;
+
+}
+
+
+
+table{
+
+width:100%;
+
+color:white;
+
+border-collapse:collapse;
+
+}
+
+
+td,th{
+
+padding:12px;
+
+border-bottom:1px solid #334155;
+
+}
+
+
+.btn{
+
+background:#2563eb;
+
+color:white;
+
+padding:8px 15px;
+
+border-radius:8px;
+
+text-decoration:none;
+
+}
+
+
+
+</style>
+
+
+
+
+<div class="container">
+
+
+
+<h1 style="color:white">
+
+Gestión de Funciones
+
+</h1>
+
+
+
+<div class="card">
+
+
+
+<h3>
+Crear función
+</h3>
+
+
+
+<form method="POST">
+
+{% csrf_token %}
+
+
+<input 
+type="text"
+name="nombre_funcion"
+placeholder="Ej: GESTIONAR_REPORTES"
+required>
+
+
+<br><br>
+
+
+<label>
+
+Activo
+
+</label>
+
+
+<input 
+type="checkbox"
+name="estado"
+checked>
+
+
+<br><br>
+
+
+<button>
+
+Guardar
+
+</button>
+
+
+</form>
+
+
+</div>
+
+
+
+
+
+
+<div class="card">
+
+
+
+<h3>
+
+Funciones registradas
+
+</h3>
+
+
+
+<table>
+
+
+<tr>
+
+<th>
+Nombre
+</th>
+
+
+<th>
+Estado
+</th>
+
+
+<th>
+Acción
+</th>
+
+</tr>
+
+
+
+
+{% for funcion in funciones %}
+
+
+
+<tr>
+
+
+<td>
+
+{{funcion.nombre_funcion}}
+
+</td>
+
+
+<td>
+
+
+{% if funcion.estado_funcion %}
+
+Activo
+
+{% else %}
+
+Inactivo
+
+{% endif %}
+
+
+</td>
+
+
+
+<td>
+
+
+<a class="btn"
+
+href="{% url 'editar_funcion' funcion.id_funcion %}">
+
+
+Editar
+
+
+</a>
+
+
+
+</td>
+
+
+</tr>
+
+
+
+{% endfor %}
+
+
+
+</table>
+
+
+</div>
+
+<a href="{% url 'dashboard_admin' %}"
+
+class="btn-back">
+
+
+⬅ Volver al Dashboard
+
+
+</a>
+
+
+</div>
+
+
+{% endblock %}

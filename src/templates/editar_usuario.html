@@ -1,0 +1,345 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+
+<style>
+
+
+.container{
+
+    padding:30px;
+
+}
+
+
+.card{
+
+    background:#111827;
+
+    padding:30px;
+
+    border-radius:15px;
+
+    color:white;
+
+    max-width:700px;
+
+}
+
+
+
+h1{
+
+    color:white;
+
+}
+
+
+
+label{
+
+    display:block;
+
+    margin-top:15px;
+
+    color:#cbd5e1;
+
+}
+
+
+
+input[type="text"],
+input[type="email"]{
+
+
+    width:100%;
+
+    padding:12px;
+
+    margin-top:5px;
+
+    border-radius:8px;
+
+    border:none;
+
+    background:#1e293b;
+
+    color:white;
+
+}
+
+
+
+.roles{
+
+    margin-top:20px;
+
+    background:#1e293b;
+
+    padding:15px;
+
+    border-radius:10px;
+
+}
+
+
+
+.role-item{
+
+    margin:10px 0;
+
+}
+
+
+
+button{
+
+
+    margin-top:25px;
+
+    background:#2563eb;
+
+    color:white;
+
+    border:none;
+
+    padding:12px 25px;
+
+    border-radius:8px;
+
+    cursor:pointer;
+
+
+}
+
+
+
+.btn-back{
+
+
+    display:inline-block;
+
+    margin-top:20px;
+
+    background:#475569;
+
+    color:white;
+
+    padding:10px 20px;
+
+    border-radius:8px;
+
+    text-decoration:none;
+
+
+}
+
+
+</style>
+
+
+
+
+
+<div class="container">
+
+
+
+<h1>
+
+✏ Editar Usuario
+
+</h1>
+
+
+
+<div class="card">
+
+
+
+<form method="POST">
+
+
+{% csrf_token %}
+
+
+
+
+<label>
+
+Usuario
+
+</label>
+
+
+<input
+
+type="text"
+
+name="user_name"
+
+value="{{usuario.user_name}}"
+
+required>
+
+
+
+<label>
+
+Correo
+
+</label>
+
+
+
+<input
+
+type="email"
+
+name="email"
+
+value="{{usuario.email}}"
+
+required>
+
+
+
+
+
+<label>
+
+Estado
+
+</label>
+
+
+
+<input
+
+type="checkbox"
+
+name="estado"
+
+{% if usuario.estado %}
+
+checked
+
+{% endif %}
+
+>
+
+
+Activo
+
+
+
+
+
+<div class="roles">
+
+
+<h3>
+
+Asignar Roles
+
+</h3>
+
+
+
+{% for rol in roles %}
+
+
+
+<div class="role-item">
+
+
+
+<input
+
+type="checkbox"
+
+name="roles"
+
+value="{{rol.id_rol}}"
+
+
+
+{% if rol in usuario.roles.all %}
+
+checked
+
+{% endif %}
+
+
+
+>
+
+
+
+{{rol.nombre_rol}}
+
+
+
+</div>
+
+
+
+{% empty %}
+
+
+<p>
+
+No existen roles creados
+
+</p>
+
+
+{% endfor %}
+
+
+
+</div>
+
+
+
+
+
+<button type="submit">
+
+
+💾 Guardar cambios
+
+
+</button>
+
+
+
+</form>
+
+
+
+
+
+<a href="{% url 'usuarios' %}"
+
+class="btn-back">
+
+
+⬅ Volver
+
+
+</a>
+
+
+
+</div>
+
+
+
+</div>
+
+
+
+{% endblock %}
