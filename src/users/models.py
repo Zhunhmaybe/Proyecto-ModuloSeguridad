@@ -57,7 +57,8 @@ class Rol(models.Model):
     id_rol = models.AutoField(primary_key=True)
 
     nombre_rol = models.CharField(
-        max_length=100
+        max_length=100,
+        unique=True
     )
 
     estado_rol = models.BooleanField(
@@ -114,7 +115,8 @@ class Funcion(models.Model):
 
 
     nombre_funcion = models.CharField(
-        max_length=100
+        max_length=100,
+        unique=True
     )
 
 

@@ -22,62 +22,58 @@ def roles_view(request):
         estado_funcion=True
     )
 
-
     if request.method == "POST":
-
 
         nombre = request.POST.get(
             "nombre_rol"
         )
 
-
         funciones_seleccionadas = request.POST.getlist(
             "funciones"
         )
 
+        # VALIDACIÓN DE ROL DUPLICADO
+        if Rol.objects.filter(
+            nombre_rol__iexact=nombre
+        ).exists():
 
+            return render(
+                request,
+                'roles.html',
+                {
+                    'roles': roles,
+                    'funciones': funciones,
+                    'error': 'El rol ya existe'
+                }
+            )
 
         rol = Rol.objects.create(
-
             nombre_rol=nombre,
-
             estado_rol=True
-
         )
-
-
 
         for f in funciones_seleccionadas:
 
-
-            FuncionRol.objects.create(
-
+            # VALIDACIÓN DE FUNCIÓN REPETIDA
+            if not FuncionRol.objects.filter(
                 rol=rol,
-
                 funcion_id=f
+            ).exists():
 
-            )
-
-
+                FuncionRol.objects.create(
+                    rol=rol,
+                    funcion_id=f
+                )
 
         return redirect('roles')
 
-
-
     return render(
-
         request,
-
         'roles.html',
-
         {
-
-        'roles':roles,
-
-        'funciones':funciones
-
+            'roles': roles,
+            'funciones': funciones
         }
-
     )
 
 @login_required(login_url='login')
@@ -274,69 +270,57 @@ def editar_usuario(request, id):
 def funciones_view(request):
 
     permiso = Funcion.objects.filter(
-
         nombre_funcion="GESTIONAR_ROLES",
-
         roles__usuarios=request.user,
-
         estado_funcion=True
-
     ).exists()
 
-
     if not permiso:
-
         return redirect('dashboard_user')
 
-
-
     if request.method == "POST":
-
 
         nombre = request.POST.get(
             'nombre_funcion'
         )
 
-
         estado = True if request.POST.get(
             'estado'
         ) else False
 
+        # VALIDACIÓN DE FUNCIÓN DUPLICADA
+        if Funcion.objects.filter(
+            nombre_funcion__iexact=nombre
+        ).exists():
 
+            funciones = Funcion.objects.all()
+
+            return render(
+                request,
+                'funciones.html',
+                {
+                    'funciones': funciones,
+                    'error': 'La función ya existe'
+                }
+            )
 
         Funcion.objects.create(
-
             nombre_funcion=nombre,
-
             estado_funcion=estado
-
         )
 
-
-        return redirect(
-            'funciones'
-        )
-
-
-
+        return redirect('funciones')
 
     funciones = Funcion.objects.all()
 
-
-
     return render(
-
         request,
-
         'funciones.html',
-
         {
-
-        'funciones':funciones
-
+            'funciones': funciones
         }
-
     )
+
 @login_required(login_url='login')
 def editar_funcion(request,id):
 
