@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+
+<div style="padding:30px;color:white">
+
+
+<h1>
+Editar Función
+</h1>
+
+
+
+<form method="POST">
+
+
+{% csrf_token %}
+
+
+
+<label>
+Nombre función
+</label>
+
+
+<input 
+type="text"
+name="nombre_funcion"
+value="{{funcion.nombre_funcion}}">
+
+
+
+<br><br>
+
+
+
+<label>
+
+Estado
+
+</label>
+
+
+
+<input 
+type="checkbox"
+name="estado"
+
+{% if funcion.estado_funcion %}
+
+checked
+
+{% endif %}
+
+>
+
+
+Activo
+
+
+
+
+<br><br>
+
+
+<button>
+
+Guardar cambios
+
+</button>
+
+
+
+</form>
+
+
+
+
+<br>
+
+
+<a href="{% url 'funciones' %}">
+
+⬅ Volver
+
+</a>
+
+
+
+</div>
+
+
+
+{% endblock %}

@@ -1,0 +1,297 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+
+<style>
+
+
+.container{
+
+padding:30px;
+
+}
+
+
+
+.card{
+
+background:#111827;
+
+padding:25px;
+
+border-radius:15px;
+
+color:white;
+
+}
+
+
+
+table{
+
+width:100%;
+
+border-collapse:collapse;
+
+margin-top:20px;
+
+}
+
+
+
+th,td{
+
+padding:12px;
+
+border-bottom:1px solid #334155;
+
+}
+
+
+
+.btn{
+
+background:#2563eb;
+
+color:white;
+
+padding:8px 15px;
+
+border-radius:8px;
+
+text-decoration:none;
+
+}
+
+
+.activo{
+
+color:#22c55e;
+
+}
+
+
+.inactivo{
+
+color:#ef4444;
+
+}
+
+
+
+</style>
+
+
+
+<div class="container">
+
+
+<h1 style="color:white">
+
+Gestión de Usuarios
+
+</h1>
+
+
+
+<div class="card">
+
+
+
+<table>
+
+
+<tr>
+
+
+<th>
+Usuario
+</th>
+
+
+<th>
+Cédula
+</th>
+
+
+<th>
+Correo
+</th>
+
+
+<th>
+Roles
+</th>
+
+
+<th>
+Estado
+</th>
+
+
+<th>
+Acción
+</th>
+
+
+</tr>
+
+
+
+
+
+{% for usuario in usuarios %}
+
+
+
+<tr>
+
+
+<td>
+
+{{usuario.user_name}}
+
+</td>
+
+
+
+<td>
+
+{{usuario.cedula}}
+
+</td>
+
+
+
+<td>
+
+{{usuario.email}}
+
+</td>
+
+
+
+<td>
+
+
+{% for rol in usuario.roles.all %}
+
+
+{{rol.nombre_rol}}
+
+
+{% if not forloop.last %}
+
+,
+
+{% endif %}
+
+
+{% empty %}
+
+Sin rol
+
+
+{% endfor %}
+
+
+
+</td>
+
+
+
+
+<td>
+
+
+{% if usuario.estado %}
+
+
+<span class="activo">
+
+Activo
+
+</span>
+
+
+{% else %}
+
+
+<span class="inactivo">
+
+Inactivo
+
+</span>
+
+
+{% endif %}
+
+
+
+</td>
+
+
+
+<td>
+
+
+<a class="btn"
+
+href="{% url 'editar_usuario' usuario.id %}">
+
+
+Editar
+
+
+</a>
+
+
+
+</td>
+
+
+</tr>
+
+
+
+
+{% empty %}
+
+
+<tr>
+
+<td colspan="6">
+
+No existen usuarios
+
+</td>
+
+
+</tr>
+
+
+
+{% endfor %}
+
+
+
+</table>
+
+
+
+</div>
+
+<a href="{% url 'dashboard_admin' %}" 
+   class="btn-back">
+
+    ⬅ Volver a usuarios
+
+</a>
+
+</div>
+
+
+
+{% endblock %}

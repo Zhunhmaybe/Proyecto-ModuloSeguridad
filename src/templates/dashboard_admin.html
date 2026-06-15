@@ -1,605 +1,880 @@
 {% extends 'base.html' %}
 
-{% block title %}Panel de Control de Seguridad (Admin){% endblock %}
-
-{% block extra_css %}
-    body {
-        padding: 0;
-        display: flex;
-        flex-direction: row;
-        min-height: 100vh;
-        background-color: #080c14;
-    }
-
-    /* Layout structure */
-    .sidebar {
-        width: 280px;
-        background: rgba(15, 23, 42, 0.4);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border-right: 1px solid rgba(255, 255, 255, 0.05);
-        padding: 30px 20px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        z-index: 10;
-        position: fixed;
-        height: 100vh;
-    }
-
-    .main-content {
-        margin-left: 280px;
-        flex: 1;
-        padding: 40px;
-        min-height: 100vh;
-        z-index: 1;
-        position: relative;
-        overflow-y: auto;
-    }
-
-    /* Sidebar Components */
-    .brand {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 40px;
-    }
-
-    .brand-icon {
-        width: 42px;
-        height: 42px;
-        background: linear-gradient(135deg, var(--primary-glow) 0%, var(--accent-glow) 100%);
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 1.3rem;
-        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
-    }
-
-    .brand-name {
-        font-size: 1.25rem;
-        font-weight: 700;
-        letter-spacing: -0.5px;
-        background: linear-gradient(to right, #fff, #94a3b8);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-
-    .nav-list {
-        list-style: none;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .nav-item a {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        padding: 12px 18px;
-        border-radius: 12px;
-        color: var(--text-secondary);
-        text-decoration: none;
-        font-weight: 500;
-        font-size: 0.95rem;
-    }
-
-    .nav-item.active a, .nav-item a:hover {
-        color: var(--text-primary);
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    }
-
-    .nav-item.active a {
-        border-left: 3px solid var(--primary-glow);
-    }
-
-    .user-profile {
-        background: rgba(255, 255, 255, 0.02);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        padding: 15px;
-        border-radius: 14px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .profile-info {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .profile-avatar {
-        width: 38px;
-        height: 38px;
-        background: var(--primary-glow);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: 600;
-        font-size: 0.95rem;
-    }
-
-    .profile-details {
-        font-size: 0.85rem;
-    }
-
-    .profile-name {
-        font-weight: 600;
-    }
-
-    .profile-role {
-        color: var(--text-secondary);
-        font-size: 0.75rem;
-    }
-
-    .logout-btn-icon {
-        color: #ef4444;
-        cursor: pointer;
-        padding: 6px;
-        border-radius: 8px;
-    }
-
-    .logout-btn-icon:hover {
-        background: rgba(239, 68, 68, 0.1);
-    }
-
-    /* Main Content Components */
-    .top-bar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 35px;
-    }
-
-    .page-title h2 {
-        font-size: 1.75rem;
-        font-weight: 700;
-    }
-
-    .page-title p {
-        font-size: 0.9rem;
-        color: var(--text-secondary);
-        margin-top: 4px;
-    }
-
-    .server-status {
-        background: rgba(16, 185, 129, 0.08);
-        border: 1px solid rgba(16, 185, 129, 0.2);
-        color: var(--success);
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .status-dot {
-        width: 8px;
-        height: 8px;
-        background-color: var(--success);
-        border-radius: 50%;
-        box-shadow: 0 0 10px var(--success);
-        animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-        0%, 100% { opacity: 0.5; }
-        50% { opacity: 1; }
-    }
-
-    /* Grid layout for cards */
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 20px;
-        margin-bottom: 35px;
-    }
-
-    .stat-card {
-        padding: 24px;
-    }
-
-    .stat-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        color: var(--text-secondary);
-        font-size: 0.9rem;
-        font-weight: 500;
-        margin-bottom: 12px;
-    }
-
-    .stat-icon {
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.1rem;
-    }
-
-    .stat-icon.primary { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
-    .stat-icon.success { background: rgba(16, 185, 129, 0.15); color: #34d399; }
-    .stat-icon.secondary { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
-    .stat-icon.warning { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
-
-    .stat-value {
-        font-size: 2rem;
-        font-weight: 700;
-        color: white;
-    }
-
-    /* Content Area Layout */
-    .dashboard-layout {
-        display: grid;
-        grid-template-columns: 1.6fr 1fr;
-        gap: 30px;
-    }
-
-    .panel-box {
-        padding: 30px;
-        min-height: 400px;
-    }
-
-    .panel-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 25px;
-    }
-
-    .panel-title {
-        font-size: 1.15rem;
-        font-weight: 600;
-        color: white;
-    }
-
-    /* Custom Tables */
-    .table-container {
-        overflow-x: auto;
-    }
-
-    .custom-table {
-        width: 100%;
-        border-collapse: collapse;
-        text-align: left;
-    }
-
-    .custom-table th {
-        padding: 14px 16px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        color: var(--text-secondary);
-        font-weight: 600;
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .custom-table td {
-        padding: 14px 16px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-        font-size: 0.9rem;
-        color: #cbd5e1;
-    }
-
-    .custom-table tbody tr:hover {
-        background: rgba(255, 255, 255, 0.01);
-    }
-
-    /* Developer Documentation Panel */
-    .doc-section {
-        background: rgba(0, 0, 0, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.04);
-        border-radius: 12px;
-        padding: 20px;
-        margin-top: 15px;
-    }
-
-    .doc-title {
-        font-weight: 600;
-        font-size: 0.9rem;
-        color: #cbd5e1;
-        margin-bottom: 8px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .code-block {
-        background: #020617;
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 8px;
-        padding: 12px 16px;
-        font-family: 'Courier New', Courier, monospace;
-        font-size: 0.78rem;
-        color: #93c5fd;
-        white-space: pre-wrap;
-        word-break: break-all;
-        overflow-x: auto;
-    }
-
-    /* Tabs switching styling */
-    .tab-content {
-        display: none;
-    }
-    .tab-content.active {
-        display: block;
-    }
-{% endblock %}
 
 {% block content %}
-    <!-- Sidebar Navigation -->
-    <div class="sidebar">
-        <div>
-            <div class="brand">
-                <div class="brand-icon">
-                    <i class="fa-solid fa-shield-halved"></i>
-                </div>
-                <span class="brand-name">Seguridad Central</span>
-            </div>
-            
-            <ul class="nav-list">
-                <li class="nav-item active" id="nav-dash" onclick="switchTab('dashboard')">
-                    <a href="javascript:void(0)">
-                        <i class="fa-solid fa-chart-line"></i>
-                        <span>Panel General</span>
-                    </a>
-                </li>
-                <li class="nav-item" id="nav-dev" onclick="switchTab('developers')">
-                    <a href="javascript:void(0)">
-                        <i class="fa-solid fa-code"></i>
-                        <span>Guía Integración API</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="/graphql/" target="_blank">
-                        <i class="fa-solid fa-network-wired"></i>
-                        <span>GraphQL Playroom</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
 
-        <!-- User Profile Area -->
-        <div class="user-profile">
-            <div class="profile-info">
-                <div class="profile-avatar">
-                    {{ user.user_name|slice:":2"|upper }}
-                </div>
-                <div class="profile-details">
-                    <div class="profile-name">@{{ user.user_name }}</div>
-                    <div class="profile-role">Administrador</div>
-                </div>
-            </div>
-            <a href="{% url 'logout' %}" class="logout-btn-icon" title="Cerrar Sesión">
-                <i class="fa-solid fa-arrow-right-from-bracket"></i>
-            </a>
-        </div>
-    </div>
 
-    <!-- Main Content Area -->
-    <div class="main-content">
-        <!-- Top Bar -->
-        <div class="top-bar">
-            <div class="page-title">
-                <h2 id="main-title">Panel de Control de Seguridad</h2>
-                <p id="main-subtitle">Consola de auditoría y monitoreo centralizado de microservicios</p>
-            </div>
-            <div class="server-status">
-                <div class="status-dot"></div>
-                <span>API de Seguridad Activa</span>
-            </div>
-        </div>
+<style>
 
-        <!-- TAB: DASHBOARD -->
-        <div id="tab-dashboard" class="tab-content active animate">
-            <!-- Stats Grid -->
-            <div class="stats-grid">
-                <div class="stat-card glass-card">
-                    <div class="stat-header">
-                        <span>Usuarios Totales</span>
-                        <div class="stat-icon primary"><i class="fa-solid fa-users"></i></div>
-                    </div>
-                    <div class="stat-value">{{ stats.total_users }}</div>
-                </div>
-                <div class="stat-card glass-card">
-                    <div class="stat-header">
-                        <span>Usuarios Activos</span>
-                        <div class="stat-icon success"><i class="fa-solid fa-user-check"></i></div>
-                    </div>
-                    <div class="stat-value">{{ stats.active_users }}</div>
-                </div>
-                <div class="stat-card glass-card">
-                    <div class="stat-header">
-                        <span>Roles Creados</span>
-                        <div class="stat-icon secondary"><i class="fa-solid fa-user-shield"></i></div>
-                    </div>
-                    <div class="stat-value">{{ stats.total_roles }}</div>
-                </div>
-                <div class="stat-card glass-card">
-                    <div class="stat-header">
-                        <span>Módulos de Negocio</span>
-                        <div class="stat-icon warning"><i class="fa-solid fa-cubes"></i></div>
-                    </div>
-                    <div class="stat-value">{{ stats.total_modules }}</div>
-                </div>
-            </div>
-
-            <!-- Dashboard Columns -->
-            <div class="dashboard-layout">
-                <!-- Audit Logs Column -->
-                <div class="panel-box glass-card">
-                    <div class="panel-header">
-                        <span class="panel-title">Últimas Pistas de Auditoría (Trazabilidad)</span>
-                    </div>
-                    <div class="table-container">
-                        <table class="custom-table">
-                            <thead>
-                                <tr>
-                                    <th>Usuario</th>
-                                    <th>Acción</th>
-                                    <th>Descripción</th>
-                                    <th>Fecha</th>
-                                    <th>Estado</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for log in logs %}
-                                    <tr>
-                                        <td><strong>@{{ log.username.user_name }}</strong></td>
-                                        <td><span class="badge badge-info">{{ log.accion }}</span></td>
-                                        <td>{{ log.descripcion }}</td>
-                                        <td>{{ log.fecha_auditoria|date:"d/m H:i" }}</td>
-                                        <td>
-                                            {% if log.estado_auditoria %}
-                                                <span class="badge badge-success"><i class="fa-solid fa-circle-check"></i> OK</span>
-                                            {% else %}
-                                                <span class="badge badge-danger"><i class="fa-solid fa-circle-xmark"></i> FALLÓ</span>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                {% empty %}
-                                    <tr>
-                                        <td colspan="5" style="text-align: center; color: var(--text-secondary);">No hay registros de auditoría aún.</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Fast Actions & Setup Column -->
-                <div class="panel-box glass-card">
-                    <div class="panel-header">
-                        <span class="panel-title">Administración Directa</span>
-                    </div>
-                    <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 20px;">
-                        Para realizar cambios administrativos avanzados (creación de usuarios, roles, asignación de permisos a módulos o inspección total de logs), utiliza el portal de GraphQL para testing rápido, o configura un frontend especializado que consuma las queries y mutations del backend.
-                    </p>
-                    
-                    <div class="doc-section">
-                        <div class="doc-title">
-                            <i class="fa-solid fa-key" style="color: #fbbf24;"></i>
-                            <span>Tu Token de Admin (Session)</span>
-                        </div>
-                        <div class="code-block" style="max-height: 140px; overflow-y: auto; font-size: 0.73rem;">{{ token }}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- TAB: DEVELOPERS -->
-        <div id="tab-developers" class="tab-content">
-            <div class="panel-box glass-card" style="min-height: auto; margin-bottom: 30px;">
-                <div class="panel-header">
-                    <span class="panel-title">Integración de Microservicios (Compras, Inventario, Facturación)</span>
-                </div>
-                <p style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 20px;">
-                    Este Módulo de Seguridad es el **núcleo de autenticación centralizado** de la universidad. Las aplicaciones independientes (desarrolladas por tus compañeros en React y NestJS) deben utilizar la siguiente lógica para asegurar sus rutas y validar a sus usuarios.
-                </p>
-
-                <div class="doc-section">
-                    <div class="doc-title">
-                        <i class="fa-solid fa-network-wired" style="color: #6366f1;"></i>
-                        <span>1. Inicio de Sesión Centralizado (GraphQL Mutation)</span>
-                    </div>
-                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 10px;">
-                        Tus compañeros deben enviar una consulta POST HTTP al endpoint <code>/graphql/</code> con la siguiente estructura de mutación. Si las credenciales y el estado del usuario/módulo son válidos, la respuesta retornará el token JWT.
-                    </p>
-                    <div class="code-block">
-mutation {
-  login(username: "nombre_usuario", password: "password_usuario", moduloId: 1) {
-    success
-    token
-    message
-  }
+.dashboard-container{
+    padding:30px;
 }
-                    </div>
-                </div>
 
-                <div class="doc-section">
-                    <div class="doc-title">
-                        <i class="fa-solid fa-signature" style="color: #a855f7;"></i>
-                        <span>2. Verificación de Permisos localmente (JWT Payload)</span>
-                    </div>
-                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 10px;">
-                        El JWT devuelto contiene la información del usuario, sus roles y sus funciones asignadas. Los microservicios externos pueden decodificar el token localmente (usando la misma llave secreta) y validar los permisos en su backend (por ejemplo en NestJS Guards):
-                    </p>
-                    <div class="code-block">
-{
-  "user_id": 4,
-  "user_name": "david",
-  "email": "david@example.com",
-  "roles": ["Administrador", "Compras"],
-  "permissions": ["CREAR_ORDEN", "APROBAR_ORDEN", "LEER_USUARIOS"],
-  "exp": 1781329333
+
+.header-dashboard{
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:30px;
+
 }
-                    </div>
-                </div>
 
-                <div class="doc-section">
-                    <div class="doc-title">
-                        <i class="fa-solid fa-user-gear" style="color: #ec4899;"></i>
-                        <span>3. Consulta del Usuario en Sesión (GraphQL Query)</span>
-                    </div>
-                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 10px;">
-                        Si un microservicio necesita consultar los datos del usuario en tiempo real, puede enviar el token en la cabecera HTTP <code>Authorization: Bearer &lt;TOKEN&gt;</code> y ejecutar el query <code>me</code>:
-                    </p>
-                    <div class="code-block">
-query {
-  me {
-    id
-    userName
-    email
-    estado
-    roles {
-      nombreRol
-      funciones {
-        nombreFuncion
-      }
-    }
-  }
+
+.title{
+    color:white;
 }
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <script>
-        function switchTab(tabName) {
-            // Hide all tabs
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            // Deactivate all nav items
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
 
-            // Show active tab
-            document.getElementById('tab-' + tabName).classList.add('active');
-            
-            // Activate clicked nav item
-            if (tabName === 'dashboard') {
-                document.getElementById('nav-dash').classList.add('active');
-                document.getElementById('main-title').innerText = 'Panel de Control de Seguridad';
-                document.getElementById('main-subtitle').innerText = 'Consola de auditoría y monitoreo centralizado de microservicios';
-            } else if (tabName === 'developers') {
-                document.getElementById('nav-dev').classList.add('active');
-                document.getElementById('main-title').innerText = 'Guía de Integración para Desarrolladores';
-                document.getElementById('main-subtitle').innerText = 'Cómo conectar los microservicios externos al Módulo de Seguridad';
-            }
-        }
-    </script>
+.user-info{
+    color:#94a3b8;
+}
+
+
+
+.cards-container{
+
+    display:grid;
+
+    grid-template-columns:
+    repeat(auto-fit,minmax(250px,1fr));
+
+    gap:25px;
+
+}
+
+
+
+.card-dashboard{
+
+    background:#111827;
+
+    border-radius:15px;
+
+    padding:25px;
+
+    color:white;
+
+    box-shadow:
+    0 10px 25px rgba(0,0,0,.25);
+
+}
+
+
+
+.card-dashboard p{
+
+    color:#94a3b8;
+
+}
+
+
+
+.btn-action{
+
+
+display:inline-block;
+
+margin-top:15px;
+
+background:#2563eb;
+
+padding:10px 20px;
+
+border-radius:8px;
+
+color:white;
+
+text-decoration:none;
+
+
+}
+
+
+
+.stats{
+
+display:grid;
+
+grid-template-columns:
+repeat(auto-fit,minmax(180px,1fr));
+
+gap:20px;
+
+margin-bottom:35px;
+
+}
+
+
+
+.stat-card{
+
+background:#1e293b;
+
+padding:20px;
+
+border-radius:12px;
+
+color:white;
+
+}
+
+
+
+.table-container{
+
+background:#111827;
+
+padding:20px;
+
+border-radius:15px;
+
+color:white;
+
+}
+
+
+
+table{
+
+width:100%;
+
+border-collapse:collapse;
+
+}
+
+
+
+th,td{
+
+padding:12px;
+
+border-bottom:1px solid #334155;
+
+}
+
+
+</style>
+
+
+
+
+
+<div class="dashboard-container">
+
+
+
+
+
+<!-- CABECERA -->
+
+
+<div class="header-dashboard">
+
+
+
+<div>
+
+
+
+<h1 class="title">
+
+Dashboard Seguridad
+
+</h1>
+
+
+
+
+<p class="user-info">
+
+Usuario:
+
+<b>
+
+{{user.user_name}}
+
+</b>
+
+
+</p>
+
+
+
+
+
+<p class="user-info">
+
+Rol(es):
+
+
+
+{% for rol in user.roles.all %}
+
+
+<span>
+
+{{rol.nombre_rol}}
+
+</span>
+
+
+
+{% empty %}
+
+
+Sin rol
+
+
+
+{% endfor %}
+
+
+</p>
+
+
+
+</div>
+
+
+
+
+
+<a class="btn-action"
+
+href="{% url 'logout' %}">
+
+
+Cerrar sesión
+
+
+</a>
+
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<!-- ESTADISTICAS -->
+
+
+<div class="stats">
+
+
+
+<div class="stat-card">
+
+
+<h4>
+
+Usuarios
+
+</h4>
+
+
+<h2>
+
+{{stats.total_users}}
+
+</h2>
+
+
+</div>
+
+
+
+
+
+<div class="stat-card">
+
+
+<h4>
+
+Usuarios activos
+
+</h4>
+
+
+<h2>
+
+{{stats.active_users}}
+
+</h2>
+
+
+</div>
+
+
+
+
+
+<div class="stat-card">
+
+
+<h4>
+
+Roles
+
+</h4>
+
+
+<h2>
+
+{{stats.total_roles}}
+
+</h2>
+
+
+</div>
+
+
+
+
+
+<div class="stat-card">
+
+
+<h4>
+
+Módulos
+
+</h4>
+
+
+<h2>
+
+{{stats.total_modules}}
+
+</h2>
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<!-- FUNCIONES DEL ROL -->
+
+
+<h2 class="title">
+
+Permisos asignados
+
+</h2>
+
+
+
+
+
+<div class="cards-container">
+
+
+
+
+
+{% for funcion in funciones %}
+
+
+
+
+
+
+
+{% if funcion.nombre_funcion == "GESTIONAR_USUARIOS" %}
+
+
+
+
+<div class="card-dashboard">
+
+
+<h3>
+
+👥 Usuarios
+
+</h3>
+
+
+
+<p>
+
+Crear y administrar usuarios
+
+</p>
+
+
+
+
+<a href="{% url 'usuarios' %}"
+
+class="btn-action">
+
+
+Ingresar
+
+
+</a>
+
+
+
+</div>
+
+
+
+
+{% endif %}
+
+
+
+
+
+
+
+
+
+{% if funcion.nombre_funcion == "GESTIONAR_ROLES" %}
+
+
+
+
+<div class="card-dashboard">
+
+
+<h3>
+
+🔐 Roles
+
+</h3>
+
+
+
+<p>
+
+Crear roles y asignar permisos
+
+</p>
+
+
+
+
+<a href="{% url 'roles' %}"
+
+class="btn-action">
+
+
+Ingresar
+
+
+</a>
+
+
+
+</div>
+
+
+
+
+{% endif %}
+
+
+
+
+
+
+
+
+
+{% if funcion.nombre_funcion == "GESTION_FUNCIONES" %}
+
+
+
+
+<div class="card-dashboard">
+
+
+<h3>
+
+⚡ Funciones
+
+</h3>
+
+
+
+<p>
+
+Crear y administrar funciones del sistema
+
+</p>
+
+
+
+
+<a href="{% url 'funciones' %}"
+
+class="btn-action">
+
+
+Ingresar
+
+
+</a>
+
+
+
+</div>
+
+
+
+
+{% endif %}
+
+
+
+
+
+
+
+
+
+{% if funcion.nombre_funcion == "GESTIONAR_MODULOS" %}
+
+
+
+
+<div class="card-dashboard">
+
+
+<h3>
+
+⚙ Módulos
+
+</h3>
+
+
+
+<p>
+
+Administrar módulos del sistema
+
+</p>
+
+
+
+
+<a href="{% url 'modulos' %}"
+
+class="btn-action">
+
+
+Ingresar
+
+
+</a>
+
+
+
+</div>
+
+
+
+
+{% endif %}
+
+
+
+
+
+
+
+
+
+{% if funcion.nombre_funcion == "EDITAR_USUARIO" %}
+
+
+
+
+<div class="card-dashboard">
+
+
+<h3>
+
+✏ Editar Usuarios
+
+</h3>
+
+
+
+<p>
+
+Modificar información de usuarios
+
+</p>
+
+
+
+
+<a href="{% url 'usuarios' %}"
+
+class="btn-action">
+
+
+Ingresar
+
+
+</a>
+
+
+
+</div>
+
+
+
+
+{% endif %}
+
+
+
+
+
+
+
+
+
+{% empty %}
+
+
+
+
+
+<div class="card-dashboard">
+
+
+<h3>
+
+Sin permisos
+
+</h3>
+
+
+
+<p>
+
+El usuario no tiene funciones asignadas
+
+</p>
+
+
+
+</div>
+
+
+
+
+
+{% endfor %}
+
+
+
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<!-- AUDITORIA -->
+
+
+<h2 class="title"
+
+style="margin-top:40px">
+
+
+Auditoría
+
+
+</h2>
+
+
+
+
+
+
+<div class="table-container">
+
+
+
+
+
+<table>
+
+
+
+<thead>
+
+
+<tr>
+
+
+<th>
+
+Usuario
+
+</th>
+
+
+
+<th>
+
+Acción
+
+</th>
+
+
+
+<th>
+
+Fecha
+
+</th>
+
+
+
+</tr>
+
+
+</thead>
+
+
+
+
+
+
+<tbody>
+
+
+
+
+{% for log in logs %}
+
+
+
+
+<tr>
+
+
+
+<td>
+
+{{log.username.user_name}}
+
+</td>
+
+
+
+
+<td>
+
+{{log.accion}}
+
+</td>
+
+
+
+
+<td>
+
+{{log.fecha_creacion}}
+
+</td>
+
+
+
+
+</tr>
+
+
+
+
+
+{% empty %}
+
+
+
+
+<tr>
+
+
+<td colspan="3">
+
+
+Sin registros
+
+
+</td>
+
+
+</tr>
+
+
+
+
+
+{% endfor %}
+
+
+
+
+
+
+</tbody>
+
+
+
+
+
+</table>
+
+
+
+
+
+
+</div>
+
+
+
+
+
+
+
+</div>
+
+
+
+
+
 {% endblock %}
