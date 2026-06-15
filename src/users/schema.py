@@ -7,6 +7,9 @@ import os
 import msal
 import jwt
 import datetime
+from django.core.mail import send_mail
+from django.conf import settings
+from django.urls import reverse
 
 # --- JWT Config ---
 JWT_SECRET = os.getenv('SECRET_KEY', 'secret')
@@ -118,6 +121,12 @@ class RegisterResponse:
 class ForgotPasswordResponse:
     success: bool
     message: str
+
+@strawberry.type
+class ResetPasswordResponse:
+    success: bool
+    message: str
+
 @strawberry.type
 class Query:
     @strawberry.field
@@ -191,73 +200,129 @@ class Mutation:
 
         except Usuario.DoesNotExist:
             return LoginResponse(success=False, token=None, message="Usuario no existe en Seguridades")
+
     @strawberry.mutation
     def register_user(
         self,
+        info: strawberry.Info,
         username:str,
         email:str,
         cedula:str,
         password:str,
         confirm_password:str
     )-> RegisterResponse:
+        import re
+        from django.db import IntegrityError
 
         if Usuario.objects.filter(user_name=username).exists():
-            return RegisterResponse(
-                success=False,
-                message="El usuario ya existe"
-            )
+            return RegisterResponse(success=False, message="El usuario ya existe")
 
         if Usuario.objects.filter(email=email).exists():
-            return RegisterResponse(
-                success=False,
-                message="El correo ya está registrado"
-            )
-        if len(password) < 8:
-            return RegisterResponse(
-                success=False,
-                message="La contraseña debe tener al menos 8 caracteres"
-        )
+            return RegisterResponse(success=False, message="El correo ya está registrado")
+            
+        if not re.match(r'^[a-zA-Z0-9._%+-]+@(gmail\.com|utn\.edu\.ec)$', email):
+            return RegisterResponse(success=False, message="Solo se permiten correos @gmail.com o @utn.edu.ec")
+
+        # Validar cédula: solo números y longitud exacta de 10 caracteres (máximo 10)
+        if not cedula.isdigit():
+            return RegisterResponse(success=False, message="La cédula debe contener solo números")
+        if len(cedula) != 10:
+            return RegisterResponse(success=False, message="La cédula debe tener exactamente 10 dígitos")
+
         if password != confirm_password:
-            return RegisterResponse(
-                success=False,
-            message="Las contraseñas no coinciden"
-        )
+            return RegisterResponse(success=False, message="Las contraseñas no coinciden")
 
-        Usuario.objects.create_user(
-            user_name=username,
-            email=email,
-            cedula=cedula,
-            password=password
-        )
-
-        return RegisterResponse(
-            success=True,
-            message="Usuario registrado correctamente"
-        )
-    @strawberry.mutation
-    def forgot_password(
-        self,
-        email:str
-    ) -> ForgotPasswordResponse:
+        # Validar contraseña: al menos 8 caracteres, 1 mayúscula, 1 minúscula, 1 especial
+        if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*[@$!%*?&\.\-\_])[A-Za-z\d@$!%*?&\.\-\_]{8,}$', password):
+            return RegisterResponse(success=False, message="La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un carácter especial (@$!%*?&.-_)")
 
         try:
+            user = Usuario.objects.create_user(
+                user_name=username,
+                email=email,
+                cedula=cedula,
+                password=password
+            )
+            
+            from users.models import EmailVerificationToken
+            from django.core.mail import send_mail
+            from django.conf import settings
+            
+            token = EmailVerificationToken.objects.create(usuario=user)
+            request = info.context.get("request")
+            if request:
+                verify_url = request.build_absolute_uri(f'/verify-email/{token.token}/')
+            else:
+                verify_url = f"http://localhost:8000/verify-email/{token.token}/"
 
+            try:
+                send_mail(
+                    subject='Bienvenido - Verifica tu correo',
+                    message=f'Hola {user.user_name},\n\nGracias por registrarte en Seguridad Centralizada. Por favor verifica tu correo electrónico haciendo clic en el siguiente enlace:\n{verify_url}',
+                    from_email=settings.EMAIL_HOST_USER,
+                    recipient_list=[email],
+                    fail_silently=False,
+                )
+            except Exception:
+                pass # Si el correo falla, de todas formas retornamos éxito pero sin bloquear
+                
+            return RegisterResponse(success=True, message="Usuario registrado correctamente. Revisa tu correo para verificar tu cuenta.")
+        except IntegrityError as e:
+            error_msg = str(e).lower()
+            if 'cedula_valida' in error_msg:
+                return RegisterResponse(success=False, message="La cédula ingresada no es válida en Ecuador")
+            elif 'cedula' in error_msg:
+                return RegisterResponse(success=False, message="La cédula ya se encuentra registrada")
+            else:
+                return RegisterResponse(success=False, message="Verifica tus datos")
+
+    @strawberry.mutation
+    def forgot_password(self, info: strawberry.Info, email: str) -> ForgotPasswordResponse:
+        try:
             user = Usuario.objects.get(email=email)
+            from users.models import PasswordResetToken
+            token = PasswordResetToken.objects.create(usuario=user)
+            
+            request = info.context.get("request")
+            if request:
+                reset_url = request.build_absolute_uri(reverse('reset_password', args=[str(token.token)]))
+            else:
+                reset_url = f"http://localhost:8000/reset-password/{token.token}/"
 
-            token = PasswordResetToken.objects.create(
-                usuario=user
-            )
-
-            return ForgotPasswordResponse(
-                success=True,
-                message=str(token.token)
-            )
+            try:
+                send_mail(
+                    subject='Recuperación de Contraseña - Seguridad Centralizada',
+                    message=f'Hola {user.user_name},\n\nHaz clic en el siguiente enlace para restablecer tu contraseña:\n{reset_url}\n\nSi no solicitaste esto, ignora este correo.',
+                    from_email=settings.EMAIL_HOST_USER,
+                    recipient_list=[email],
+                    fail_silently=False,
+                )
+                return ForgotPasswordResponse(success=True, message="Enlace enviado al correo.")
+            except Exception as e:
+                return ForgotPasswordResponse(success=False, message=f"Fallo al enviar correo: {str(e)}")
 
         except Usuario.DoesNotExist:
+            return ForgotPasswordResponse(success=False, message="Correo no registrado")
 
-            return ForgotPasswordResponse(
-                success=False,
-                message="Correo no registrado"
-            )
+    @strawberry.mutation
+    def reset_password(self, token: str, password: str, confirm_password: str) -> ResetPasswordResponse:
+        from users.models import PasswordResetToken
+        try:
+            reset_token = PasswordResetToken.objects.get(token=token, usado=False)
+            if password != confirm_password:
+                return ResetPasswordResponse(success=False, message="Las contraseñas no coinciden")
+            if len(password) < 8:
+                return ResetPasswordResponse(success=False, message="La contraseña debe tener al menos 8 caracteres")
+                
+            user = reset_token.usuario
+            user.set_password(password)
+            user.save()
+            
+            reset_token.usado = True
+            reset_token.save()
+            
+            return ResetPasswordResponse(success=True, message="Contraseña actualizada exitosamente")
+        except PasswordResetToken.DoesNotExist:
+            return ResetPasswordResponse(success=False, message="Token inválido o ya utilizado")
 
 

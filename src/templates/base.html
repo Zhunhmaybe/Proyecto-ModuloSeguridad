@@ -127,7 +127,7 @@
             align-items: center;
         }
 
-        .input-wrapper i {
+        .input-wrapper i:first-child {
             position: absolute;
             left: 15px;
             color: var(--text-secondary);
@@ -236,8 +236,8 @@
             background: rgba(255, 255, 255, 0.2);
         }
 
-        {% block extra_css %}{% endblock %}
     </style>
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
     <div class="blob blob-1"></div>
