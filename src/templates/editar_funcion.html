@@ -1,96 +1,172 @@
 {% extends 'base.html' %}
 
-
 {% block content %}
 
+<style>
+    *{
+        box-sizing:border-box;
+    }
 
-<div style="padding:30px;color:white">
+    body{
+        background:linear-gradient(135deg,#0f172a,#1e293b);
+    }
 
+    .container{
+        max-width:700px;
+        margin:40px auto;
+        padding:20px;
+    }
 
-<h1>
-Editar Función
-</h1>
+    .card{
+        background:rgba(17,24,39,0.95);
+        backdrop-filter:blur(12px);
+        border:1px solid rgba(255,255,255,0.08);
+        border-radius:20px;
+        padding:30px;
+        color:white;
+        box-shadow:0 10px 30px rgba(0,0,0,0.35);
+    }
 
+    h1{
+        margin-top:0;
+        margin-bottom:25px;
+        color:white;
+        font-size:2rem;
+        font-weight:700;
+    }
 
+    .form-group{
+        margin-bottom:20px;
+    }
 
-<form method="POST">
+    label{
+        display:block;
+        margin-bottom:8px;
+        color:#cbd5e1;
+        font-weight:600;
+    }
 
+    input[type="text"]{
+        width:100%;
+        padding:12px 15px;
+        border-radius:10px;
+        border:1px solid #334155;
+        background:#1e293b;
+        color:white;
+        font-size:15px;
+        transition:.3s;
+    }
 
-{% csrf_token %}
+    input[type="text"]:focus{
+        outline:none;
+        border-color:#3b82f6;
+        box-shadow:0 0 0 3px rgba(59,130,246,.25);
+    }
 
+    .checkbox-group{
+        display:flex;
+        align-items:center;
+        gap:10px;
+        color:#e2e8f0;
+        font-weight:500;
+    }
 
+    input[type="checkbox"]{
+        width:18px;
+        height:18px;
+        cursor:pointer;
+    }
 
-<label>
-Nombre función
-</label>
+    .btn-save{
+        background:linear-gradient(135deg,#2563eb,#3b82f6);
+        color:white;
+        border:none;
+        padding:12px 22px;
+        border-radius:10px;
+        cursor:pointer;
+        font-weight:600;
+        transition:.3s;
+    }
 
+    .btn-save:hover{
+        transform:translateY(-2px);
+        box-shadow:0 8px 20px rgba(37,99,235,.35);
+    }
 
-<input 
-type="text"
-name="nombre_funcion"
-value="{{funcion.nombre_funcion}}">
+    .btn-back{
+        display:inline-flex;
+        align-items:center;
+        gap:8px;
+        margin-top:20px;
+        background:#334155;
+        padding:12px 20px;
+        border-radius:10px;
+        color:white;
+        text-decoration:none;
+        font-weight:600;
+        transition:.3s;
+    }
 
+    .btn-back:hover{
+        background:#475569;
+        transform:translateY(-2px);
+    }
+</style>
 
+<div class="container">
 
-<br><br>
+    <div class="card">
 
+        <h1>✏️ Editar Función</h1>
 
+        <form method="POST">
 
-<label>
+            {% csrf_token %}
 
-Estado
+            <div class="form-group">
 
-</label>
+                <label>Nombre función</label>
 
+                <input
+                    type="text"
+                    name="nombre_funcion"
+                    value="{{ funcion.nombre_funcion }}"
+                    required>
 
+            </div>
 
-<input 
-type="checkbox"
-name="estado"
+            <div class="form-group">
 
-{% if funcion.estado_funcion %}
+                <label>Estado</label>
 
-checked
+                <div class="checkbox-group">
 
-{% endif %}
+                    <input
+                        type="checkbox"
+                        name="estado"
+                        {% if funcion.estado_funcion %}
+                        checked
+                        {% endif %}
+                    >
 
->
+                    <span>Activo</span>
 
+                </div>
 
-Activo
+            </div>
 
+            <button type="submit" class="btn-save">
+                Guardar cambios
+            </button>
 
+        </form>
 
+        <a href="{% url 'funciones' %}" class="btn-back">
+            ⬅ Volver
+        </a>
 
-<br><br>
-
-
-<button>
-
-Guardar cambios
-
-</button>
-
-
-
-</form>
-
-
-
-
-<br>
-
-
-<a href="{% url 'funciones' %}">
-
-⬅ Volver
-
-</a>
-
-
+    </div>
 
 </div>
-
-
 
 {% endblock %}

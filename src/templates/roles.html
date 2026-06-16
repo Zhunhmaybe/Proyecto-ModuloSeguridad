@@ -1,468 +1,309 @@
 {% extends 'base.html' %}
 
-
 {% block content %}
 
-
 <style>
+*{box-sizing:border-box}
+
+body{
+    background:linear-gradient(135deg,#0f172a,#1e293b);
+    min-height:100vh;
+}
 
 .container{
-
-    padding:30px;
-
+    max-width:1200px;
+    margin:auto;
+    padding:40px 25px;
 }
 
-
+h1{
+    color:white;
+    margin-bottom:25px;
+    font-size:2rem;
+    font-weight:700;
+    letter-spacing:.5px;
+}
 
 .card{
-
-    background:#111827;
-
-    padding:25px;
-
-    border-radius:15px;
-
+    background:rgba(17,24,39,.95);
+    backdrop-filter:blur(12px);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:20px;
+    padding:30px;
     color:white;
-
-    margin-bottom:20px;
-
+    box-shadow:0 10px 30px rgba(0,0,0,.35);
+    margin-bottom:24px;
 }
 
+.card h3{
+    margin:0 0 20px;
+    font-size:1.1rem;
+    color:#e2e8f0;
+    border-left:4px solid #3b82f6;
+    padding-left:12px;
+    font-weight:600;
+}
 
+.card h4{
+    margin:20px 0 10px;
+    color:#94a3b8;
+    font-size:.85rem;
+    text-transform:uppercase;
+    letter-spacing:.5px;
+    font-weight:600;
+}
 
-input{
+label{
+    display:block;
+    margin-bottom:6px;
+    color:#94a3b8;
+    font-size:.85rem;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:.5px;
+}
 
+input[type="text"]{
     width:100%;
-
-    padding:10px;
-
-    margin:8px 0;
-
-    border-radius:8px;
-
-    border:none;
-
-}
-
-
-
-button{
-
-    background:#2563eb;
-
+    padding:12px 15px;
+    border-radius:10px;
+    border:1px solid #334155;
+    background:#1e293b;
     color:white;
-
-    border:none;
-
-    padding:10px 20px;
-
-    border-radius:8px;
-
-    cursor:pointer;
-
+    font-size:.95rem;
+    transition:all .3s;
 }
 
+input[type="text"]:focus{
+    outline:none;
+    border-color:#3b82f6;
+    box-shadow:0 0 0 3px rgba(59,130,246,.2);
+}
 
+.funciones-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+    gap:10px;
+    margin-top:4px;
+}
+
+.funcion-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 14px;
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.07);
+    border-radius:9px;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.funcion-item:hover{
+    background:rgba(59,130,246,.1);
+    border-color:rgba(59,130,246,.3);
+}
+
+.funcion-item input[type="checkbox"]{
+    width:16px;height:16px;
+    accent-color:#3b82f6;
+    cursor:pointer;
+    flex-shrink:0;
+}
+
+.funcion-item span{
+    font-size:.85rem;
+    color:#cbd5e1;
+    font-weight:500;
+}
+
+.no-funciones{
+    color:#475569;
+    font-size:.88rem;
+    font-style:italic;
+}
+
+button[type="submit"]{
+    margin-top:24px;
+    background:linear-gradient(135deg,#2563eb,#3b82f6);
+    color:white;
+    border:none;
+    padding:12px 24px;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:600;
+    font-size:.9rem;
+    transition:.3s;
+}
+
+button[type="submit"]:hover{
+    transform:translateY(-2px);
+    box-shadow:0 8px 20px rgba(37,99,235,.4);
+}
+
+/* Tabla */
+.table-container{overflow-x:auto}
 
 table{
-
     width:100%;
-
-    color:white;
-
     border-collapse:collapse;
-
+    margin-top:5px;
 }
 
+thead{background:#1e293b}
 
+th{
+    text-align:left;
+    padding:13px 15px;
+    color:#cbd5e1;
+    font-weight:600;
+    text-transform:uppercase;
+    font-size:.78rem;
+    letter-spacing:.5px;
+}
 
-td,th{
-
-    padding:12px;
-
+td{
+    padding:13px 15px;
     border-bottom:1px solid #334155;
-
+    color:#f1f5f9;
+    font-size:.88rem;
+    vertical-align:middle;
 }
 
+tbody tr{transition:.25s}
+tbody tr:hover{background:rgba(59,130,246,.08)}
+tbody tr:last-child td{border-bottom:none}
 
-
-a{
-
-    color:white;
-
-    text-decoration:none;
-
+.funcion-badge{
+    display:inline-block;
+    background:rgba(99,102,241,.15);
+    color:#a5b4fc;
+    border:1px solid rgba(99,102,241,.3);
+    padding:3px 9px;
+    border-radius:999px;
+    font-size:.75rem;
+    font-weight:500;
+    margin:2px;
 }
-
-
 
 .btn-edit{
-
-    background:#16a34a;
-
-    padding:8px 15px;
-
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:linear-gradient(135deg,#2563eb,#3b82f6);
+    color:white;
+    padding:7px 14px;
     border-radius:8px;
-
+    font-size:.82rem;
+    font-weight:600;
+    text-decoration:none;
+    transition:.3s;
+    white-space:nowrap;
 }
 
-
+.btn-edit:hover{
+    transform:translateY(-2px);
+    box-shadow:0 8px 20px rgba(37,99,235,.35);
+}
 
 .btn-back{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    margin-top:24px;
+    background:#334155;
+    padding:12px 20px;
+    border-radius:10px;
+    color:white;
+    text-decoration:none;
+    font-weight:600;
+    font-size:.9rem;
+    transition:.3s;
+}
 
-    display:inline-block;
-
-    margin-top:20px;
-
+.btn-back:hover{
     background:#475569;
-
-    padding:10px 20px;
-
-    border-radius:8px;
-
+    transform:translateY(-2px);
 }
 
-
-
-.funcion{
-
-    display:block;
-
-    margin:8px 0;
-
+.empty-row td{
+    text-align:center;
+    color:#475569;
+    padding:32px;
+    font-size:.88rem;
 }
-
-
-
 </style>
-
-
-
-
-
 
 <div class="container">
 
-
-
-<h1 style="color:white">
-
-🔐 Gestión de Roles
-
-</h1>
-
-
-
-
-
-<!-- CREAR ROL -->
-
-
-<div class="card">
-
-
-<h3>
-
-Crear Rol
-
-</h3>
-
-
-
-
-<form method="POST">
-
-
-{% csrf_token %}
-
-
-
-<label>
-
-Nombre del rol
-
-</label>
-
-
-<input
-
-type="text"
-
-name="nombre_rol"
-
-placeholder="Ej: ADMIN"
-
-required>
-
-
-
-
-
-
-<h4>
-
-Asignar funciones
-
-</h4>
-
-
-
-{% for funcion in funciones %}
-
-
-
-<label class="funcion">
-
-
-<input
-
-type="checkbox"
-
-name="funciones"
-
-value="{{funcion.id_funcion}}">
-
-
-{{funcion.nombre_funcion}}
-
-
-
-</label>
-
-
-
-{% empty %}
-
-
-<p>
-
-No existen funciones creadas
-
-</p>
-
-
-
-{% endfor %}
-
-
-
-
-
-
-<br>
-
-
-<button type="submit">
-
-💾 Guardar rol
-
-</button>
-
-
-
-</form>
-
-
+    <h1>🔐 Gestión de Roles</h1>
+
+    <!-- CREAR ROL -->
+    <div class="card">
+        <h3>Crear Rol</h3>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <label>Nombre del rol</label>
+            <input type="text" name="nombre_rol" placeholder="Ej: ADMIN" required>
+
+            <h4>Asignar funciones</h4>
+            <div class="funciones-grid">
+                {% for funcion in funciones %}
+                <label class="funcion-item">
+                    <input type="checkbox" name="funciones" value="{{ funcion.id_funcion }}">
+                    <span>{{ funcion.nombre_funcion }}</span>
+                </label>
+                {% empty %}
+                <p class="no-funciones">No existen funciones creadas</p>
+                {% endfor %}
+            </div>
+
+            <button type="submit">💾 Guardar rol</button>
+        </form>
+    </div>
+
+    <!-- LISTA ROLES -->
+    <div class="card">
+        <h3>Roles existentes</h3>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Funciones</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rol in roles %}
+                    <tr>
+                        <td>{{ rol.nombre_rol }}</td>
+                        <td>
+                            {% for f in rol.funciones.all %}
+                                <span class="funcion-badge">{{ f.nombre_funcion }}</span>
+                            {% empty %}
+                                <span style="color:#475569;font-size:.82rem">Sin funciones</span>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            <a href="{% url 'editar_rol' rol.id_rol %}" class="btn-edit">✏ Editar</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr class="empty-row">
+                        <td colspan="3">No existen roles registrados</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <a href="{% url 'dashboard_admin' %}" class="btn-back">⬅ Volver al Dashboard</a>
+    </div>
 
 </div>
-
-
-
-
-
-
-
-
-
-<!-- LISTA ROLES -->
-
-
-<div class="card">
-
-
-<h3>
-
-Roles existentes
-
-</h3>
-
-
-
-
-<table>
-
-
-<tr>
-
-
-<th>
-
-Nombre
-
-</th>
-
-
-
-<th>
-
-Funciones
-
-</th>
-
-
-
-<th>
-
-Acción
-
-</th>
-
-
-</tr>
-
-
-
-
-
-
-{% for rol in roles %}
-
-
-
-
-<tr>
-
-
-
-<td>
-
-{{rol.nombre_rol}}
-
-</td>
-
-
-
-
-
-<td>
-
-
-{% for f in rol.funciones.all %}
-
-
-{{f.nombre_funcion}}
-
-
-{% if not forloop.last %}
-
-,
-
-{% endif %}
-
-
-{% empty %}
-
-
-Sin funciones
-
-
-{% endfor %}
-
-
-
-</td>
-
-
-
-
-
-
-<td>
-
-
-<a 
-
-href="{% url 'editar_rol' rol.id_rol %}"
-
-class="btn-edit">
-
-
-✏ Editar
-
-
-</a>
-
-
-
-</td>
-
-
-
-
-
-
-</tr>
-
-
-
-
-{% empty %}
-
-
-
-
-<tr>
-
-
-<td colspan="3">
-
-
-No existen roles registrados
-
-
-</td>
-
-
-</tr>
-
-
-
-
-{% endfor %}
-
-
-
-
-
-</table>
-
-
-
-
-
-<a href="{% url 'dashboard_admin' %}"
-
-class="btn-back">
-
-
-Volver al Dashboard
-
-
-</a>
-
-
-
-
-
-</div>
-
-
-
-
-
-
-</div>
-
-
 
 {% endblock %}
