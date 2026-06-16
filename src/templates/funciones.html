@@ -96,6 +96,11 @@ Crear función
 
 {% csrf_token %}
 
+{% if error %}
+<div style="background:#dc2626;color:white;padding:10px;border-radius:8px;margin-bottom:12px;">
+    ⚠ {{ error }}
+</div>
+{% endif %}
 
 <input 
 type="text"

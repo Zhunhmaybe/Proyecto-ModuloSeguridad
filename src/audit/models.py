@@ -1,6 +1,6 @@
 from django.db import models
 from users.models import Usuario
-from modules.models import Funcion
+from users.models import Funcion
 
 class Auditoria(models.Model):
     id_auditoria = models.AutoField(primary_key=True)
