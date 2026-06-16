@@ -29,6 +29,12 @@ env/
 Thumbs.db
 Desktop.ini
 
+# Coverage (reportes de cobertura de tests - generados automáticamente)
+.coverage
+src/.coverage
+htmlcov/
+coverage.xml
+
 # Archivos temporales o de compilación de gRPC (si se generan localmente y no queremos subirlos)
 # *.pb.py
 # *_pb2.py
