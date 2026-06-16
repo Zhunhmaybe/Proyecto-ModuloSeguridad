@@ -1,383 +1,244 @@
 {% extends 'base.html' %}
 
-
 {% block content %}
 
-
 <style>
-
-.container{
-
-padding:30px;
-
-}
-
-
-
-.card{
-
-background:#111827;
-
-padding:25px;
-
-border-radius:15px;
-
-color:white;
-
-margin-bottom:20px;
-
-}
-
-
-
-input, textarea{
-
-
-width:100%;
-
-padding:10px;
-
-margin:8px 0;
-
-border-radius:8px;
-
-border:none;
-
-background:#1e293b;
-
-color:white;
-
-
-}
-
-
-
-textarea{
-
-height:100px;
-
-resize:none;
-
-}
-
-
-
-button{
-
-
-background:#2563eb;
-
-color:white;
-
-border:none;
-
-padding:10px 20px;
-
-border-radius:8px;
-
-cursor:pointer;
-
-
-}
-
-
-
-
-table{
-
-
-width:100%;
-
-color:white;
-
-border-collapse:collapse;
-
-
-}
-
-
-
-
-th,td{
-
-
-padding:12px;
-
-border-bottom:1px solid #334155;
-
-
-}
-
-
-
-
-.btn-back{
-
-
-display:inline-block;
-
-margin-top:20px;
-
-background:#475569;
-
-padding:10px 20px;
-
-border-radius:8px;
-
-color:white;
-
-text-decoration:none;
-
-
-}
-
-
-
+    *{
+        box-sizing:border-box;
+    }
+
+    body{
+        background: linear-gradient(135deg,#0f172a,#1e293b);
+    }
+
+    .container{
+        max-width:1200px;
+        margin:auto;
+        padding:40px 25px;
+    }
+
+    h1{
+        color:white;
+        margin-bottom:25px;
+        font-size:2rem;
+        font-weight:700;
+        letter-spacing:0.5px;
+    }
+
+    .card{
+        background:rgba(17,24,39,0.95);
+        backdrop-filter: blur(12px);
+        border:1px solid rgba(255,255,255,0.08);
+        border-radius:20px;
+        padding:30px;
+        color:white;
+        box-shadow:0 10px 30px rgba(0,0,0,0.35);
+        overflow:hidden;
+    }
+
+    .card h3{
+        margin-top:0;
+        margin-bottom:20px;
+        font-size:1.2rem;
+        color:#e2e8f0;
+        border-left:4px solid #3b82f6;
+        padding-left:12px;
+    }
+
+    input,
+    textarea{
+        width:100%;
+        padding:12px 15px;
+        margin:8px 0;
+        border-radius:10px;
+        border:1px solid #334155;
+        background:#1e293b;
+        color:white;
+        transition:all .3s ease;
+    }
+
+    input:focus,
+    textarea:focus{
+        outline:none;
+        border-color:#3b82f6;
+        box-shadow:0 0 0 3px rgba(59,130,246,.25);
+    }
+
+    textarea{
+        height:100px;
+        resize:none;
+    }
+
+    button{
+        background:linear-gradient(135deg,#2563eb,#3b82f6);
+        color:white;
+        border:none;
+        padding:12px 22px;
+        border-radius:10px;
+        cursor:pointer;
+        font-weight:600;
+        transition:.3s;
+    }
+
+    button:hover{
+        transform:translateY(-2px);
+        box-shadow:0 8px 20px rgba(37,99,235,.35);
+    }
+
+    table{
+        width:100%;
+        border-collapse:collapse;
+        margin-top:15px;
+        overflow:hidden;
+        border-radius:12px;
+    }
+
+    thead{
+        background:#1e293b;
+    }
+
+    th{
+        text-align:left;
+        padding:15px;
+        color:#cbd5e1;
+        font-weight:600;
+        text-transform:uppercase;
+        font-size:.85rem;
+        letter-spacing:.5px;
+    }
+
+    td{
+        padding:15px;
+        border-bottom:1px solid #334155;
+        color:#f1f5f9;
+    }
+
+    tbody tr{
+        transition:.25s;
+    }
+
+    tbody tr:hover{
+        background:rgba(59,130,246,.08);
+    }
+
+    tbody tr:last-child td{
+        border-bottom:none;
+    }
+
+    .estado-activo{
+        display:inline-block;
+        background:#14532d;
+        color:#86efac;
+        padding:6px 12px;
+        border-radius:999px;
+        font-size:.85rem;
+        font-weight:600;
+    }
+
+    .estado-inactivo{
+        display:inline-block;
+        background:#7f1d1d;
+        color:#fca5a5;
+        padding:6px 12px;
+        border-radius:999px;
+        font-size:.85rem;
+        font-weight:600;
+    }
+
+    .btn-back{
+        display:inline-flex;
+        align-items:center;
+        gap:8px;
+        margin-top:25px;
+        background:#334155;
+        padding:12px 20px;
+        border-radius:10px;
+        color:white;
+        text-decoration:none;
+        font-weight:600;
+        transition:.3s;
+    }
+
+    .btn-back:hover{
+        background:#475569;
+        transform:translateY(-2px);
+    }
+
+    .table-container{
+        overflow-x:auto;
+    }
+
+    @media (max-width:768px){
+        .container{
+            padding:20px;
+        }
+
+        .card{
+            padding:20px;
+        }
+
+        table{
+            font-size:14px;
+        }
+
+        th,
+        td{
+            padding:10px;
+        }
+    }
 </style>
-
-
-
-
-
-
-
-
 
 <div class="container">
 
-
-
-
-
-<h1 style="color:white">
-
-⚙ Gestión de Módulos
-
-</h1>
-
-
-
-
-
-
-
-<!-- LISTA MODULOS -->
-
-
-
-<div class="card">
-
-
-
-<h3>
-
-Módulos registrados
-
-</h3>
-
-
-
-
-
-
-<table>
-
-
-
-
-
-<tr>
-
-
-<th>
-
-Nombre
-
-</th>
-
-
-
-<th>
-
-Descripción
-
-</th>
-
-
-
-
-<th>
-
-Estado
-
-</th>
-
-
-
-</tr>
-
-
-
-
-
-
-
-
-
-{% for modulo in modulos %}
-
-
-
-
-
-
-<tr>
-
-
-
-
-
-<td>
-
-{{modulo.nombre_modulo}}
-
-</td>
-
-
-
-
-
-
-
-<td>
-
-{{modulo.descripcion_modulo}}
-
-</td>
-
-
-
-
-
-
-
-<td>
-
-
-
-
-{% if modulo.estado_modulo %}
-
-
-Activo
-
-
-{% else %}
-
-
-Inactivo
-
-
-{% endif %}
-
-
-
-
-
-</td>
-
-
-
-
-
-
-</tr>
-
-
-
-
-
-
-
-
-
-
-{% empty %}
-
-
-
-
-
-<tr>
-
-
-<td colspan="3">
-
-
-No existen módulos registrados
-
-
-</td>
-
-
-</tr>
-
-
-
-
-
-
-{% endfor %}
-
-
-
-
-
-
-
-
-
-</table>
-
-
-
-
-
-
-
-
-<a href="{% url 'dashboard_admin' %}"
-
-class="btn-back">
-
-
-
-⬅ Volver Dashboard
-
-
-
-</a>
-
-
-
-
-
+    <h1>⚙ Gestión de Módulos</h1>
+
+    <div class="card">
+
+        <h3>Módulos registrados</h3>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Descripción</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for modulo in modulos %}
+                    <tr>
+                        <td>{{ modulo.nombre_modulo }}</td>
+
+                        <td>{{ modulo.descripcion_modulo }}</td>
+
+                        <td>
+                            {% if modulo.estado_modulo %}
+                                <span class="estado-activo">Activo</span>
+                            {% else %}
+                                <span class="estado-inactivo">Inactivo</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" style="text-align:center; padding:25px;">
+                            No existen módulos registrados
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <a href="{% url 'dashboard_admin' %}" class="btn-back">
+            ⬅ Volver al Dashboard
+        </a>
+
+    </div>
 
 </div>
-
-
-
-
-
-
-
-
-
-</div>
-
-
-
-
-
 
 {% endblock %}
