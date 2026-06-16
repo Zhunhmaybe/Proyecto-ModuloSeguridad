@@ -1,256 +1,313 @@
 {% extends 'base.html' %}
 
-
 {% block content %}
 
-
 <style>
+    *{
+        box-sizing:border-box;
+    }
 
-.container{
+    body{
+        background: linear-gradient(135deg,#0f172a,#1e293b);
+    }
 
-padding:30px;
+    .container{
+        max-width:1200px;
+        margin:auto;
+        padding:40px 25px;
+    }
 
-}
+    h1{
+        color:white;
+        margin-bottom:25px;
+        font-size:2rem;
+        font-weight:700;
+        letter-spacing:0.5px;
+    }
 
+    .card{
+        background:rgba(17,24,39,0.95);
+        backdrop-filter: blur(12px);
+        border:1px solid rgba(255,255,255,0.08);
+        border-radius:20px;
+        padding:30px;
+        color:white;
+        box-shadow:0 10px 30px rgba(0,0,0,0.35);
+        margin-bottom:25px;
+    }
 
-.card{
+    .card h3{
+        margin-top:0;
+        margin-bottom:20px;
+        font-size:1.2rem;
+        color:#e2e8f0;
+        border-left:4px solid #3b82f6;
+        padding-left:12px;
+    }
 
-background:#111827;
+    input[type="text"]{
+        width:100%;
+        padding:12px 15px;
+        border-radius:10px;
+        border:1px solid #334155;
+        background:#1e293b;
+        color:white;
+        transition:.3s;
+    }
 
-padding:25px;
+    input[type="text"]:focus{
+        outline:none;
+        border-color:#3b82f6;
+        box-shadow:0 0 0 3px rgba(59,130,246,.25);
+    }
 
-border-radius:15px;
+    .checkbox-group{
+        display:flex;
+        align-items:center;
+        gap:10px;
+        margin:20px 0;
+        color:#e2e8f0;
+        font-weight:500;
+    }
 
-color:white;
+    input[type="checkbox"]{
+        width:18px;
+        height:18px;
+        cursor:pointer;
+    }
 
-margin-bottom:20px;
+    button{
+        background:linear-gradient(135deg,#2563eb,#3b82f6);
+        color:white;
+        border:none;
+        padding:12px 22px;
+        border-radius:10px;
+        cursor:pointer;
+        font-weight:600;
+        transition:.3s;
+    }
 
-}
+    button:hover{
+        transform:translateY(-2px);
+        box-shadow:0 8px 20px rgba(37,99,235,.35);
+    }
 
+    .table-container{
+        overflow-x:auto;
+    }
 
+    table{
+        width:100%;
+        border-collapse:collapse;
+        margin-top:10px;
+    }
 
-table{
+    thead{
+        background:#1e293b;
+    }
 
-width:100%;
+    th{
+        text-align:left;
+        padding:15px;
+        color:#cbd5e1;
+        font-weight:600;
+        text-transform:uppercase;
+        font-size:.85rem;
+        letter-spacing:.5px;
+    }
 
-color:white;
+    td{
+        padding:15px;
+        border-bottom:1px solid #334155;
+        color:#f1f5f9;
+    }
 
-border-collapse:collapse;
+    tbody tr{
+        transition:.25s;
+    }
 
-}
+    tbody tr:hover{
+        background:rgba(59,130,246,.08);
+    }
 
+    .estado-activo{
+        display:inline-block;
+        background:#14532d;
+        color:#86efac;
+        padding:6px 12px;
+        border-radius:999px;
+        font-size:.85rem;
+        font-weight:600;
+    }
 
-td,th{
+    .estado-inactivo{
+        display:inline-block;
+        background:#7f1d1d;
+        color:#fca5a5;
+        padding:6px 12px;
+        border-radius:999px;
+        font-size:.85rem;
+        font-weight:600;
+    }
 
-padding:12px;
+    .btn{
+        display:inline-block;
+        background:linear-gradient(135deg,#2563eb,#3b82f6);
+        color:white;
+        padding:10px 16px;
+        border-radius:10px;
+        text-decoration:none;
+        font-weight:600;
+        transition:.3s;
+    }
 
-border-bottom:1px solid #334155;
+    .btn:hover{
+        transform:translateY(-2px);
+        box-shadow:0 8px 20px rgba(37,99,235,.35);
+    }
 
-}
+    .btn-back{
+        display:inline-flex;
+        align-items:center;
+        gap:8px;
+        background:#334155;
+        padding:12px 20px;
+        border-radius:10px;
+        color:white;
+        text-decoration:none;
+        font-weight:600;
+        transition:.3s;
+    }
 
+    .btn-back:hover{
+        background:#475569;
+        transform:translateY(-2px);
+    }
 
-.btn{
+    @media (max-width:768px){
 
-background:#2563eb;
+        .container{
+            padding:20px;
+        }
 
-color:white;
+        .card{
+            padding:20px;
+        }
 
-padding:8px 15px;
+        table{
+            font-size:14px;
+        }
 
-border-radius:8px;
+        th,
+        td{
+            padding:10px;
+        }
 
-text-decoration:none;
-
-}
-
-
-
+        .btn{
+            padding:8px 12px;
+            font-size:14px;
+        }
+    }
 </style>
-
-
-
 
 <div class="container">
 
+    <h1>⚙ Gestión de Funciones</h1>
 
+    <div class="card">
 
-<h1 style="color:white">
+        <h3>Crear función</h3>
 
-Gestión de Funciones
+        <form method="POST">
+            {% csrf_token %}
 
-</h1>
+            <input
+                type="text"
+                name="nombre_funcion"
+                placeholder="Ej: GESTIONAR_REPORTES"
+                required>
 
+            <div class="checkbox-group">
+                <input
+                    type="checkbox"
+                    name="estado"
+                    checked>
 
+                <label>Activo</label>
+            </div>
 
-<div class="card">
+            <button type="submit">
+                Guardar
+            </button>
 
+        </form>
 
+    </div>
 
-<h3>
-Crear función
-</h3>
+    <div class="card">
 
+        <h3>Funciones registradas</h3>
 
+        <div class="table-container">
 
-<form method="POST">
+            <table>
 
-{% csrf_token %}
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Estado</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
 
+                <tbody>
 
-<input 
-type="text"
-name="nombre_funcion"
-placeholder="Ej: GESTIONAR_REPORTES"
-required>
+                    {% for funcion in funciones %}
 
+                    <tr>
 
-<br><br>
+                        <td>{{ funcion.nombre_funcion }}</td>
 
+                        <td>
+                            {% if funcion.estado_funcion %}
+                                <span class="estado-activo">Activo</span>
+                            {% else %}
+                                <span class="estado-inactivo">Inactivo</span>
+                            {% endif %}
+                        </td>
 
-<label>
+                        <td>
+                            <a
+                                class="btn"
+                                href="{% url 'editar_funcion' funcion.id_funcion %}">
+                                Editar
+                            </a>
+                        </td>
 
-Activo
+                    </tr>
 
-</label>
+                    {% empty %}
 
+                    <tr>
+                        <td colspan="3" style="text-align:center; padding:25px;">
+                            No existen funciones registradas
+                        </td>
+                    </tr>
 
-<input 
-type="checkbox"
-name="estado"
-checked>
+                    {% endfor %}
 
+                </tbody>
 
-<br><br>
+            </table>
 
+        </div>
 
-<button>
+    </div>
 
-Guardar
-
-</button>
-
-
-</form>
-
+    <a href="{% url 'dashboard_admin' %}" class="btn-back">
+        ⬅ Volver al Dashboard
+    </a>
 
 </div>
-
-
-
-
-
-
-<div class="card">
-
-
-
-<h3>
-
-Funciones registradas
-
-</h3>
-
-
-
-<table>
-
-
-<tr>
-
-<th>
-Nombre
-</th>
-
-
-<th>
-Estado
-</th>
-
-
-<th>
-Acción
-</th>
-
-</tr>
-
-
-
-
-{% for funcion in funciones %}
-
-
-
-<tr>
-
-
-<td>
-
-{{funcion.nombre_funcion}}
-
-</td>
-
-
-<td>
-
-
-{% if funcion.estado_funcion %}
-
-Activo
-
-{% else %}
-
-Inactivo
-
-{% endif %}
-
-
-</td>
-
-
-
-<td>
-
-
-<a class="btn"
-
-href="{% url 'editar_funcion' funcion.id_funcion %}">
-
-
-Editar
-
-
-</a>
-
-
-
-</td>
-
-
-</tr>
-
-
-
-{% endfor %}
-
-
-
-</table>
-
-
-</div>
-
-<a href="{% url 'dashboard_admin' %}"
-
-class="btn-back">
-
-
-⬅ Volver al Dashboard
-
-
-</a>
-
-
-</div>
-
 
 {% endblock %}
