@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>
+*{box-sizing:border-box}
+
+body{
+    background:linear-gradient(135deg,#0f172a,#1e293b);
+    min-height:100vh;
+}
+
+.container{
+    max-width:1200px;
+    margin:auto;
+    padding:40px 25px;
+}
+
+h1{
+    color:white;
+    margin-bottom:25px;
+    font-size:2rem;
+    font-weight:700;
+    letter-spacing:.5px;
+}
+
+.card{
+    background:rgba(17,24,39,.95);
+    backdrop-filter:blur(12px);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:20px;
+    padding:30px;
+    color:white;
+    box-shadow:0 10px 30px rgba(0,0,0,.35);
+    overflow:hidden;
+}
+
+.card-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+.card-title{
+    font-size:1.1rem;
+    color:#e2e8f0;
+    border-left:4px solid #3b82f6;
+    padding-left:12px;
+    margin:0;
+    font-weight:600;
+}
+
+.table-container{overflow-x:auto}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:5px;
+    overflow:hidden;
+    border-radius:12px;
+}
+
+thead{background:#1e293b}
+
+th{
+    text-align:left;
+    padding:15px;
+    color:#cbd5e1;
+    font-weight:600;
+    text-transform:uppercase;
+    font-size:.8rem;
+    letter-spacing:.5px;
+}
+
+td{
+    padding:14px 15px;
+    border-bottom:1px solid #334155;
+    color:#f1f5f9;
+    vertical-align:middle;
+}
+
+tbody tr{transition:.25s}
+tbody tr:hover{background:rgba(59,130,246,.08)}
+tbody tr:last-child td{border-bottom:none}
+
+.user-cell{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.user-avatar{
+    width:34px;height:34px;
+    background:linear-gradient(135deg,#312e81,#4338ca);
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:12px;font-weight:700;
+    color:#c7d2fe;
+    flex-shrink:0;
+}
+
+.user-name{
+    font-weight:500;
+    color:#e2e8f0;
+}
+
+.role-badge{
+    display:inline-block;
+    background:rgba(59,130,246,.15);
+    color:#93c5fd;
+    border:1px solid rgba(59,130,246,.3);
+    padding:3px 10px;
+    border-radius:999px;
+    font-size:.8rem;
+    font-weight:500;
+    margin:2px;
+}
+
+.estado-activo{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    background:#14532d;
+    color:#86efac;
+    padding:5px 12px;
+    border-radius:999px;
+    font-size:.82rem;
+    font-weight:600;
+}
+
+.estado-inactivo{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    background:#7f1d1d;
+    color:#fca5a5;
+    padding:5px 12px;
+    border-radius:999px;
+    font-size:.82rem;
+    font-weight:600;
+}
+
+.status-dot{
+    width:5px;height:5px;
+    border-radius:50%;
+    flex-shrink:0;
+}
+
+.dot-green{background:#4ade80}
+.dot-red{background:#f87171}
+
+.btn-edit{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:linear-gradient(135deg,#2563eb,#3b82f6);
+    color:white;
+    padding:7px 16px;
+    border-radius:8px;
+    font-size:.82rem;
+    font-weight:600;
+    text-decoration:none;
+    transition:.3s;
+    white-space:nowrap;
+}
+
+.btn-edit:hover{
+    transform:translateY(-2px);
+    box-shadow:0 8px 20px rgba(37,99,235,.35);
+}
+
+.empty-row td{
+    text-align:center;
+    color:#475569;
+    padding:40px;
+    font-size:.9rem;
+}
+
+.btn-back{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    margin-top:25px;
+    background:#334155;
+    padding:12px 20px;
+    border-radius:10px;
+    color:white;
+    text-decoration:none;
+    font-weight:600;
+    transition:.3s;
+}
+
+.btn-back:hover{
+    background:#475569;
+    transform:translateY(-2px);
+}
+</style>
+
+<div class="container">
+
+    <h1>👥 Gestión de Usuarios</h1>
+
+    <div class="card">
+
+        <div class="card-header">
+            <h3 class="card-title">Usuarios registrados</h3>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Cédula</th>
+                        <th>Correo</th>
+                        <th>Roles</th>
+                        <th>Estado</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for usuario in usuarios %}
+                    <tr>
+                        <td>
+                            <div class="user-cell">
+                                <div class="user-avatar">
+                                    {{ usuario.user_name|slice:":2"|upper }}
+                                </div>
+                                <span class="user-name">{{ usuario.user_name }}</span>
+                            </div>
+                        </td>
+                        <td>{{ usuario.cedula }}</td>
+                        <td>{{ usuario.email }}</td>
+                        <td>
+                            {% for rol in usuario.roles.all %}
+                                <span class="role-badge">{{ rol.nombre_rol }}</span>
+                            {% empty %}
+                                <span style="color:#475569;font-size:.82rem">Sin rol</span>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% if usuario.estado %}
+                                <span class="estado-activo">
+                                    <span class="status-dot dot-green"></span> Activo
+                                </span>
+                            {% else %}
+                                <span class="estado-inactivo">
+                                    <span class="status-dot dot-red"></span> Inactivo
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'editar_usuario' usuario.id %}" class="btn-edit">
+                                ✏ Editar
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr class="empty-row">
+                        <td colspan="6">No existen usuarios registrados</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <a href="{% url 'dashboard_admin' %}" class="btn-back">
+            ⬅ Volver al Dashboard
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

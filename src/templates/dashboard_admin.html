@@ -1,454 +1,557 @@
 {% extends 'base.html' %}
-{% load static %}
-{% block title %}Panel de Control de Seguridad (Admin){% endblock %}
-
-{% block extra_css %}
-    <link rel="stylesheet" href="{% static 'css/dashboard_admin.css' %}">
-{% endblock %}
 
 {% block content %}
-    <!-- Sidebar Navigation -->
-    <div class="sidebar">
-        <div>
-            <div class="brand">
-                <div class="brand-icon">
-                    <i class="fa-solid fa-shield-halved"></i>
-                </div>
-                <span class="brand-name">Seguridad Central</span>
-            </div>
-            
-            <ul class="nav-list">
-                <li class="nav-item active" id="nav-dash" onclick="switchTab('dashboard')">
-                    <a href="javascript:void(0)">
-                        <i class="fa-solid fa-chart-line"></i>
-                        <span>Panel General</span>
-                    </a>
-                </li>
-                <li class="nav-item" id="nav-users" onclick="switchTab('users')">
-                    <a href="javascript:void(0)">
-                        <i class="fa-solid fa-users-gear"></i>
-                        <span>Gestión de Usuarios</span>
-                    </a>
-                </li>
-                <li class="nav-item" id="nav-dev" onclick="switchTab('developers')">
-                    <a href="javascript:void(0)">
-                        <i class="fa-solid fa-code"></i>
-                        <span>Guía Integración API</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="/graphql/" target="_blank">
-                        <i class="fa-solid fa-network-wired"></i>
-                        <span>GraphQL Playroom</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
 
-        <!-- User Profile Area -->
-        <div class="user-profile">
-            <div class="profile-info">
-                <div class="profile-avatar">
-                    {{ user.user_name|slice:":2"|upper }}
-                </div>
-                <div class="profile-details">
-                    <div class="profile-name">@{{ user.user_name }}</div>
-                    <div class="profile-role">Administrador</div>
-                </div>
-            </div>
-            <a href="{% url 'logout' %}" class="logout-btn-icon" title="Cerrar Sesión">
-                <i class="fa-solid fa-arrow-right-from-bracket"></i>
-            </a>
-        </div>
+<style>
+*{box-sizing:border-box}
+
+body{
+    background:#0a0a14;
+    margin:0;
+    font-family:system-ui,-apple-system,sans-serif;
+    color:#e2e8f0;
+}
+
+.layout{
+    display:flex;
+    min-height:100vh;
+}
+
+/* ── SIDEBAR ── */
+.sidebar{
+    width:240px;
+    background:#0d0d1a;
+    border-right:1px solid #1a1a2e;
+    position:fixed;
+    top:0;left:0;bottom:0;
+    display:flex;
+    flex-direction:column;
+    z-index:100;
+    overflow-y:auto;
+}
+
+.logo-area{
+    padding:20px 18px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    border-bottom:1px solid #1a1a2e;
+    flex-shrink:0;
+}
+
+.logo-icon{
+    width:32px;height:32px;
+    background:linear-gradient(135deg,#6366f1,#8b5cf6);
+    border-radius:8px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:16px;
+    flex-shrink:0;
+}
+
+.logo-text{
+    font-size:14px;
+    font-weight:600;
+    color:#fff;
+}
+
+.menu{
+    padding:14px 12px 0;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+}
+
+.menu-label{
+    font-size:10px;
+    color:#334155;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    padding:10px 12px 6px;
+    font-weight:600;
+}
+
+.menu-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 12px;
+    border-radius:8px;
+    color:#94a3b8;
+    font-size:13px;
+    text-decoration:none;
+    transition:.2s;
+}
+
+.menu-item:hover{
+    background:#1a1a2e;
+    color:#e2e8f0;
+}
+
+.menu-item.active{
+    background:#1e1b4b;
+    color:#a5b4fc;
+}
+
+/* Permisos en sidebar */
+.perms-section{
+    padding:0 12px 14px;
+    flex:1;
+}
+
+.perm-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 12px;
+    border-radius:8px;
+    color:#94a3b8;
+    font-size:13px;
+    text-decoration:none;
+    transition:.2s;
+    margin-bottom:2px;
+}
+
+.perm-item:hover{
+    background:#1a1a2e;
+    color:#e2e8f0;
+}
+
+.perm-icon{font-size:15px;flex-shrink:0}
+
+.sidebar-divider{
+    border:none;
+    border-top:1px solid #1a1a2e;
+    margin:8px 12px;
+}
+
+.sidebar-user{
+    padding:14px 16px;
+    border-top:1px solid #1a1a2e;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-shrink:0;
+}
+
+.avatar{
+    width:32px;height:32px;
+    background:#312e81;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:12px;font-weight:600;
+    color:#a5b4fc;
+    flex-shrink:0;
+}
+
+.user-meta{flex:1;min-width:0}
+.user-meta strong{display:block;font-size:12px;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-meta span{font-size:11px;color:#64748b}
+
+.logout-link{
+    color:#64748b;
+    font-size:16px;
+    text-decoration:none;
+    transition:.2s;
+    flex-shrink:0;
+}
+.logout-link:hover{color:#f87171}
+
+/* ── MAIN ── */
+.main-content{
+    flex:1;
+    margin-left:240px;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+}
+
+.top-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:16px 28px;
+    border-bottom:1px solid #1a1a2e;
+    position:sticky;top:0;
+    background:#0a0a14;
+    z-index:50;
+}
+
+.page-title{
+    font-size:20px;
+    font-weight:600;
+    color:#fff;
+}
+
+.page-sub{
+    font-size:12px;
+    color:#64748b;
+    margin-top:2px;
+}
+
+.api-badge{
+    background:#0d2d1a;
+    border:1px solid #16a34a;
+    color:#4ade80;
+    font-size:11px;
+    padding:6px 14px;
+    border-radius:20px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    white-space:nowrap;
+}
+
+.api-dot{
+    width:6px;height:6px;
+    background:#4ade80;
+    border-radius:50%;
+}
+
+.dashboard-body{padding:24px 28px}
+
+/* ── STAT CARDS ── */
+.stat-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:16px;
+    margin-bottom:28px;
+}
+
+.stat-card{
+    background:#0d0d1a;
+    border:1px solid #1a1a2e;
+    border-radius:14px;
+    padding:20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    transition:.2s;
+}
+
+.stat-card:hover{
+    border-color:#312e81;
+    transform:translateY(-2px);
+}
+
+.stat-label{font-size:12px;color:#64748b;margin-bottom:8px}
+.stat-number{font-size:30px;font-weight:600;color:#fff}
+
+.stat-icon{
+    width:42px;height:42px;
+    border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:20px;
+    flex-shrink:0;
+}
+
+.ic-blue{background:#1e1b4b}
+.ic-green{background:#0d2d1a}
+.ic-purple{background:#2d1b4b}
+.ic-amber{background:#2d200d}
+
+/* ── BOTTOM GRID ── */
+.bottom-grid{
+    display:grid;
+    grid-template-columns:1fr 360px;
+    gap:20px;
+}
+
+@media(max-width:900px){
+    .bottom-grid{grid-template-columns:1fr}
+}
+
+/* ── AUDIT TABLE ── */
+.audit-panel,
+.admin-panel{
+    background:#0d0d1a;
+    border:1px solid #1a1a2e;
+    border-radius:14px;
+    padding:20px;
+}
+
+.panel-title{
+    font-size:14px;
+    font-weight:600;
+    color:#e2e8f0;
+    margin:0 0 18px;
+}
+
+.audit-table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+.audit-table th{
+    font-size:11px;
+    color:#64748b;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    padding:8px 10px;
+    text-align:left;
+    border-bottom:1px solid #1a1a2e;
+    font-weight:500;
+}
+
+.audit-table td{
+    font-size:13px;
+    color:#cbd5e1;
+    padding:10px;
+    border-bottom:1px solid #111827;
+    vertical-align:middle;
+}
+
+.audit-table tr:last-child td{border-bottom:none}
+
+.badge-action{
+    background:#1e1b4b;
+    color:#a5b4fc;
+    padding:3px 10px;
+    border-radius:12px;
+    font-size:11px;
+    font-weight:500;
+    white-space:nowrap;
+}
+
+.status-ok{
+    background:#0d2d1a;
+    color:#4ade80;
+    padding:3px 10px;
+    border-radius:12px;
+    font-size:11px;
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    white-space:nowrap;
+}
+
+.status-dot{
+    width:5px;height:5px;
+    background:#4ade80;
+    border-radius:50%;
+}
+
+/* ── ADMIN PANEL ── */
+.admin-desc{
+    font-size:12px;
+    color:#64748b;
+    line-height:1.7;
+    margin-bottom:14px;
+}
+
+.token-box{
+    background:#111827;
+    border:1px solid #1a1a2e;
+    border-radius:8px;
+    padding:12px;
+}
+
+.token-label{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:12px;
+    color:#fbbf24;
+    font-weight:500;
+    margin-bottom:8px;
+}
+
+.token-text{
+    font-family:ui-monospace,monospace;
+    font-size:10px;
+    color:#475569;
+    word-break:break-all;
+    line-height:1.7;
+    user-select:all;
+}
+
+.no-perms{
+    font-size:12px;
+    color:#334155;
+    padding:10px 12px;
+    font-style:italic;
+}
+</style>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+
+    <div class="logo-area">
+      <div class="logo-icon">🛡</div>
+      <span class="logo-text">Seguridad Central</span>
     </div>
 
-    <!-- Main Content Area -->
-    <div class="main-content">
-        <!-- Top Bar -->
-        <div class="top-bar">
-            <div class="page-title">
-                <h2 id="main-title">Panel de Control de Seguridad</h2>
-                <p id="main-subtitle">Consola de auditoría y monitoreo centralizado de microservicios</p>
-            </div>
-            <div class="server-status">
-                <div class="status-dot"></div>
-                <span>API de Seguridad Activa</span>
-            </div>
-        </div>
-
-        <!-- TAB: DASHBOARD -->
-        <div id="tab-dashboard" class="tab-content active animate">
-            <!-- Stats Grid -->
-            <div class="stats-grid">
-                <div class="stat-card glass-card">
-                    <div class="stat-header">
-                        <span>Usuarios Totales</span>
-                        <div class="stat-icon primary"><i class="fa-solid fa-users"></i></div>
-                    </div>
-                    <div class="stat-value">{{ stats.total_users }}</div>
-                </div>
-                <div class="stat-card glass-card">
-                    <div class="stat-header">
-                        <span>Usuarios Activos</span>
-                        <div class="stat-icon success"><i class="fa-solid fa-user-check"></i></div>
-                    </div>
-                    <div class="stat-value">{{ stats.active_users }}</div>
-                </div>
-                <div class="stat-card glass-card">
-                    <div class="stat-header">
-                        <span>Roles Creados</span>
-                        <div class="stat-icon secondary"><i class="fa-solid fa-user-shield"></i></div>
-                    </div>
-                    <div class="stat-value">{{ stats.total_roles }}</div>
-                </div>
-                <div class="stat-card glass-card">
-                    <div class="stat-header">
-                        <span>Módulos de Negocio</span>
-                        <div class="stat-icon warning"><i class="fa-solid fa-cubes"></i></div>
-                    </div>
-                    <div class="stat-value">{{ stats.total_modules }}</div>
-                </div>
-            </div>
-
-            <!-- Dashboard Columns -->
-            <div class="dashboard-layout">
-                <!-- Audit Logs Column -->
-                <div class="panel-box glass-card">
-                    <div class="panel-header">
-                        <span class="panel-title">Últimas Pistas de Auditoría (Trazabilidad)</span>
-                    </div>
-                    <div class="table-container">
-                        <table class="custom-table">
-                            <thead>
-                                <tr>
-                                    <th>Usuario</th>
-                                    <th>Acción</th>
-                                    <th>Descripción</th>
-                                    <th>Fecha</th>
-                                    <th>Estado</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for log in logs %}
-                                    <tr>
-                                        <td><strong>@{{ log.username.user_name }}</strong></td>
-                                        <td><span class="badge badge-info">{{ log.accion }}</span></td>
-                                        <td>{{ log.descripcion }}</td>
-                                        <td>{{ log.fecha_auditoria|date:"d/m H:i" }}</td>
-                                        <td>
-                                            {% if log.estado_auditoria %}
-                                                <span class="badge badge-success"><i class="fa-solid fa-circle-check"></i> OK</span>
-                                            {% else %}
-                                                <span class="badge badge-danger"><i class="fa-solid fa-circle-xmark"></i> FALLÓ</span>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                {% empty %}
-                                    <tr>
-                                        <td colspan="5" style="text-align: center; color: var(--text-secondary);">No hay registros de auditoría aún.</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Fast Actions & Setup Column -->
-                <div class="panel-box glass-card">
-                    <div class="panel-header">
-                        <span class="panel-title">Administración Directa</span>
-                    </div>
-                    <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 20px;">
-                        Para realizar cambios administrativos avanzados (creación de usuarios, roles, asignación de permisos a módulos o inspección total de logs), utiliza el portal de GraphQL para testing rápido, o configura un frontend especializado que consuma las queries y mutations del backend.
-                    </p>
-                    
-                    <div class="doc-section">
-                        <div class="doc-title">
-                            <i class="fa-solid fa-key" style="color: #fbbf24;"></i>
-                            <span>Tu Token de Admin (Session)</span>
-                        </div>
-                        <div class="code-block" style="max-height: 140px; overflow-y: auto; font-size: 0.73rem;">{{ token }}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- TAB: GESTIÓN DE USUARIOS -->
-        <div id="tab-users" class="tab-content">
-            <div class="panel-box glass-card" style="min-height: auto; margin-bottom: 30px;">
-                <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <span class="panel-title">Directorio de Usuarios</span>
-                    <form method="GET" action="" style="display: flex; gap: 10px;">
-                        <input type="hidden" name="tab" value="users">
-                        <input type="text" name="q" class="form-input" placeholder="Buscar por nombre, correo, o cédula..." value="{{ search_query }}" style="padding: 10px 15px; width: 300px;">
-                        <button type="submit" class="btn btn-primary" style="padding: 10px 20px; width: auto;"><i class="fa-solid fa-search"></i></button>
-                        {% if search_query %}
-                            <a href="?tab=users" class="btn btn-secondary" style="padding: 10px 15px; width: auto;" title="Limpiar"><i class="fa-solid fa-xmark"></i></a>
-                        {% endif %}
-                    </form>
-                </div>
-                
-                <div class="table-container">
-                    <table class="custom-table">
-                        <thead>
-                            <tr>
-                                <th>Usuario</th>
-                                <th>Cédula</th>
-                                <th>Correo</th>
-                                <th>Roles</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for u in page_obj %}
-                                <tr>
-                                    <td>
-                                        <strong>@{{ u.user_name }}</strong>
-                                        {% if u.is_superuser %}
-                                            <i class="fa-solid fa-crown" style="color: #fbbf24; font-size: 0.8rem; margin-left: 5px;" title="Super Admin"></i>
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ u.cedula }}</td>
-                                    <td>{{ u.email }}</td>
-                                    <td>
-                                        <div style="display: flex; gap: 5px; flex-wrap: wrap;">
-                                            {% for rol in u.roles.all %}
-                                                <span class="badge badge-info">{{ rol.nombre_rol }}</span>
-                                            {% empty %}
-                                                <span style="color: var(--text-secondary); font-size: 0.8rem;">Sin roles</span>
-                                            {% endfor %}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        {% if u.estado %}
-                                            <span class="badge badge-success">Activo</span>
-                                        {% else %}
-                                            <span class="badge badge-danger">Inactivo</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <div style="display: flex; gap: 10px;">
-                                            <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; width: auto;" onclick="openRolesModal('{{ u.id }}', '{{ u.user_name }}', [{% for r in u.roles.all %}'{{ r.id_rol }}'{% if not forloop.last %},{% endif %}{% endfor %}])" title="Editar Roles">
-                                                <i class="fa-solid fa-user-pen"></i>
-                                            </button>
-                                            
-                                            {% if u.id != user.id %}
-                                                <form method="POST" style="margin: 0;">
-                                                    {% csrf_token %}
-                                                    <input type="hidden" name="action" value="toggle_status">
-                                                    <input type="hidden" name="user_id" value="{{ u.id }}">
-                                                    {% if u.estado %}
-                                                        <button type="submit" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; width: auto; color: var(--danger); border-color: rgba(239, 68, 68, 0.3);" title="Dar de Baja (Inactivar)">
-                                                            <i class="fa-solid fa-ban"></i>
-                                                        </button>
-                                                    {% else %}
-                                                        <button type="submit" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; width: auto; color: var(--success); border-color: rgba(16, 185, 129, 0.3);" title="Reactivar Usuario">
-                                                            <i class="fa-solid fa-check"></i>
-                                                        </button>
-                                                    {% endif %}
-                                                </form>
-                                            {% endif %}
-                                        </div>
-                                    </td>
-                                </tr>
-                            {% empty %}
-                                <tr>
-                                    <td colspan="6" style="text-align: center; color: var(--text-secondary);">No se encontraron usuarios.</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Paginación -->
-                {% if page_obj.has_other_pages %}
-                <div class="pagination" style="display: flex; justify-content: center; gap: 5px; margin-top: 20px;">
-                    {% if page_obj.has_previous %}
-                        <a href="?tab=users&page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn btn-secondary" style="width: auto; padding: 5px 15px;">&laquo; Ant</a>
-                    {% endif %}
-                    
-                    {% for i in page_obj.paginator.page_range %}
-                        {% if page_obj.number == i %}
-                            <span class="btn btn-primary" style="width: auto; padding: 5px 15px; background: rgba(99, 102, 241, 0.5);">{{ i }}</span>
-                        {% else %}
-                            <a href="?tab=users&page={{ i }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn btn-secondary" style="width: auto; padding: 5px 15px;">{{ i }}</a>
-                        {% endif %}
-                    {% endfor %}
-                    
-                    {% if page_obj.has_next %}
-                        <a href="?tab=users&page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn btn-secondary" style="width: auto; padding: 5px 15px;">Sig &raquo;</a>
-                    {% endif %}
-                </div>
-                {% endif %}
-            </div>
-        </div>
-
-
-
-        <!-- TAB: DEVELOPERS -->
-        <div id="tab-developers" class="tab-content">
-            <div class="panel-box glass-card" style="min-height: auto; margin-bottom: 30px;">
-                <div class="panel-header">
-                    <span class="panel-title">Integración de Microservicios (Compras, Inventario, Facturación)</span>
-                </div>
-                <p style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 20px;">
-                    Este Módulo de Seguridad es el **núcleo de autenticación centralizado** de la universidad. Las aplicaciones independientes (desarrolladas por tus compañeros en React y NestJS) deben utilizar la siguiente lógica para asegurar sus rutas y validar a sus usuarios.
-                </p>
-
-                <div class="doc-section">
-                    <div class="doc-title">
-                        <i class="fa-solid fa-network-wired" style="color: #6366f1;"></i>
-                        <span>1. Inicio de Sesión Centralizado (GraphQL Mutation)</span>
-                    </div>
-                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 10px;">
-                        Tus compañeros deben enviar una consulta POST HTTP al endpoint <code>/graphql/</code> con la siguiente estructura de mutación. Si las credenciales y el estado del usuario/módulo son válidos, la respuesta retornará el token JWT.
-                    </p>
-                    <div class="code-block">
-mutation {
-  login(username: "nombre_usuario", password: "password_usuario", moduloId: 1) {
-    success
-    token
-    message
-  }
-}
-                    </div>
-                </div>
-
-                <div class="doc-section">
-                    <div class="doc-title">
-                        <i class="fa-solid fa-signature" style="color: #a855f7;"></i>
-                        <span>2. Verificación de Permisos localmente (JWT Payload)</span>
-                    </div>
-                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 10px;">
-                        El JWT devuelto contiene la información del usuario, sus roles y sus funciones asignadas. Los microservicios externos pueden decodificar el token localmente (usando la misma llave secreta) y validar los permisos en su backend (por ejemplo en NestJS Guards):
-                    </p>
-                    <div class="code-block">
-{
-  "user_id": 4,
-  "user_name": "david",
-  "email": "david@example.com",
-  "roles": ["Administrador", "Compras"],
-  "permissions": ["CREAR_ORDEN", "APROBAR_ORDEN", "LEER_USUARIOS"],
-  "exp": 1781329333
-}
-                    </div>
-                </div>
-
-                <div class="doc-section">
-                    <div class="doc-title">
-                        <i class="fa-solid fa-user-gear" style="color: #ec4899;"></i>
-                        <span>3. Consulta del Usuario en Sesión (GraphQL Query)</span>
-                    </div>
-                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 10px;">
-                        Si un microservicio necesita consultar los datos del usuario en tiempo real, puede enviar el token en la cabecera HTTP <code>Authorization: Bearer &lt;TOKEN&gt;</code> y ejecutar el query <code>me</code>:
-                    </p>
-                    <div class="code-block">
-query {
-  me {
-    id
-    userName
-    email
-    estado
-    roles {
-      nombreRol
-      funciones {
-        nombreFuncion
-      }
-    }
-  }
-}
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="menu">
+      <a class="menu-item active" href="#">📊 Panel General</a>
+      <a class="menu-item" href="#">&lt;/&gt; Guía Integración API</a>
+      <a class="menu-item" href="#">⬡ GraphQL Playground</a>
     </div>
 
-    <!-- Modal Edit Roles -->
-    <div id="rolesModal" class="modal-backdrop hidden">
-        <div class="modal-box glass-card animate">
-            <div class="panel-header" style="display: flex; justify-content: space-between;">
-                <span class="panel-title">Editar Roles de <span id="modal-username" style="color: var(--primary-glow);"></span></span>
-                <i class="fa-solid fa-xmark" style="cursor: pointer; color: var(--text-secondary);" onclick="closeRolesModal()"></i>
-            </div>
-            <form method="POST" action="">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="edit_roles">
-                <input type="hidden" name="user_id" id="modal-userid">
-                
-                <div style="margin-top: 15px; margin-bottom: 25px; max-height: 250px; overflow-y: auto;">
-                    {% for rol in roles_list %}
-                        <label class="custom-checkbox" style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; cursor: pointer;">
-                            <input type="checkbox" name="roles" value="{{ rol.id_rol }}" id="role-{{ rol.id_rol }}" style="width: 18px; height: 18px; cursor: pointer;">
-                            <span>{{ rol.nombre_rol }}</span>
-                        </label>
-                    {% empty %}
-                        <p style="color: var(--text-secondary);">No hay roles creados en el sistema.</p>
-                    {% endfor %}
-                </div>
-                
-                <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                    <button type="button" class="btn btn-secondary" style="width: auto;" onclick="closeRolesModal()">Cancelar</button>
-                    <button type="submit" class="btn btn-primary" style="width: auto;">Guardar Cambios</button>
-                </div>
-            </form>
-        </div>
+    <hr class="sidebar-divider">
+
+    <!-- PERMISOS EN SIDEBAR -->
+    <div class="perms-section">
+      <div class="menu-label">Permisos asignados</div>
+
+      {% for funcion in funciones %}
+
+        {% if funcion.nombre_funcion == "GESTIONAR_USUARIOS" %}
+        <a href="{% url 'usuarios' %}" class="perm-item">
+          <span class="perm-icon">👥</span> Usuarios
+        </a>
+        {% endif %}
+
+        {% if funcion.nombre_funcion == "GESTIONAR_ROLES" %}
+        <a href="{% url 'roles' %}" class="perm-item">
+          <span class="perm-icon">🔐</span> Roles
+        </a>
+        {% endif %}
+
+        {% if funcion.nombre_funcion == "GESTION_FUNCIONES" %}
+        <a href="{% url 'funciones' %}" class="perm-item">
+          <span class="perm-icon">⚡</span> Funciones
+        </a>
+        {% endif %}
+
+        {% if funcion.nombre_funcion == "GESTIONAR_MODULOS" %}
+        <a href="{% url 'modulos' %}" class="perm-item">
+          <span class="perm-icon">⚙</span> Módulos
+        </a>
+        {% endif %}
+
+        {% if funcion.nombre_funcion == "EDITAR_USUARIO" %}
+        <a href="{% url 'usuarios' %}" class="perm-item">
+          <span class="perm-icon">✏</span> Editar Usuarios
+        </a>
+        {% endif %}
+
+      {% empty %}
+        <p class="no-perms">Sin permisos asignados</p>
+      {% endfor %}
+
     </div>
 
-    <script>
-        function switchTab(tabName) {
-            // Hide all tabs
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            // Deactivate all nav items
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
+    <div class="sidebar-user">
+      <div class="avatar">{{ user.user_name|slice:":2"|upper }}</div>
+      <div class="user-meta">
+        <strong>@{{ user.user_name }}</strong>
+        <span>
+          {% for rol in user.roles.all %}{{ rol.nombre_rol }}{% if not forloop.last %}, {% endif %}{% empty %}Sin rol{% endfor %}
+        </span>
+      </div>
+      <a class="logout-link" href="{% url 'logout' %}" title="Cerrar sesión">⎋</a>
+    </div>
 
-            // Show active tab
-            document.getElementById('tab-' + tabName).classList.add('active');
-            
-            // Activate clicked nav item
-            if (tabName === 'dashboard') {
-                document.getElementById('nav-dash').classList.add('active');
-                document.getElementById('main-title').innerText = 'Panel de Control de Seguridad';
-                document.getElementById('main-subtitle').innerText = 'Consola de auditoría y monitoreo centralizado de microservicios';
-            } else if (tabName === 'users') {
-                document.getElementById('nav-users').classList.add('active');
-                document.getElementById('main-title').innerText = 'Gestión de Usuarios (CRUD)';
-                document.getElementById('main-subtitle').innerText = 'Administra cuentas, roles, y estados lógicos de los usuarios';
-            } else if (tabName === 'developers') {
-                document.getElementById('nav-dev').classList.add('active');
-                document.getElementById('main-title').innerText = 'Guía de Integración para Desarrolladores';
-                document.getElementById('main-subtitle').innerText = 'Cómo conectar los microservicios externos al Módulo de Seguridad';
-            }
-        }
+  </div>
 
-        // Funciones para Modal de Roles
-        function openRolesModal(userId, username, userRoles) {
-            document.getElementById('modal-userid').value = userId;
-            document.getElementById('modal-username').innerText = '@' + username;
-            
-            // Desmarcar todos primero
-            document.querySelectorAll('input[name="roles"]').forEach(cb => cb.checked = false);
-            
-            // Marcar los que tiene el usuario
-            userRoles.forEach(roleId => {
-                const cb = document.getElementById('role-' + roleId);
-                if(cb) cb.checked = true;
-            });
-            
-            document.getElementById('rolesModal').classList.remove('hidden');
-        }
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
 
-        function closeRolesModal() {
-            document.getElementById('rolesModal').classList.add('hidden');
-        }
+    <!-- TOP BAR -->
+    <div class="top-bar">
+      <div>
+        <div class="page-title">Panel de Control de Seguridad</div>
+        <div class="page-sub">Consola de auditoría y monitoreo centralizado de microservicios</div>
+      </div>
+      <div class="api-badge">
+        <div class="api-dot"></div>
+        API de Seguridad Activa
+      </div>
+    </div>
 
-        // Iniciar en la pestaña correcta
-        window.onload = function() {
-            switchTab('{{ active_tab }}');
-        }
-    </script>
+    <div class="dashboard-body">
+
+      <!-- ESTADÍSTICAS -->
+      <div class="stat-grid">
+
+        <div class="stat-card">
+          <div>
+            <div class="stat-label">Usuarios Totales</div>
+            <div class="stat-number">{{ stats.total_users }}</div>
+          </div>
+          <div class="stat-icon ic-blue">👥</div>
+        </div>
+
+        <div class="stat-card">
+          <div>
+            <div class="stat-label">Usuarios Activos</div>
+            <div class="stat-number">{{ stats.active_users }}</div>
+          </div>
+          <div class="stat-icon ic-green">✅</div>
+        </div>
+
+        <div class="stat-card">
+          <div>
+            <div class="stat-label">Roles Creados</div>
+            <div class="stat-number">{{ stats.total_roles }}</div>
+          </div>
+          <div class="stat-icon ic-purple">🔐</div>
+        </div>
+
+        <div class="stat-card">
+          <div>
+            <div class="stat-label">Módulos de Negocio</div>
+            <div class="stat-number">{{ stats.total_modules }}</div>
+          </div>
+          <div class="stat-icon ic-amber">📦</div>
+        </div>
+
+      </div>
+
+      <!-- AUDITORÍA + ADMIN -->
+      <div class="bottom-grid">
+
+        <div class="audit-panel">
+          <div class="panel-title">Últimas Pistas de Auditoría (Trazabilidad)</div>
+          <table class="audit-table">
+            <thead>
+              <tr>
+                <th>Usuario</th>
+                <th>Acción</th>
+                <th>Descripción</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for log in logs %}
+              <tr>
+                <td>@{{ log.username.user_name }}</td>
+                <td><span class="badge-action">{{ log.accion }}</span></td>
+                <td>{{ log.descripcion|default:"-" }}</td>
+                <td>{{ log.fecha_creacion|date:"Y-m-d H:i" }}</td>
+                <td><span class="status-ok"><span class="status-dot"></span> OK</span></td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="5" style="text-align:center;color:#475569;padding:24px">
+                  Sin registros de auditoría
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="admin-panel">
+          <div class="panel-title">Administración Directa</div>
+          <p class="admin-desc">
+            Para realizar cambios administrativos avanzados (creación de usuarios, roles,
+            asignación de permisos a módulos o inspección total de logs), utiliza el portal
+            de GraphQL para testing rápido, o configura un frontend especializado que consuma
+            las queries y mutations del backend.
+          </p>
+          <div class="token-box">
+            <div class="token-label">🔑 Tu Token de Admin (Session)</div>
+            <div class="token-text">{{ request.session.jwt_token|default:"No hay token activo en esta sesión" }}</div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
 {% endblock %}

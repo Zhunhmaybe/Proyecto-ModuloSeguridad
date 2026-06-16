@@ -53,12 +53,29 @@ class EmailVerificationToken(models.Model):
         db_table = 'email_verification_tokens'
 
 class Rol(models.Model):
+
     id_rol = models.AutoField(primary_key=True)
-    nombre_rol = models.CharField(max_length=100)
-    estado_rol = models.BooleanField(default=True)
+
+    nombre_rol = models.CharField(
+        max_length=100,
+        unique=True
+    )
+
+    estado_rol = models.BooleanField(
+        default=True
+    )
+
+
+    funciones = models.ManyToManyField(
+        'Funcion',
+        through='FuncionRol',
+        related_name='roles'
+    )
+
 
     class Meta:
         db_table = 'roles'
+
 
     def __str__(self):
         return self.nombre_rol
@@ -91,3 +108,57 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     @property
     def is_active(self):
         return self.estado
+    
+class Funcion(models.Model):
+
+    id_funcion = models.AutoField(primary_key=True)
+
+
+    nombre_funcion = models.CharField(
+        max_length=100,
+        unique=True
+    )
+
+
+    estado_funcion = models.BooleanField(
+        default=True
+    )
+
+
+    class Meta:
+        db_table = 'funciones'
+
+
+    def __str__(self):
+        return self.nombre_funcion
+    
+class FuncionRol(models.Model):
+
+    id = models.AutoField(
+        primary_key=True
+    )
+
+
+    funcion = models.ForeignKey(
+
+        Funcion,
+
+        on_delete=models.CASCADE,
+
+        db_column='funcion_id'
+
+    )
+
+
+    rol = models.ForeignKey(
+
+        Rol,
+
+        on_delete=models.CASCADE,
+
+        db_column='rol_id'
+
+    )
+    class Meta:
+
+        db_table = 'funciones_roles'
