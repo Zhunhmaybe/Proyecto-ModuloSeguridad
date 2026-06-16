@@ -1,6 +1,12 @@
 from django.db import models
 import uuid
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.core.validators import MinLengthValidator
+from django.core.exceptions import ValidationError
+
+def validate_email_domain(value):
+    if not value.endswith('@utn.edu.ec') and not value.endswith('@gmail.com'):
+        raise ValidationError('El correo debe terminar en @utn.edu.ec o @gmail.com')
 
 class UsuarioManager(BaseUserManager):
     def create_user(self, user_name, email, cedula, password=None, **extra_fields):
@@ -58,7 +64,9 @@ class Rol(models.Model):
 
     nombre_rol = models.CharField(
         max_length=100,
-        unique=True
+        unique=True,
+        null=False,
+        blank=False
     )
 
     estado_rol = models.BooleanField(
@@ -81,9 +89,15 @@ class Rol(models.Model):
         return self.nombre_rol
 
 class Usuario(AbstractBaseUser, PermissionsMixin):
-    user_name = models.CharField(max_length=16, unique=True)
+    user_name = models.CharField(
+        max_length=16, 
+        unique=True,
+        null=False,
+        blank=False,
+        validators=[MinLengthValidator(8, message="El usuario debe tener mínimo 8 caracteres.")]
+    )
     cedula = models.CharField(max_length=10, unique=True)
-    email = models.EmailField(unique=True)
+    email = models.EmailField(unique=True, null=False, blank=False, validators=[validate_email_domain])
     correo_verificado = models.BooleanField(default=False)
     estado = models.BooleanField(default=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)

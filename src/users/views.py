@@ -438,34 +438,41 @@ from modules.models import Modulo
 
 @login_required(login_url='login')
 def modulos_view(request):
-
-
     if request.method == "POST":
-
-
-        nombre = request.POST.get('nombre_modulo')
-
-        descripcion = request.POST.get('descripcion_modulo')
-
-        estado = request.POST.get('estado_modulo')
-
-
+        action = request.POST.get('action')
+        
+        if action == 'create_module':
+            nombre = request.POST.get('nombre_modulo')
+            descripcion = request.POST.get('descripcion_modulo')
+            # estado por defecto True en BD
+            try:
+                nuevo_mod = Modulo(nombre_modulo=nombre, descripcion_modulo=descripcion)
+                nuevo_mod.full_clean()
+                nuevo_mod.save()
+            except Exception as e:
+                request.session['modulo_error'] = "Error al crear el módulo. Verifica que el nombre no esté duplicado."
+                
+        elif action == 'toggle_module_status':
+            mod_id = request.POST.get('module_id')
+            try:
+                mod = Modulo.objects.get(id_modulo=mod_id)
+                mod.estado_modulo = not mod.estado_modulo
+                mod.save()
+            except Modulo.DoesNotExist:
+                pass
+                
         return redirect('modulos')
 
-    modulos = Modulo.objects.all()
+    modulos = Modulo.objects.all().order_by('-id_modulo')
+    error = request.session.pop('modulo_error', None)
 
     return render(
-
         request,
-
         'modulos.html',
-
         {
-
-            'modulos': modulos
-
+            'modulos': modulos,
+            'error': error
         }
-
     )
 
 def register_view(request):

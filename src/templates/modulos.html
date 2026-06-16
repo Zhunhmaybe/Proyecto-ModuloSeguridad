@@ -169,23 +169,35 @@
     }
 
     @media (max-width:768px){
-        .container{
-            padding:20px;
-        }
-
-        .card{
-            padding:20px;
-        }
-
-        table{
-            font-size:14px;
-        }
-
-        th,
-        td{
-            padding:10px;
-        }
+        .container{ padding:20px; }
+        .card{ padding:20px; }
+        table{ font-size:14px; }
+        th, td{ padding:10px; }
     }
+
+    /* Modal Styles */
+    .modal-backdrop {
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+        z-index: 1000; display: flex; align-items: center; justify-content: center;
+    }
+    .modal-backdrop.hidden { display: none; }
+    
+    .modal-box {
+        background: #0f172a; border: 1px solid #1e293b; border-radius: 14px;
+        padding: 24px; width: 450px; max-width: 90%;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        color: white;
+    }
+    .modal-header {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 20px; font-weight: 600; font-size: 16px;
+    }
+    .close-btn { cursor: pointer; color: #94a3b8; font-size: 24px; }
+    
+    .btn-danger { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid #ef4444; padding: 6px 12px; }
+    .btn-secondary { background: #1e293b; color: #cbd5e1; }
+    .btn-action-form { margin: 0; }
 </style>
 
 <div class="container">
@@ -193,8 +205,16 @@
     <h1>⚙ Gestión de Módulos</h1>
 
     <div class="card">
+        {% if error %}
+        <div style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid #ef4444; padding: 12px; border-radius: 8px; margin-bottom: 20px;">
+          <strong>Error:</strong> {{ error }}
+        </div>
+        {% endif %}
 
-        <h3>Módulos registrados</h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="margin: 0;">Módulos registrados</h3>
+            <button onclick="openModal('moduleModal')">+ Nuevo Módulo</button>
+        </div>
 
         <div class="table-container">
             <table>
@@ -203,6 +223,7 @@
                         <th>Nombre</th>
                         <th>Descripción</th>
                         <th>Estado</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
 
@@ -220,11 +241,19 @@
                                 <span class="estado-inactivo">Inactivo</span>
                             {% endif %}
                         </td>
+                        <td>
+                            <form method="POST" class="btn-action-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="toggle_module_status">
+                                <input type="hidden" name="module_id" value="{{ modulo.id_modulo }}">
+                                <button type="submit" class="btn-danger" title="Dar de baja/Alta">🚫 Estado</button>
+                            </form>
+                        </td>
                     </tr>
 
                     {% empty %}
                     <tr>
-                        <td colspan="3" style="text-align:center; padding:25px;">
+                        <td colspan="4" style="text-align:center; padding:25px;">
                             No existen módulos registrados
                         </td>
                     </tr>
@@ -240,5 +269,40 @@
     </div>
 
 </div>
+
+<!-- Modal: Crear Módulo -->
+<div id="moduleModal" class="modal-backdrop hidden">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span>Crear Nuevo Módulo</span>
+      <span class="close-btn" onclick="closeModal('moduleModal')">×</span>
+    </div>
+    <form method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="create_module">
+      <div>
+        <label style="font-size: 13px; color: #94a3b8;">Nombre del Módulo (Microservicio)</label>
+        <input type="text" name="nombre_modulo" required>
+      </div>
+      <div>
+        <label style="font-size: 13px; color: #94a3b8;">Descripción</label>
+        <textarea name="descripcion_modulo" rows="2"></textarea>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top:15px;">
+        <button type="button" class="btn-secondary" onclick="closeModal('moduleModal')">Cancelar</button>
+        <button type="submit">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openModal(modalId) {
+    document.getElementById(modalId).classList.remove('hidden');
+  }
+  function closeModal(modalId) {
+    document.getElementById(modalId).classList.add('hidden');
+  }
+</script>
 
 {% endblock %}
