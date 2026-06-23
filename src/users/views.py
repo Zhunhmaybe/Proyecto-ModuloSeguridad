@@ -15,133 +15,77 @@ from .schema import validate_microsoft_token, generate_jwt
 
 @login_required(login_url='login')
 def roles_view(request):
-
     roles = Rol.objects.all()
-
-    funciones = Funcion.objects.filter(
-        estado_funcion=True
-    )
+    funciones = Funcion.objects.filter(estado_funcion=True)
+    modulos = Modulo.objects.filter(estado_modulo=True).prefetch_related('funciones')
 
     if request.method == "POST":
+        nombre = request.POST.get('nombre_rol', '').strip()
+        funciones_seleccionadas = request.POST.getlist('funciones')
 
-        nombre = request.POST.get(
-            "nombre_rol"
-        )
+        ctx = {'roles': roles, 'funciones': funciones, 'modulos': modulos}
 
-        funciones_seleccionadas = request.POST.getlist(
-            "funciones"
-        )
+        if not nombre:
+            ctx['error'] = 'El nombre del rol es obligatorio.'
+            return render(request, 'roles.html', ctx)
 
-        # VALIDACIÓN DE ROL DUPLICADO
-        if Rol.objects.filter(
-            nombre_rol__iexact=nombre
-        ).exists():
+        if not funciones_seleccionadas:
+            ctx['error'] = 'Debes seleccionar al menos una función para el rol.'
+            return render(request, 'roles.html', ctx)
 
-            return render(
-                request,
-                'roles.html',
-                {
-                    'roles': roles,
-                    'funciones': funciones,
-                    'error': 'El rol ya existe'
-                }
-            )
+        if Rol.objects.filter(nombre_rol__iexact=nombre).exists():
+            ctx['error'] = 'El rol ya existe.'
+            return render(request, 'roles.html', ctx)
 
-        rol = Rol.objects.create(
-            nombre_rol=nombre,
-            estado_rol=True
-        )
+        rol = Rol.objects.create(nombre_rol=nombre, estado_rol=True)
 
         for f in funciones_seleccionadas:
-
-            # VALIDACIÓN DE FUNCIÓN REPETIDA
-            if not FuncionRol.objects.filter(
-                rol=rol,
-                funcion_id=f
-            ).exists():
-
-                FuncionRol.objects.create(
-                    rol=rol,
-                    funcion_id=f
-                )
+            if not FuncionRol.objects.filter(rol=rol, funcion_id=f).exists():
+                FuncionRol.objects.create(rol=rol, funcion_id=f)
 
         return redirect('roles')
 
-    return render(
-        request,
-        'roles.html',
-        {
-            'roles': roles,
-            'funciones': funciones
-        }
-    )
+    return render(request, 'roles.html', {
+        'roles': roles,
+        'funciones': funciones,
+        'modulos': modulos
+    })
 
 @login_required(login_url='login')
-def editar_rol(request,id):
+def editar_rol(request, id):
+    rol = get_object_or_404(Rol, id_rol=id)
+    funciones = Funcion.objects.filter(estado_funcion=True)
+    modulos = Modulo.objects.filter(estado_modulo=True).prefetch_related('funciones')
 
+    if request.method == "POST":
+        nombre = request.POST.get('nombre_rol', '').strip()
+        funciones_seleccionadas = request.POST.getlist('funciones')
 
-    rol = get_object_or_404(
-        Rol,
-        id_rol=id
-    )
+        ctx = {'rol': rol, 'funciones': funciones, 'modulos': modulos}
 
+        if not nombre:
+            ctx['error'] = 'El nombre del rol es obligatorio.'
+            return render(request, 'editar_rol.html', ctx)
 
-    funciones = Funcion.objects.all()
+        if not funciones_seleccionadas:
+            ctx['error'] = 'Debes seleccionar al menos una función para el rol.'
+            return render(request, 'editar_rol.html', ctx)
 
-
-
-    if request.method=="POST":
-
-
-        rol.nombre_rol = request.POST.get(
-            "nombre_rol"
-        )
-
-
+        rol.nombre_rol = nombre
+        rol.estado_rol = bool(request.POST.get('estado_rol'))
         rol.save()
 
-
-
         rol.funciones.clear()
+        for f in funciones_seleccionadas:
+            FuncionRol.objects.create(rol=rol, funcion_id=f)
 
+        return redirect('roles')
 
-
-        for f in request.POST.getlist(
-            "funciones"
-        ):
-
-
-            FuncionRol.objects.create(
-
-                rol=rol,
-
-                funcion_id=f
-
-            )
-
-
-
-        return redirect(
-            'roles'
-        )
-
-
-
-    return render(
-
-        request,
-
-        'editar_rol.html',
-
-        {
-
-        'rol':rol,
-
-        'funciones':funciones
-
-        }
-
-    )
+    return render(request, 'editar_rol.html', {
+        'rol': rol,
+        'funciones': funciones,
+        'modulos': modulos
+    })
 #Usuarios
 @login_required(login_url='login')
 def usuarios_view(request):
