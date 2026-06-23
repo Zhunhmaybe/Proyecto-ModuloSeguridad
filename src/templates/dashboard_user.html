@@ -1,108 +1,81 @@
 {% extends 'base.html' %}
-{% load static %}
 {% block title %}Panel de Usuario - Seguridad Centralizada{% endblock %}
 
-{% block extra_css %}
-    <link rel="stylesheet" href="{% static 'css/dashboard_user.css' %}">
+{% block breadcrumb %}
+<span class="breadcrumb-separator"><i class="fa-solid fa-chevron-right"></i></span>
+<span class="breadcrumb-current">Mi Panel</span>
 {% endblock %}
 
 {% block content %}
-    <div class="container">
-        <!-- Header Section -->
-        <div class="header">
-            <div class="user-info">
-                <div class="avatar">
-                    {{ user.user_name|slice:":2"|upper }}
-                </div>
-                <div class="welcome-text">
-                    <p>Sesión activa</p>
-                    <h1>@{{ user.user_name }}</h1>
-                </div>
-            </div>
-            <a href="{% url 'logout' %}" class="logout-btn">
-                <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                <span>Cerrar Sesión</span>
-            </a>
-        </div>
 
-        <!-- Details Card -->
-        <div class="content-box glass-card">
-            <h2 class="section-title">
-                <i class="fa-regular fa-address-card"></i>
-                <span>Información Personal</span>
-            </h2>
-            
-            <div class="info-grid">
-                <div class="info-item">
-                    <span class="label">Correo Electrónico</span>
-                    <span class="value">{{ user.email }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="label">Identificación (Cédula)</span>
-                    <span class="value">{{ user.cedula }}</span>
-                </div>
+<div style="max-width:650px">
+    <!-- Details Card -->
+    <div class="card" style="margin-bottom:24px">
+        <h2 style="font-size:1.1rem;font-weight:600;margin-bottom:20px;display:flex;align-items:center;gap:10px;color:var(--text-primary)">
+            <i class="fa-regular fa-address-card"></i> Información Personal
+        </h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+            <div style="background:var(--input-bg);border:1px solid var(--input-border);padding:15px;border-radius:12px">
+                <span style="display:block;font-size:.8rem;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Correo</span>
+                <span style="font-weight:500">{{ user.email }}</span>
             </div>
-
-            <h2 class="section-title">
-                <i class="fa-solid fa-shield-halved"></i>
-                <span>Roles Asignados</span>
-            </h2>
-            
-            <div class="role-container">
-                {% for rol in user.roles.all %}
-                    {% if rol.estado_rol %}
-                        <span class="badge badge-info">
-                            <i class="fa-solid fa-user-shield" style="margin-right: 5px;"></i>
-                            {{ rol.nombre_rol }}
-                        </span>
-                    {% endif %}
-                {% empty %}
-                    <span class="badge badge-danger">Sin roles asignados</span>
-                {% endfor %}
+            <div style="background:var(--input-bg);border:1px solid var(--input-border);padding:15px;border-radius:12px">
+                <span style="display:block;font-size:.8rem;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Cédula</span>
+                <span style="font-weight:500">{{ user.cedula }}</span>
             </div>
         </div>
 
-        <!-- Token Card -->
-        <div class="content-box glass-card">
-            <h2 class="section-title">
-                <i class="fa-solid fa-key"></i>
-                <span>Tu Token JWT de Acceso</span>
-            </h2>
-            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">
-                Este token ha sido generado por el Módulo de Seguridad Central y es el que debes enviar en las cabeceras HTTP de los demás microservicios (Compras, Inventario, etc.) para que validen tu identidad.
-            </p>
-            
-            <div class="token-section">
-                <div class="token-area" id="tokenText">{{ token }}</div>
-                <button class="copy-btn" onclick="copyToken()">
-                    <i class="fa-regular fa-copy"></i>
-                    <span id="btnText">Copiar Token</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- Admin Alert Block -->
-        <div class="alert-banner">
-            <i class="fa-solid fa-circle-info" style="font-size: 1.2rem; margin-top: 2px;"></i>
-            <div>
-                <strong style="display: block; margin-bottom: 4px;">Acceso Estándar Limitado</strong>
-                No posees permisos de administrador de seguridad. Por ello, solo puedes visualizar tus credenciales y token JWT. Si requieres gestionar usuarios, roles o módulos, contacta con el Administrador de Seguridad de la Universidad.
-            </div>
+        <h2 style="font-size:1.1rem;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:10px;color:var(--text-primary)">
+            <i class="fa-solid fa-shield-halved"></i> Roles Asignados
+        </h2>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px">
+            {% for rol in user.roles.all %}
+                {% if rol.estado_rol %}
+                    <span class="badge badge-info" style="padding:6px 14px">
+                        <i class="fa-solid fa-user-shield"></i> {{ rol.nombre_rol }}
+                    </span>
+                {% endif %}
+            {% empty %}
+                <span class="badge" style="background:rgba(239,68,68,0.15);color:var(--danger);border:1px solid rgba(239,68,68,0.3)">Sin roles asignados</span>
+            {% endfor %}
         </div>
     </div>
 
-    <script>
-        function copyToken() {
-            const tokenText = document.getElementById('tokenText').innerText;
-            navigator.clipboard.writeText(tokenText).then(() => {
-                const btnText = document.getElementById('btnText');
-                btnText.innerText = '¡Copiado!';
-                setTimeout(() => {
-                    btnText.innerText = 'Copiar Token';
-                }, 2000);
-            }).catch(err => {
-                console.error('Error al copiar el token: ', err);
-            });
-        }
-    </script>
+    <!-- Token Card -->
+    <div class="card" style="margin-bottom:24px">
+        <h2 style="font-size:1.1rem;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:10px;color:var(--text-primary)">
+            <i class="fa-solid fa-key"></i> Tu Token JWT de Acceso
+        </h2>
+        <p style="font-size:.85rem;color:var(--text-secondary);margin-bottom:12px">
+            Este token es generado por el Módulo de Seguridad Central. Envíalo en las cabeceras HTTP de los demás microservicios para validar tu identidad.
+        </p>
+        <div style="background:var(--input-bg);border:1px solid var(--input-border);padding:16px;border-radius:12px">
+            <div id="tokenText" style="font-family:ui-monospace,monospace;font-size:.8rem;color:var(--primary);word-break:break-all;max-height:120px;overflow-y:auto">{{ token }}</div>
+            <button class="btn btn-primary" onclick="copyToken()" style="margin-top:12px;padding:8px 16px;font-size:.82rem">
+                <i class="fa-regular fa-copy"></i>
+                <span id="btnText">Copiar Token</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Alert -->
+    <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);color:var(--warning);padding:15px;border-radius:12px;font-size:.85rem;display:flex;align-items:flex-start;gap:12px">
+        <i class="fa-solid fa-circle-info" style="font-size:1.2rem;margin-top:2px"></i>
+        <div>
+            <strong style="display:block;margin-bottom:4px">Acceso Estándar Limitado</strong>
+            No posees permisos de administrador. Solo puedes visualizar tus credenciales y token JWT. Contacta al Administrador de Seguridad para obtener más permisos.
+        </div>
+    </div>
+</div>
+
+<script>
+function copyToken(){
+    const t=document.getElementById('tokenText').innerText;
+    navigator.clipboard.writeText(t).then(()=>{
+        const b=document.getElementById('btnText');
+        b.innerText='¡Copiado!';
+        setTimeout(()=>{b.innerText='Copiar Token'},2000);
+    });
+}
+</script>
 {% endblock %}

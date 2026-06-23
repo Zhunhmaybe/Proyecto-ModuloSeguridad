@@ -1,308 +1,265 @@
 {% extends 'base.html' %}
+{% block title %}Gestión de Módulos{% endblock %}
+
+{% block breadcrumb %}
+<span class="breadcrumb-separator"><i class="fa-solid fa-chevron-right"></i></span>
+<span class="breadcrumb-current">Módulos</span>
+{% endblock %}
 
 {% block content %}
+<div class="page-header"><h1>⚙ Gestión de Módulos</h1></div>
 
-<style>
-    *{
-        box-sizing:border-box;
-    }
+<div class="card">
+    {% if error %}
+    <div class="alert alert-error"><i class="fa-solid fa-triangle-exclamation"></i> {{ error }}</div>
+    {% endif %}
 
-    body{
-        background: linear-gradient(135deg,#0f172a,#1e293b);
-    }
-
-    .container{
-        max-width:1200px;
-        margin:auto;
-        padding:40px 25px;
-    }
-
-    h1{
-        color:white;
-        margin-bottom:25px;
-        font-size:2rem;
-        font-weight:700;
-        letter-spacing:0.5px;
-    }
-
-    .card{
-        background:rgba(17,24,39,0.95);
-        backdrop-filter: blur(12px);
-        border:1px solid rgba(255,255,255,0.08);
-        border-radius:20px;
-        padding:30px;
-        color:white;
-        box-shadow:0 10px 30px rgba(0,0,0,0.35);
-        overflow:hidden;
-    }
-
-    .card h3{
-        margin-top:0;
-        margin-bottom:20px;
-        font-size:1.2rem;
-        color:#e2e8f0;
-        border-left:4px solid #3b82f6;
-        padding-left:12px;
-    }
-
-    input,
-    textarea{
-        width:100%;
-        padding:12px 15px;
-        margin:8px 0;
-        border-radius:10px;
-        border:1px solid #334155;
-        background:#1e293b;
-        color:white;
-        transition:all .3s ease;
-    }
-
-    input:focus,
-    textarea:focus{
-        outline:none;
-        border-color:#3b82f6;
-        box-shadow:0 0 0 3px rgba(59,130,246,.25);
-    }
-
-    textarea{
-        height:100px;
-        resize:none;
-    }
-
-    button{
-        background:linear-gradient(135deg,#2563eb,#3b82f6);
-        color:white;
-        border:none;
-        padding:12px 22px;
-        border-radius:10px;
-        cursor:pointer;
-        font-weight:600;
-        transition:.3s;
-    }
-
-    button:hover{
-        transform:translateY(-2px);
-        box-shadow:0 8px 20px rgba(37,99,235,.35);
-    }
-
-    table{
-        width:100%;
-        border-collapse:collapse;
-        margin-top:15px;
-        overflow:hidden;
-        border-radius:12px;
-    }
-
-    thead{
-        background:#1e293b;
-    }
-
-    th{
-        text-align:left;
-        padding:15px;
-        color:#cbd5e1;
-        font-weight:600;
-        text-transform:uppercase;
-        font-size:.85rem;
-        letter-spacing:.5px;
-    }
-
-    td{
-        padding:15px;
-        border-bottom:1px solid #334155;
-        color:#f1f5f9;
-    }
-
-    tbody tr{
-        transition:.25s;
-    }
-
-    tbody tr:hover{
-        background:rgba(59,130,246,.08);
-    }
-
-    tbody tr:last-child td{
-        border-bottom:none;
-    }
-
-    .estado-activo{
-        display:inline-block;
-        background:#14532d;
-        color:#86efac;
-        padding:6px 12px;
-        border-radius:999px;
-        font-size:.85rem;
-        font-weight:600;
-    }
-
-    .estado-inactivo{
-        display:inline-block;
-        background:#7f1d1d;
-        color:#fca5a5;
-        padding:6px 12px;
-        border-radius:999px;
-        font-size:.85rem;
-        font-weight:600;
-    }
-
-    .btn-back{
-        display:inline-flex;
-        align-items:center;
-        gap:8px;
-        margin-top:25px;
-        background:#334155;
-        padding:12px 20px;
-        border-radius:10px;
-        color:white;
-        text-decoration:none;
-        font-weight:600;
-        transition:.3s;
-    }
-
-    .btn-back:hover{
-        background:#475569;
-        transform:translateY(-2px);
-    }
-
-    .table-container{
-        overflow-x:auto;
-    }
-
-    @media (max-width:768px){
-        .container{ padding:20px; }
-        .card{ padding:20px; }
-        table{ font-size:14px; }
-        th, td{ padding:10px; }
-    }
-
-    /* Modal Styles */
-    .modal-backdrop {
-        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-        background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
-        z-index: 1000; display: flex; align-items: center; justify-content: center;
-    }
-    .modal-backdrop.hidden { display: none; }
-    
-    .modal-box {
-        background: #0f172a; border: 1px solid #1e293b; border-radius: 14px;
-        padding: 24px; width: 450px; max-width: 90%;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        color: white;
-    }
-    .modal-header {
-        display: flex; justify-content: space-between; align-items: center;
-        margin-bottom: 20px; font-weight: 600; font-size: 16px;
-    }
-    .close-btn { cursor: pointer; color: #94a3b8; font-size: 24px; }
-    
-    .btn-danger { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid #ef4444; padding: 6px 12px; }
-    .btn-secondary { background: #1e293b; color: #cbd5e1; }
-    .btn-action-form { margin: 0; }
-</style>
-
-<div class="container">
-
-    <h1>⚙ Gestión de Módulos</h1>
-
-    <div class="card">
-        {% if error %}
-        <div style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid #ef4444; padding: 12px; border-radius: 8px; margin-bottom: 20px;">
-          <strong>Error:</strong> {{ error }}
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px">
+        <h3 class="card-title" style="margin:0">Módulos registrados</h3>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <div style="position:relative;min-width:240px">
+                <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none"></i>
+                <input type="text" id="searchModulos" oninput="filtrarModulos()"
+                       placeholder="Buscar módulo, función, estado..."
+                       style="padding:8px 12px 8px 36px;width:100%;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text-primary)">
+            </div>
+            <button class="btn btn-primary" onclick="openModal('moduleModal')" style="padding:10px 18px;white-space:nowrap">+ Nuevo Módulo</button>
         </div>
-        {% endif %}
-
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h3 style="margin: 0;">Módulos registrados</h3>
-            <button onclick="openModal('moduleModal')">+ Nuevo Módulo</button>
-        </div>
-
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Descripción</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    {% for modulo in modulos %}
-                    <tr>
-                        <td>{{ modulo.nombre_modulo }}</td>
-
-                        <td>{{ modulo.descripcion_modulo }}</td>
-
-                        <td>
-                            {% if modulo.estado_modulo %}
-                                <span class="estado-activo">Activo</span>
-                            {% else %}
-                                <span class="estado-inactivo">Inactivo</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <form method="POST" class="btn-action-form">
-                                {% csrf_token %}
-                                <input type="hidden" name="action" value="toggle_module_status">
-                                <input type="hidden" name="module_id" value="{{ modulo.id_modulo }}">
-                                <button type="submit" class="btn-danger" title="Dar de baja/Alta">🚫 Estado</button>
-                            </form>
-                        </td>
-                    </tr>
-
-                    {% empty %}
-                    <tr>
-                        <td colspan="4" style="text-align:center; padding:25px;">
-                            No existen módulos registrados
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        <a href="{% url 'dashboard_admin' %}" class="btn-back">
-            ⬅ Volver al Dashboard
-        </a>
-
     </div>
+    <p id="contadorModulos" style="font-size:.82rem;color:var(--text-muted);margin-bottom:8px"></p>
 
+    <div class="table-container">
+        <table class="data-table" id="tablaModulos">
+            <thead><tr><th>Nombre</th><th>Descripción</th><th>Funciones</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <tbody>
+                {% for modulo in modulos %}
+                <tr>
+                    <td>{{ modulo.nombre_modulo }}</td>
+                    <td>{{ modulo.descripcion_modulo }}</td>
+                    <td>
+                        {% for f in modulo.funciones.all %}
+                        <span class="role-badge" style="font-size:.75rem">{{ f.nombre_funcion }}</span>
+                        {% empty %}
+                        <span style="color:var(--text-muted);font-size:.82rem">Sin funciones</span>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% if modulo.estado_modulo %}
+                        <span class="estado-activo" style="padding:5px 12px;border-radius:999px;font-size:.82rem">Activo</span>
+                        {% else %}
+                        <span class="estado-inactivo" style="padding:5px 12px;border-radius:999px;font-size:.82rem">Inactivo</span>
+                        {% endif %}
+                    </td>
+                    <td style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                        <a href="{% url 'editar_modulo' modulo.id_modulo %}" class="btn btn-secondary" style="padding:6px 12px;font-size:.82rem">✏️ Editar</a>
+                        <form method="POST" style="margin:0;display:inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="toggle_module_status">
+                            <input type="hidden" name="module_id" value="{{ modulo.id_modulo }}">
+                            <button type="submit" class="btn {% if modulo.estado_modulo %}btn-danger{% else %}btn-primary{% endif %}" style="padding:6px 12px;font-size:.82rem">
+                                {% if modulo.estado_modulo %}🚫 Desactivar{% else %}✅ Activar{% endif %}
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:25px">No existen módulos registrados</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <a href="{% url 'dashboard_admin' %}" class="btn-back">⬅ Volver al Dashboard</a>
 </div>
 
 <!-- Modal: Crear Módulo -->
 <div id="moduleModal" class="modal-backdrop hidden">
-  <div class="modal-box">
-    <div class="modal-header">
-      <span>Crear Nuevo Módulo</span>
-      <span class="close-btn" onclick="closeModal('moduleModal')">×</span>
+    <div class="modal-box" style="max-width:560px">
+        <div class="modal-header">
+            <span>Crear Nuevo Módulo</span>
+            <span class="close-btn" onclick="closeModal('moduleModal')">×</span>
+        </div>
+        <form method="POST" id="formCrearModulo">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create_module">
+
+            <div class="form-group">
+                <label class="form-label">Nombre del Módulo <span style="color:var(--danger)">*</span></label>
+                <input type="text" name="nombre_modulo" required maxlength="100" placeholder="Ej: Facturación">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Descripción</label>
+                <textarea name="descripcion_modulo" rows="2" maxlength="255" placeholder="Descripción breve..."></textarea>
+            </div>
+
+            <!-- Paso: Selección de Rol con búsqueda -->
+            <div class="form-group">
+                <label class="form-label">
+                    Seleccionar Rol <span style="color:var(--danger)">*</span>
+                    <small style="color:var(--text-muted);font-weight:400"> — el módulo estará disponible para este rol</small>
+                </label>
+                <!-- Input oculto que guarda el rol seleccionado -->
+                <input type="hidden" id="rolSeleccionadoId" value="">
+                <div style="position:relative" id="rolDropdownWrapper">
+                    <!-- Campo de búsqueda visible -->
+                    <div style="position:relative">
+                        <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none;font-size:.85rem"></i>
+                        <input type="text" id="searchRolInput" placeholder="Buscar rol..." autocomplete="off"
+                               oninput="filtrarOpcRoles()" onfocus="abrirDropdownRol()" onclick="abrirDropdownRol()"
+                               style="padding:8px 10px 8px 32px;width:100%;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text-primary)">
+                        <i class="fa-solid fa-chevron-down" id="iconChevronRol" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none;font-size:.8rem"></i>
+                    </div>
+                    <!-- Lista desplegable -->
+                    <div id="rolDropdownList" style="display:none;position:absolute;z-index:9999;width:100%;background:#1e2130;border:1px solid #3a3f5c;border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.6);max-height:200px;overflow-y:auto;margin-top:4px">
+                        {% for rol in roles %}
+                        <div class="rol-opcion" data-id="{{ rol.id_rol }}" data-nombre="{{ rol.nombre_rol }}"
+                             onclick="seleccionarRol('{{ rol.id_rol }}', '{{ rol.nombre_rol }}')"
+                             style="padding:10px 16px;cursor:pointer;font-size:.9rem;border-bottom:1px solid #2d3148;color:#e2e8f0;background:#1e2130;transition:background .15s"
+                             onmouseover="this.style.background='#2d3460'" onmouseout="this.style.background='#1e2130'">
+                            {{ rol.nombre_rol }}
+                        </div>
+                        {% empty %}
+                        <div style="padding:10px 16px;color:#94a3b8;font-style:italic;font-size:.88rem;background:#1e2130">No hay roles activos.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <small id="errorRolCrear" style="color:var(--danger);display:none">⚠ Debes seleccionar un rol.</small>
+            </div>
+
+            <!-- Todas las funciones disponibles -->
+            <div class="form-group" id="panelFuncionesCrear" style="display:none">
+                <label class="form-label">
+                    Funciones a asignar al Módulo <span style="color:var(--danger)">*</span>
+                    <small style="color:var(--text-muted);font-weight:400"> — mínimo 1</small>
+                </label>
+                <!-- Buscador de funciones -->
+                <div style="position:relative;margin-bottom:10px">
+                    <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none;font-size:.85rem"></i>
+                    <input type="text" id="searchFuncionesModal" oninput="filtrarFuncionesModal()"
+                           placeholder="Buscar función..."
+                           style="padding:7px 10px 7px 32px;width:100%;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text-primary);font-size:.88rem">
+                </div>
+                <div class="items-box" style="max-height:220px;overflow-y:auto">
+                    <div class="items-grid" id="gridFuncionesModal">
+                        {% for f in todas_funciones %}
+                        <label class="grid-item chk-label-crear">
+                            <input type="checkbox" name="funciones" value="{{ f.id_funcion }}" class="chk-funcion-crear">
+                            <span>{{ f.nombre_funcion }}</span>
+                        </label>
+                        {% empty %}
+                        <p style="color:var(--text-muted);font-style:italic;padding:8px">No hay funciones activas disponibles.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                <small id="errorFuncionCrear" style="color:var(--danger);display:none">⚠ Debes seleccionar al menos una función.</small>
+            </div>
+
+            <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:15px">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('moduleModal')">Cancelar</button>
+                <button type="submit" class="btn btn-primary" onclick="return validarModuloCrear()">Guardar</button>
+            </div>
+        </form>
     </div>
-    <form method="POST">
-      {% csrf_token %}
-      <input type="hidden" name="action" value="create_module">
-      <div>
-        <label style="font-size: 13px; color: #94a3b8;">Nombre del Módulo (Microservicio)</label>
-        <input type="text" name="nombre_modulo" required>
-      </div>
-      <div>
-        <label style="font-size: 13px; color: #94a3b8;">Descripción</label>
-        <textarea name="descripcion_modulo" rows="2"></textarea>
-      </div>
-      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top:15px;">
-        <button type="button" class="btn-secondary" onclick="closeModal('moduleModal')">Cancelar</button>
-        <button type="submit">Guardar</button>
-      </div>
-    </form>
-  </div>
 </div>
 
 <script>
-  function openModal(modalId) {
-    document.getElementById(modalId).classList.remove('hidden');
-  }
-  function closeModal(modalId) {
-    document.getElementById(modalId).classList.add('hidden');
-  }
-</script>
+function openModal(id){document.getElementById(id).classList.remove('hidden')}
+function closeModal(id){document.getElementById(id).classList.add('hidden')}
 
+function filtrarModulos() {
+    const q = document.getElementById('searchModulos').value.toLowerCase().trim();
+    const filas = document.querySelectorAll('#tablaModulos tbody tr');
+    let visibles = 0;
+    filas.forEach(tr => {
+        const mostrar = !q || tr.innerText.toLowerCase().includes(q);
+        tr.style.display = mostrar ? '' : 'none';
+        if (mostrar) visibles++;
+    });
+    const c = document.getElementById('contadorModulos');
+    c.textContent = q ? `${visibles} resultado(s) encontrado(s)` : '';
+}
+
+function filtrarFuncionesModal() {
+    const q = document.getElementById('searchFuncionesModal').value.toLowerCase().trim();
+    document.querySelectorAll('#gridFuncionesModal .chk-label-crear').forEach(label => {
+        const nombre = label.querySelector('span').textContent.toLowerCase();
+        label.style.display = !q || nombre.includes(q) ? '' : 'none';
+    });
+}
+
+// ===== DROPDOWN ROL CON BÚSQUEDA =====
+function abrirDropdownRol() {
+    document.getElementById('rolDropdownList').style.display = 'block';
+}
+function cerrarDropdownRol() {
+    document.getElementById('rolDropdownList').style.display = 'none';
+}
+function filtrarOpcRoles() {
+    const q = document.getElementById('searchRolInput').value.toLowerCase().trim();
+    document.querySelectorAll('#rolDropdownList .rol-opcion').forEach(op => {
+        op.style.display = !q || op.dataset.nombre.toLowerCase().includes(q) ? 'block' : 'none';
+    });
+    // Si se borra el texto, limpiar rol seleccionado
+    if (!q) {
+        document.getElementById('rolSeleccionadoId').value = '';
+        ocultarFuncionesCrear();
+    }
+    abrirDropdownRol();
+}
+function seleccionarRol(id, nombre) {
+    document.getElementById('rolSeleccionadoId').value = id;
+    document.getElementById('searchRolInput').value = nombre;
+    document.getElementById('errorRolCrear').style.display = 'none';
+    cerrarDropdownRol();
+    mostrarFuncionesCrear(id);
+}
+// Cerrar dropdown al hacer click fuera
+document.addEventListener('click', function(e) {
+    const wrapper = document.getElementById('rolDropdownWrapper');
+    if (wrapper && !wrapper.contains(e.target)) cerrarDropdownRol();
+});
+
+function filtrarFuncionesModal() {
+    const q = document.getElementById('searchFuncionesModal').value.toLowerCase().trim();
+    document.querySelectorAll('#gridFuncionesModal .chk-label-crear').forEach(label => {
+        const nombre = label.querySelector('span').textContent.toLowerCase();
+        label.style.display = !q || nombre.includes(q) ? '' : 'none';
+    });
+}
+
+function mostrarFuncionesCrear(rolId) {
+    const panel = document.getElementById('panelFuncionesCrear');
+    if (!rolId) {
+        panel.style.display = 'none';
+        document.querySelectorAll('.chk-funcion-crear').forEach(c => c.checked = false);
+    } else {
+        panel.style.display = 'block';
+    }
+}
+function ocultarFuncionesCrear() {
+    document.getElementById('panelFuncionesCrear').style.display = 'none';
+    document.querySelectorAll('.chk-funcion-crear').forEach(c => c.checked = false);
+}
+
+function validarModuloCrear() {
+    const rolId = document.getElementById('rolSeleccionadoId').value;
+    const errRol = document.getElementById('errorRolCrear');
+    if (!rolId) {
+        errRol.style.display = 'block';
+        return false;
+    }
+    errRol.style.display = 'none';
+    const checked = document.querySelectorAll('.chk-funcion-crear:checked');
+    const errFun = document.getElementById('errorFuncionCrear');
+    if (checked.length === 0) {
+        errFun.style.display = 'block';
+        return false;
+    }
+    errFun.style.display = 'none';
+    return true;
+}
+
+// Si el modal se abre después de un error del servidor, vuelve a abrirlo
+{% if error %}window.addEventListener('DOMContentLoaded', () => openModal('moduleModal'));{% endif %}
+</script>
 {% endblock %}

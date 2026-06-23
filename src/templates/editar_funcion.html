@@ -1,172 +1,40 @@
 {% extends 'base.html' %}
+{% block title %}Editar Función{% endblock %}
+
+{% block breadcrumb %}
+<span class="breadcrumb-separator"><i class="fa-solid fa-chevron-right"></i></span>
+<a href="{% url 'funciones' %}" class="breadcrumb-item">Funciones</a>
+<span class="breadcrumb-separator"><i class="fa-solid fa-chevron-right"></i></span>
+<span class="breadcrumb-current">Editar: {{ funcion.nombre_funcion }}</span>
+{% endblock %}
 
 {% block content %}
+<div class="page-header"><h1>✏️ Editar Función</h1></div>
 
-<style>
-    *{
-        box-sizing:border-box;
-    }
+<div class="card" style="max-width:700px">
+    <form method="POST">
+        {% csrf_token %}
 
-    body{
-        background:linear-gradient(135deg,#0f172a,#1e293b);
-    }
+        <div class="form-group">
+            <label class="form-label">Nombre función</label>
+            <input type="text" name="nombre_funcion" value="{{ funcion.nombre_funcion }}" required>
+        </div>
 
-    .container{
-        max-width:700px;
-        margin:40px auto;
-        padding:20px;
-    }
-
-    .card{
-        background:rgba(17,24,39,0.95);
-        backdrop-filter:blur(12px);
-        border:1px solid rgba(255,255,255,0.08);
-        border-radius:20px;
-        padding:30px;
-        color:white;
-        box-shadow:0 10px 30px rgba(0,0,0,0.35);
-    }
-
-    h1{
-        margin-top:0;
-        margin-bottom:25px;
-        color:white;
-        font-size:2rem;
-        font-weight:700;
-    }
-
-    .form-group{
-        margin-bottom:20px;
-    }
-
-    label{
-        display:block;
-        margin-bottom:8px;
-        color:#cbd5e1;
-        font-weight:600;
-    }
-
-    input[type="text"]{
-        width:100%;
-        padding:12px 15px;
-        border-radius:10px;
-        border:1px solid #334155;
-        background:#1e293b;
-        color:white;
-        font-size:15px;
-        transition:.3s;
-    }
-
-    input[type="text"]:focus{
-        outline:none;
-        border-color:#3b82f6;
-        box-shadow:0 0 0 3px rgba(59,130,246,.25);
-    }
-
-    .checkbox-group{
-        display:flex;
-        align-items:center;
-        gap:10px;
-        color:#e2e8f0;
-        font-weight:500;
-    }
-
-    input[type="checkbox"]{
-        width:18px;
-        height:18px;
-        cursor:pointer;
-    }
-
-    .btn-save{
-        background:linear-gradient(135deg,#2563eb,#3b82f6);
-        color:white;
-        border:none;
-        padding:12px 22px;
-        border-radius:10px;
-        cursor:pointer;
-        font-weight:600;
-        transition:.3s;
-    }
-
-    .btn-save:hover{
-        transform:translateY(-2px);
-        box-shadow:0 8px 20px rgba(37,99,235,.35);
-    }
-
-    .btn-back{
-        display:inline-flex;
-        align-items:center;
-        gap:8px;
-        margin-top:20px;
-        background:#334155;
-        padding:12px 20px;
-        border-radius:10px;
-        color:white;
-        text-decoration:none;
-        font-weight:600;
-        transition:.3s;
-    }
-
-    .btn-back:hover{
-        background:#475569;
-        transform:translateY(-2px);
-    }
-</style>
-
-<div class="container">
-
-    <div class="card">
-
-        <h1>✏️ Editar Función</h1>
-
-        <form method="POST">
-
-            {% csrf_token %}
-
-            <div class="form-group">
-
-                <label>Nombre función</label>
-
-                <input
-                    type="text"
-                    name="nombre_funcion"
-                    value="{{ funcion.nombre_funcion }}"
-                    required>
-
+        <div class="form-group">
+            <label class="form-label">Estado</label>
+            <div class="toggle-wrapper">
+                <label class="toggle">
+                    <input type="checkbox" name="estado" {% if funcion.estado_funcion %}checked{% endif %}>
+                    <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-label">Función activa</span>
             </div>
+        </div>
 
-            <div class="form-group">
-
-                <label>Estado</label>
-
-                <div class="checkbox-group">
-
-                    <input
-                        type="checkbox"
-                        name="estado"
-                        {% if funcion.estado_funcion %}
-                        checked
-                        {% endif %}
-                    >
-
-                    <span>Activo</span>
-
-                </div>
-
-            </div>
-
-            <button type="submit" class="btn-save">
-                Guardar cambios
-            </button>
-
-        </form>
-
-        <a href="{% url 'funciones' %}" class="btn-back">
-            ⬅ Volver
-        </a>
-
-    </div>
-
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">💾 Guardar cambios</button>
+            <a href="{% url 'funciones' %}" class="btn-back" style="margin-top:0">⬅ Volver</a>
+        </div>
+    </form>
 </div>
-
 {% endblock %}

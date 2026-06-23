@@ -101,7 +101,7 @@ def populate():
         user_name="compras_user",
         defaults={
             "email": "compras@utn.edu.ec",
-            "cedula": "1234567890",
+            "cedula": "1700000019",
             "is_staff": False,
             "is_superuser": False,
             "estado": True

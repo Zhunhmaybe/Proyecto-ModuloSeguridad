@@ -13,7 +13,8 @@ urlpatterns = [
     # path('admin/', admin.site.urls), # Deshabilitado por seguridad e inicio unificado
     path('', user_views.login_view, name='login'),
     path('login/', user_views.login_view, name='login_alias'),
-    path('register/', user_views.register_view, name='register'),
+    # Registro público deshabilitado - redirige al login
+    path('register/', user_views.login_view, name='register'),
     path('forgot-password/', user_views.forgot_password_view, name='forgot_password'),
     path('reset-password/<uuid:token>/', user_views.reset_password_view, name='reset_password'),
     path('verify-email/<uuid:token>/', user_views.verify_email_view, name='verify_email'),
@@ -53,7 +54,13 @@ urlpatterns = [
         name='modulos'
     ),
 
-    #Usuarios
+    path(
+        'modulos/editar/<int:id>/',
+        module_views.editar_modulo,
+        name='editar_modulo'
+    ),
+
+
     path(
     'usuarios/',
     user_views.usuarios_view,

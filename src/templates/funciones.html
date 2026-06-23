@@ -1,261 +1,90 @@
 {% extends 'base.html' %}
+{% block title %}Gestión de Funciones{% endblock %}
 
+{% block breadcrumb %}
+<span class="breadcrumb-separator"><i class="fa-solid fa-chevron-right"></i></span>
+<span class="breadcrumb-current">Funciones</span>
+{% endblock %}
 
 {% block content %}
+<div class="page-header"><h1>⚡ Gestión de Funciones</h1></div>
 
+<!-- CREAR FUNCIÓN -->
+<div class="card" style="margin-bottom:24px">
+    <div class="card-header"><h3 class="card-title">Crear función</h3></div>
+    <form method="POST">
+        {% csrf_token %}
+        {% if error %}
+        <div class="alert alert-error"><i class="fa-solid fa-triangle-exclamation"></i> {{ error }}</div>
+        {% endif %}
 
-<style>
+        <div class="form-group">
+            <label class="form-label">Nombre de la función</label>
+            <input type="text" name="nombre_funcion" placeholder="Ej: GESTIONAR_REPORTES" required>
+        </div>
 
-.container{
+        <div class="form-group">
+            <label class="form-label">Estado</label>
+            <div class="toggle-wrapper">
+                <label class="toggle">
+                    <input type="checkbox" name="estado" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-label">Función activa</span>
+            </div>
+        </div>
 
-padding:30px;
+        <button type="submit" class="btn btn-primary">💾 Guardar</button>
+    </form>
+</div>
 
-}
-
-
-.card{
-
-background:#111827;
-
-padding:25px;
-
-border-radius:15px;
-
-color:white;
-
-margin-bottom:20px;
-
-}
-
-
-
-table{
-
-width:100%;
-
-color:white;
-
-border-collapse:collapse;
-
-}
-
-
-td,th{
-
-padding:12px;
-
-border-bottom:1px solid #334155;
-
-}
-
-
-.btn{
-
-background:#2563eb;
-
-color:white;
-
-padding:8px 15px;
-
-border-radius:8px;
-
-text-decoration:none;
-
-}
-
-
-
-</style>
-
-
-
-
-<div class="container">
-
-
-
-<h1 style="color:white">
-
-Gestión de Funciones
-
-</h1>
-
-
-
+<!-- LISTA FUNCIONES -->
 <div class="card">
-
-
-
-<h3>
-Crear función
-</h3>
-
-
-
-<form method="POST">
-
-{% csrf_token %}
-
-{% if error %}
-<div style="background:#dc2626;color:white;padding:10px;border-radius:8px;margin-bottom:12px;">
-    ⚠ {{ error }}
-</div>
-{% endif %}
-
-<input 
-type="text"
-name="nombre_funcion"
-placeholder="Ej: GESTIONAR_REPORTES"
-required>
-
-
-<br><br>
-
-
-<label>
-
-Activo
-
-</label>
-
-
-<input 
-type="checkbox"
-name="estado"
-checked>
-
-
-<br><br>
-
-
-<button>
-
-Guardar
-
-</button>
-
-
-</form>
-
-
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px">
+        <h3 class="card-title" style="margin:0">Funciones registradas</h3>
+        <div style="position:relative;min-width:240px">
+            <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none"></i>
+            <input type="text" id="searchFunciones" oninput="filtrarFuncionesTabla()"
+                   placeholder="Buscar función o estado..."
+                   style="padding:8px 12px 8px 36px;width:100%;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text-primary)">
+        </div>
+    </div>
+    <p id="contadorFunciones" style="font-size:.82rem;color:var(--text-muted);margin-bottom:8px"></p>
+    <div class="table-container">
+        <table class="data-table" id="tablaFunciones">
+            <thead><tr><th>Nombre</th><th>Estado</th><th>Acción</th></tr></thead>
+            <tbody>
+                {% for funcion in funciones %}
+                <tr>
+                    <td>{{funcion.nombre_funcion}}</td>
+                    <td>
+                        {% if funcion.estado_funcion %}
+                        <span class="estado-activo" style="padding:5px 12px;border-radius:999px;font-size:.82rem"><span class="status-dot dot-green"></span> Activo</span>
+                        {% else %}
+                        <span class="estado-inactivo" style="padding:5px 12px;border-radius:999px;font-size:.82rem"><span class="status-dot dot-red"></span> Inactivo</span>
+                        {% endif %}
+                    </td>
+                    <td><a href="{% url 'editar_funcion' funcion.id_funcion %}" class="btn btn-success" style="padding:7px 16px;font-size:.82rem">✏ Editar</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <a href="{% url 'dashboard_admin' %}" class="btn-back">⬅ Volver al Dashboard</a>
 </div>
 
-
-
-
-
-
-<div class="card">
-
-
-
-<h3>
-
-Funciones registradas
-
-</h3>
-
-
-
-<table>
-
-
-<tr>
-
-<th>
-Nombre
-</th>
-
-
-<th>
-Estado
-</th>
-
-
-<th>
-Acción
-</th>
-
-</tr>
-
-
-
-
-{% for funcion in funciones %}
-
-
-
-<tr>
-
-
-<td>
-
-{{funcion.nombre_funcion}}
-
-</td>
-
-
-<td>
-
-
-{% if funcion.estado_funcion %}
-
-Activo
-
-{% else %}
-
-Inactivo
-
-{% endif %}
-
-
-</td>
-
-
-
-<td>
-
-
-<a class="btn"
-
-href="{% url 'editar_funcion' funcion.id_funcion %}">
-
-
-Editar
-
-
-</a>
-
-
-
-</td>
-
-
-</tr>
-
-
-
-{% endfor %}
-
-
-
-</table>
-
-
-</div>
-
-<a href="{% url 'dashboard_admin' %}"
-
-class="btn-back">
-
-
-⬅ Volver al Dashboard
-
-
-</a>
-
-
-</div>
-
-
+<script>
+function filtrarFuncionesTabla() {
+    const q = document.getElementById('searchFunciones').value.toLowerCase().trim();
+    const filas = document.querySelectorAll('#tablaFunciones tbody tr');
+    let visibles = 0;
+    filas.forEach(tr => {
+        const mostrar = !q || tr.innerText.toLowerCase().includes(q);
+        tr.style.display = mostrar ? '' : 'none';
+        if (mostrar) visibles++;
+    });
+    const c = document.getElementById('contadorFunciones');
+    c.textContent = q ? `${visibles} resultado(s) encontrado(s)` : '';
+}
+</script>
 {% endblock %}

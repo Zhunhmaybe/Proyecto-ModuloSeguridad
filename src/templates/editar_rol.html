@@ -1,249 +1,31 @@
 {% extends 'base.html' %}
+{% block title %}Editar Rol{% endblock %}
+
+{% block breadcrumb %}
+<span class="breadcrumb-separator"><i class="fa-solid fa-chevron-right"></i></span>
+<a href="{% url 'roles' %}" class="breadcrumb-item">Roles</a>
+<span class="breadcrumb-separator"><i class="fa-solid fa-chevron-right"></i></span>
+<span class="breadcrumb-current">Editar: {{ rol.nombre_rol }}</span>
+{% endblock %}
 
 {% block content %}
+<div class="page-header"><h1>✏ Editar Rol</h1></div>
 
-<style>
-*{box-sizing:border-box}
+<div class="card" style="max-width:700px">
+    <form method="POST" id="formEditarRol">
+        {% csrf_token %}
 
-body{
-    background:linear-gradient(135deg,#0f172a,#1e293b);
-    min-height:100vh;
-}
+        {% if error %}
+        <div class="alert alert-error"><i class="fa-solid fa-triangle-exclamation"></i> {{ error }}</div>
+        {% endif %}
 
-.container{
-    max-width:1200px;
-    margin:auto;
-    padding:40px 25px;
-}
-
-h1{
-    color:white;
-    margin-bottom:25px;
-    font-size:2rem;
-    font-weight:700;
-    letter-spacing:.5px;
-}
-
-.card{
-    background:rgba(17,24,39,.95);
-    backdrop-filter:blur(12px);
-    border:1px solid rgba(255,255,255,.08);
-    border-radius:20px;
-    padding:30px;
-    color:white;
-    box-shadow:0 10px 30px rgba(0,0,0,.35);
-    max-width:700px;
-}
-
-.card h3{
-    margin:0 0 20px;
-    font-size:1.1rem;
-    color:#e2e8f0;
-    border-left:4px solid #3b82f6;
-    padding-left:12px;
-    font-weight:600;
-}
-
-label{
-    display:block;
-    margin-top:18px;
-    margin-bottom:6px;
-    color:#94a3b8;
-    font-size:.85rem;
-    font-weight:600;
-    text-transform:uppercase;
-    letter-spacing:.5px;
-}
-
-input[type="text"]{
-    width:100%;
-    padding:12px 15px;
-    border-radius:10px;
-    border:1px solid #334155;
-    background:#1e293b;
-    color:white;
-    font-size:.95rem;
-    transition:all .3s;
-}
-
-input[type="text"]:focus{
-    outline:none;
-    border-color:#3b82f6;
-    box-shadow:0 0 0 3px rgba(59,130,246,.2);
-}
-
-/* Toggle estado */
-.toggle-wrapper{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    margin-top:6px;
-    padding:14px 16px;
-    background:#1e293b;
-    border:1px solid #334155;
-    border-radius:10px;
-}
-
-.toggle{
-    position:relative;
-    width:44px;height:24px;
-    flex-shrink:0;
-}
-
-.toggle input{
-    opacity:0;width:0;height:0;position:absolute;
-}
-
-.toggle-slider{
-    position:absolute;
-    inset:0;
-    background:#334155;
-    border-radius:999px;
-    cursor:pointer;
-    transition:.3s;
-}
-
-.toggle-slider:before{
-    content:'';
-    position:absolute;
-    width:18px;height:18px;
-    left:3px;top:3px;
-    background:white;
-    border-radius:50%;
-    transition:.3s;
-}
-
-.toggle input:checked + .toggle-slider{background:#2563eb}
-.toggle input:checked + .toggle-slider:before{transform:translateX(20px)}
-
-.toggle-label{
-    font-size:.9rem;
-    color:#cbd5e1;
-    margin:0;
-    text-transform:none;
-    letter-spacing:0;
-    font-weight:400;
-}
-
-/* Funciones */
-.funciones-box{
-    margin-top:6px;
-    background:#1e293b;
-    border:1px solid #334155;
-    border-radius:12px;
-    padding:18px;
-}
-
-.funciones-box h3{
-    margin:0 0 14px;
-    font-size:1rem;
-    color:#e2e8f0;
-    border-left:4px solid #3b82f6;
-    padding-left:12px;
-    font-weight:600;
-    text-transform:none;
-    letter-spacing:0;
-}
-
-.funciones-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(190px,1fr));
-    gap:10px;
-}
-
-.funcion-item{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    padding:10px 14px;
-    background:rgba(255,255,255,.04);
-    border:1px solid rgba(255,255,255,.07);
-    border-radius:9px;
-    cursor:pointer;
-    transition:.2s;
-}
-
-.funcion-item:hover{
-    background:rgba(59,130,246,.1);
-    border-color:rgba(59,130,246,.3);
-}
-
-.funcion-item input[type="checkbox"]{
-    width:16px;height:16px;
-    accent-color:#3b82f6;
-    cursor:pointer;
-    flex-shrink:0;
-}
-
-.funcion-item span{
-    font-size:.85rem;
-    color:#cbd5e1;
-    font-weight:500;
-}
-
-.no-funciones{
-    color:#475569;
-    font-size:.88rem;
-    font-style:italic;
-}
-
-.form-actions{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    margin-top:28px;
-    flex-wrap:wrap;
-}
-
-button[type="submit"]{
-    background:linear-gradient(135deg,#2563eb,#3b82f6);
-    color:white;
-    border:none;
-    padding:12px 24px;
-    border-radius:10px;
-    cursor:pointer;
-    font-weight:600;
-    font-size:.9rem;
-    transition:.3s;
-}
-
-button[type="submit"]:hover{
-    transform:translateY(-2px);
-    box-shadow:0 8px 20px rgba(37,99,235,.4);
-}
-
-.btn-back{
-    display:inline-flex;
-    align-items:center;
-    gap:8px;
-    background:#334155;
-    padding:12px 20px;
-    border-radius:10px;
-    color:white;
-    text-decoration:none;
-    font-weight:600;
-    font-size:.9rem;
-    transition:.3s;
-}
-
-.btn-back:hover{
-    background:#475569;
-    transform:translateY(-2px);
-}
-</style>
-
-<div class="container">
-
-    <h1>✏ Editar Rol</h1>
-
-    <div class="card">
-        <form method="POST">
-            {% csrf_token %}
-
-            <label>Nombre del rol</label>
+        <div class="form-group">
+            <label class="form-label">Nombre del rol <span style="color:var(--danger)">*</span></label>
             <input type="text" name="nombre_rol" value="{{ rol.nombre_rol }}" required>
+        </div>
 
-            <label>Estado</label>
+        <div class="form-group">
+            <label class="form-label">Estado</label>
             <div class="toggle-wrapper">
                 <label class="toggle">
                     <input type="checkbox" name="estado_rol" {% if rol.estado_rol %}checked{% endif %}>
@@ -251,32 +33,102 @@ button[type="submit"]:hover{
                 </label>
                 <span class="toggle-label">Rol activo</span>
             </div>
+        </div>
 
-            <label>Funciones asignadas</label>
-            <div class="funciones-box">
-                <div class="funciones-grid">
-                    {% for funcion in funciones %}
-                    <label class="funcion-item">
-                        <input
-                            type="checkbox"
-                            name="funciones"
-                            value="{{ funcion.id_funcion }}"
-                            {% if funcion in rol.funciones.all %}checked{% endif %}>
-                        <span>{{ funcion.nombre_funcion }}</span>
-                    </label>
-                    {% empty %}
-                    <p class="no-funciones">No existen funciones creadas</p>
-                    {% endfor %}
+        <!-- Filtro por Módulo -->
+        <div class="form-group">
+            <label class="form-label">
+                Filtrar por Módulo <span style="color:var(--danger)">*</span>
+                <small style="color:var(--text-muted);font-weight:400"> — filtra las funciones disponibles</small>
+            </label>
+            <select id="moduloFiltroEditar" onchange="filtrarFuncionesPorModuloEditar(this.value)">
+                <option value="">— Todos los Módulos —</option>
+                {% for modulo in modulos %}
+                <option value="{{ modulo.id_modulo }}">{{ modulo.nombre_modulo }}</option>
+                {% endfor %}
+            </select>
+            {% if not modulos %}
+            <small style="color:var(--text-muted);font-style:italic">No hay módulos activos disponibles.</small>
+            {% endif %}
+        </div>
+
+        <!-- Funciones agrupadas por Módulo -->
+        <div class="form-group">
+            <label class="form-label">
+                Funciones asignadas <span style="color:var(--danger)">*</span>
+                <small style="color:var(--text-muted);font-weight:400"> — mínimo 1</small>
+            </label>
+            <!-- Buscador de funciones -->
+            <div style="position:relative;margin-bottom:10px">
+                <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none;font-size:.85rem"></i>
+                <input type="text" id="searchFuncionesRolEditar" oninput="filtrarFuncionesRolEditar()"
+                       placeholder="Buscar función..."
+                       style="padding:7px 10px 7px 32px;width:100%;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text-primary);font-size:.88rem">
+            </div>
+            <div class="items-box" style="max-height:320px;overflow-y:auto">
+                {% for modulo in modulos %}
+                <div class="funciones-editar-grupo" data-modulo="{{ modulo.id_modulo }}">
+                    <p style="font-size:.8rem;font-weight:600;color:var(--text-muted);margin:8px 0 4px;text-transform:uppercase;letter-spacing:.05em">
+                        {{ modulo.nombre_modulo }}
+                    </p>
+                    <div class="items-grid">
+                        {% for f in modulo.funciones.all %}
+                        {% if f.estado_funcion %}
+                        <label class="grid-item">
+                            <input type="checkbox" name="funciones" value="{{ f.id_funcion }}"
+                                   {% if f in rol.funciones.all %}checked{% endif %}>
+                            <span>{{ f.nombre_funcion }}</span>
+                        </label>
+                        {% endif %}
+                        {% empty %}
+                        <p style="color:var(--text-muted);font-style:italic;font-size:.82rem;padding:4px 8px">Sin funciones activas en este módulo.</p>
+                        {% endfor %}
+                    </div>
                 </div>
+                {% empty %}
+                <p style="color:var(--text-muted);font-style:italic;padding:8px">No hay módulos activos disponibles.</p>
+                {% endfor %}
             </div>
+            <small id="errorFuncionEditarRol" style="color:var(--danger);display:none">⚠ Debes seleccionar al menos una función.</small>
+        </div>
 
-            <div class="form-actions">
-                <button type="submit">💾 Guardar cambios</button>
-                <a href="{% url 'roles' %}" class="btn-back">⬅ Volver a roles</a>
-            </div>
-        </form>
-    </div>
-
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary" onclick="return validarEditarRol()">💾 Guardar cambios</button>
+            <a href="{% url 'roles' %}" class="btn-back" style="margin-top:0">⬅ Volver a roles</a>
+        </div>
+    </form>
 </div>
 
+<script>
+function filtrarFuncionesPorModuloEditar(moduloId) {
+    document.querySelectorAll('.funciones-editar-grupo').forEach(g => {
+        g.style.display = (!moduloId || g.dataset.modulo === moduloId) ? 'block' : 'none';
+    });
+    // Reset texto de búsqueda al cambiar módulo
+    const s = document.getElementById('searchFuncionesRolEditar');
+    if (s) { s.value = ''; filtrarFuncionesRolEditar(); }
+}
+
+function filtrarFuncionesRolEditar() {
+    const q = document.getElementById('searchFuncionesRolEditar').value.toLowerCase().trim();
+    document.querySelectorAll('.funciones-editar-grupo').forEach(grupo => {
+        if (grupo.style.display === 'none') return; // respeta filtro de módulo
+        grupo.querySelectorAll('.grid-item').forEach(label => {
+            const nombre = label.querySelector('span').textContent.toLowerCase();
+            label.style.display = !q || nombre.includes(q) ? '' : 'none';
+        });
+    });
+}
+
+function validarEditarRol() {
+    const checked = document.querySelectorAll('input[name="funciones"]:checked');
+    const errEl = document.getElementById('errorFuncionEditarRol');
+    if (checked.length === 0) {
+        errEl.style.display = 'block';
+        return false;
+    }
+    errEl.style.display = 'none';
+    return true;
+}
+</script>
 {% endblock %}
