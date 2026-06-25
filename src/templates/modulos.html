@@ -92,71 +92,9 @@
                 <textarea name="descripcion_modulo" rows="2" maxlength="255" placeholder="Descripción breve..."></textarea>
             </div>
 
-            <!-- Paso: Selección de Rol con búsqueda -->
-            <div class="form-group">
-                <label class="form-label">
-                    Seleccionar Rol <span style="color:var(--danger)">*</span>
-                    <small style="color:var(--text-muted);font-weight:400"> — el módulo estará disponible para este rol</small>
-                </label>
-                <!-- Input oculto que guarda el rol seleccionado -->
-                <input type="hidden" id="rolSeleccionadoId" value="">
-                <div style="position:relative" id="rolDropdownWrapper">
-                    <!-- Campo de búsqueda visible -->
-                    <div style="position:relative">
-                        <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none;font-size:.85rem"></i>
-                        <input type="text" id="searchRolInput" placeholder="Buscar rol..." autocomplete="off"
-                               oninput="filtrarOpcRoles()" onfocus="abrirDropdownRol()" onclick="abrirDropdownRol()"
-                               style="padding:8px 10px 8px 32px;width:100%;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text-primary)">
-                        <i class="fa-solid fa-chevron-down" id="iconChevronRol" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none;font-size:.8rem"></i>
-                    </div>
-                    <!-- Lista desplegable -->
-                    <div id="rolDropdownList" style="display:none;position:absolute;z-index:9999;width:100%;background:#1e2130;border:1px solid #3a3f5c;border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.6);max-height:200px;overflow-y:auto;margin-top:4px">
-                        {% for rol in roles %}
-                        <div class="rol-opcion" data-id="{{ rol.id_rol }}" data-nombre="{{ rol.nombre_rol }}"
-                             onclick="seleccionarRol('{{ rol.id_rol }}', '{{ rol.nombre_rol }}')"
-                             style="padding:10px 16px;cursor:pointer;font-size:.9rem;border-bottom:1px solid #2d3148;color:#e2e8f0;background:#1e2130;transition:background .15s"
-                             onmouseover="this.style.background='#2d3460'" onmouseout="this.style.background='#1e2130'">
-                            {{ rol.nombre_rol }}
-                        </div>
-                        {% empty %}
-                        <div style="padding:10px 16px;color:#94a3b8;font-style:italic;font-size:.88rem;background:#1e2130">No hay roles activos.</div>
-                        {% endfor %}
-                    </div>
-                </div>
-                <small id="errorRolCrear" style="color:var(--danger);display:none">⚠ Debes seleccionar un rol.</small>
-            </div>
-
-            <!-- Todas las funciones disponibles -->
-            <div class="form-group" id="panelFuncionesCrear" style="display:none">
-                <label class="form-label">
-                    Funciones a asignar al Módulo <span style="color:var(--danger)">*</span>
-                    <small style="color:var(--text-muted);font-weight:400"> — mínimo 1</small>
-                </label>
-                <!-- Buscador de funciones -->
-                <div style="position:relative;margin-bottom:10px">
-                    <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none;font-size:.85rem"></i>
-                    <input type="text" id="searchFuncionesModal" oninput="filtrarFuncionesModal()"
-                           placeholder="Buscar función..."
-                           style="padding:7px 10px 7px 32px;width:100%;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text-primary);font-size:.88rem">
-                </div>
-                <div class="items-box" style="max-height:220px;overflow-y:auto">
-                    <div class="items-grid" id="gridFuncionesModal">
-                        {% for f in todas_funciones %}
-                        <label class="grid-item chk-label-crear">
-                            <input type="checkbox" name="funciones" value="{{ f.id_funcion }}" class="chk-funcion-crear">
-                            <span>{{ f.nombre_funcion }}</span>
-                        </label>
-                        {% empty %}
-                        <p style="color:var(--text-muted);font-style:italic;padding:8px">No hay funciones activas disponibles.</p>
-                        {% endfor %}
-                    </div>
-                </div>
-                <small id="errorFuncionCrear" style="color:var(--danger);display:none">⚠ Debes seleccionar al menos una función.</small>
-            </div>
-
             <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:15px">
                 <button type="button" class="btn btn-secondary" onclick="closeModal('moduleModal')">Cancelar</button>
-                <button type="submit" class="btn btn-primary" onclick="return validarModuloCrear()">Guardar</button>
+                <button type="submit" class="btn btn-primary">Guardar</button>
             </div>
         </form>
     </div>

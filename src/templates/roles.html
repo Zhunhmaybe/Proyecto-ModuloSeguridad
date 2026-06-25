@@ -18,18 +18,13 @@
         <div class="alert alert-error"><i class="fa-solid fa-triangle-exclamation"></i> {{ error }}</div>
         {% endif %}
 
-        <div class="form-group">
-            <label class="form-label">Nombre del rol <span style="color:var(--danger)">*</span></label>
-            <input type="text" name="nombre_rol" placeholder="Ej: ADMIN" required>
-        </div>
-
         <!-- Paso 1: Seleccionar Módulo -->
         <div class="form-group">
             <label class="form-label">
                 Seleccionar Módulo <span style="color:var(--danger)">*</span>
-                <small style="color:var(--text-muted);font-weight:400"> — filtra las funciones disponibles</small>
+                <small style="color:var(--text-muted);font-weight:400"> — requerido para crear el rol</small>
             </label>
-            <select id="moduloFiltroCrear" onchange="filtrarFuncionesPorModulo(this.value)">
+            <select id="moduloFiltroCrear" name="modulo_id" onchange="filtrarFuncionesPorModulo(this.value)">
                 <option value="">— Selecciona un Módulo —</option>
                 {% for modulo in modulos %}
                 <option value="{{ modulo.id_modulo }}">{{ modulo.nombre_modulo }}</option>
@@ -40,34 +35,41 @@
             {% endif %}
         </div>
 
-        <!-- Paso 2: Funciones del módulo seleccionado -->
-        <div class="form-group" id="panelFuncionesRol" style="display:none">
-            <label class="form-label">
-                Funciones del Módulo <span style="color:var(--danger)">*</span>
-                <small style="color:var(--text-muted);font-weight:400"> — mínimo 1</small>
-            </label>
-            <div class="items-box">
-                {% for modulo in modulos %}
-                <div class="funciones-por-modulo" data-modulo="{{ modulo.id_modulo }}" style="display:none">
-                    <div class="items-grid">
-                        {% for f in modulo.funciones.all %}
-                        {% if f.estado_funcion %}
-                        <label class="grid-item">
-                            <input type="checkbox" name="funciones" value="{{ f.id_funcion }}" class="chk-funcion-rol">
-                            <span>{{ f.nombre_funcion }}</span>
-                        </label>
-                        {% endif %}
-                        {% empty %}
-                        <p style="color:var(--text-muted);font-style:italic;padding:8px">Este módulo no tiene funciones activas asignadas.</p>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endfor %}
+        <div id="restOfForm" style="display:none;">
+            <div class="form-group">
+                <label class="form-label">Nombre del rol <span style="color:var(--danger)">*</span></label>
+                <input type="text" name="nombre_rol" id="nombre_rol_input" placeholder="Ej: ADMIN">
             </div>
-            <small id="errorFuncionRol" style="color:var(--danger);display:none">⚠ Debes seleccionar al menos una función.</small>
-        </div>
 
-        <button type="submit" class="btn btn-primary" onclick="return validarCrearRol()">💾 Guardar rol</button>
+            <!-- Paso 2: Funciones del módulo seleccionado -->
+            <div class="form-group" id="panelFuncionesRol" style="display:none">
+                <label class="form-label">
+                    Funciones del Módulo <span style="color:var(--danger)">*</span>
+                    <small style="color:var(--text-muted);font-weight:400"> — mínimo 1</small>
+                </label>
+                <div class="items-box">
+                    {% for modulo in modulos %}
+                    <div class="funciones-por-modulo" data-modulo="{{ modulo.id_modulo }}" style="display:none">
+                        <div class="items-grid">
+                            {% for f in modulo.funciones.all %}
+                            {% if f.estado_funcion %}
+                            <label class="grid-item">
+                                <input type="checkbox" name="funciones" value="{{ f.id_funcion }}" class="chk-funcion-rol">
+                                <span>{{ f.nombre_funcion }}</span>
+                            </label>
+                            {% endif %}
+                            {% empty %}
+                            <p style="color:var(--text-muted);font-style:italic;padding:8px">Este módulo no tiene funciones activas asignadas.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <small id="errorFuncionRol" style="color:var(--danger);display:none">⚠ Debes seleccionar al menos una función.</small>
+            </div>
+
+            <button type="submit" class="btn btn-primary" onclick="return validarCrearRol()">💾 Guardar rol</button>
+        </div>
     </form>
 </div>
 
@@ -110,6 +112,17 @@
 
 <script>
 function filtrarFuncionesPorModulo(moduloId) {
+    const restOfForm = document.getElementById('restOfForm');
+    const inputNombre = document.getElementById('nombre_rol_input');
+    
+    if (moduloId) {
+        restOfForm.style.display = 'block';
+        inputNombre.required = true;
+    } else {
+        restOfForm.style.display = 'none';
+        inputNombre.required = false;
+    }
+
     const panel = document.getElementById('panelFuncionesRol');
     const grupos = document.querySelectorAll('.funciones-por-modulo');
     grupos.forEach(g => {

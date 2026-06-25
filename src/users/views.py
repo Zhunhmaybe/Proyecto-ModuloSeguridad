@@ -71,6 +71,10 @@ def editar_rol(request, id):
             ctx['error'] = 'Debes seleccionar al menos una función para el rol.'
             return render(request, 'editar_rol.html', ctx)
 
+        if Rol.objects.filter(nombre_rol__iexact=nombre).exclude(id_rol=id).exists():
+            ctx['error'] = 'Ya existe un rol con ese nombre.'
+            return render(request, 'editar_rol.html', ctx)
+
         rol.nombre_rol = nombre
         rol.estado_rol = bool(request.POST.get('estado_rol'))
         rol.save()
@@ -84,8 +88,9 @@ def editar_rol(request, id):
     return render(request, 'editar_rol.html', {
         'rol': rol,
         'funciones': funciones,
-        'modulos': modulos
+        'modulos': modulos,
     })
+
 #Usuarios
 @login_required(login_url='login')
 def usuarios_view(request):

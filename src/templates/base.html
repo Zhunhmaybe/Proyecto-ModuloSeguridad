@@ -37,22 +37,30 @@
                     <i class="fa-solid fa-chart-pie"></i>
                     <span>Dashboard</span>
                 </a>
+                {% if 'GESTIONAR_USUARIOS' in user_active_functions %}
                 <a href="{% url 'usuarios' %}" class="nav-link {% if request.resolver_match.url_name == 'usuarios' or request.resolver_match.url_name == 'editar_usuario' %}active{% endif %}" id="nav-usuarios">
                     <i class="fa-solid fa-users"></i>
                     <span>Usuarios</span>
                 </a>
+                {% endif %}
+                {% if 'GESTIONAR_ROLES' in user_active_functions %}
                 <a href="{% url 'roles' %}" class="nav-link {% if request.resolver_match.url_name == 'roles' or request.resolver_match.url_name == 'editar_rol' %}active{% endif %}" id="nav-roles">
                     <i class="fa-solid fa-user-shield"></i>
                     <span>Roles</span>
                 </a>
+                {% endif %}
+                {% if 'GESTION_FUNCIONES' in user_active_functions %}
                 <a href="{% url 'funciones' %}" class="nav-link {% if request.resolver_match.url_name == 'funciones' or request.resolver_match.url_name == 'editar_funcion' %}active{% endif %}" id="nav-funciones">
                     <i class="fa-solid fa-bolt"></i>
                     <span>Funciones</span>
                 </a>
+                {% endif %}
+                {% if 'GESTIONAR_MODULOS' in user_active_functions %}
                 <a href="{% url 'modulos' %}" class="nav-link {% if request.resolver_match.url_name == 'modulos' %}active{% endif %}" id="nav-modulos">
                     <i class="fa-solid fa-cubes"></i>
                     <span>Módulos</span>
                 </a>
+                {% endif %}
             </div>
 
             <div class="navbar-right">

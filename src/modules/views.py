@@ -4,7 +4,7 @@ from users.models import Funcion, Rol
 
 
 def modulos_view(request):
-    modulos = Modulo.objects.all().order_by('-id_modulo')
+    modulos = Modulo.objects.all().prefetch_related('funciones').order_by('-id_modulo')
     roles = Rol.objects.filter(estado_rol=True)
     todas_funciones = Funcion.objects.filter(estado_funcion=True)
 
@@ -22,9 +22,6 @@ def modulos_view(request):
                 ctx['error'] = 'El nombre del módulo es obligatorio.'
                 return render(request, 'modulos.html', ctx)
 
-            if not funciones_ids:
-                ctx['error'] = 'Debes seleccionar al menos una función para el módulo.'
-                return render(request, 'modulos.html', ctx)
 
             if Modulo.objects.filter(nombre_modulo__iexact=nombre).exists():
                 ctx['error'] = 'Ya existe un módulo con ese nombre.'
@@ -62,42 +59,45 @@ def editar_modulo(request, id):
     funciones_actuales_ids = set(modulo.funciones.values_list('id_funcion', flat=True))
 
     if request.method == "POST":
-        nombre = request.POST.get('nombre_modulo', '').strip()
-        descripcion = request.POST.get('descripcion_modulo', '').strip()
-        estado = request.POST.get('estado_modulo') == 'true'
-        funciones_ids = request.POST.getlist('funciones')
+        action = request.POST.get('action', 'edit_module')
 
-        ctx = {'modulo': modulo, 'roles': roles, 'funciones_actuales_ids': funciones_actuales_ids}
+        if action == 'assign_functions':
+            funciones_ids = request.POST.getlist('funciones')
+            FuncionModulo.objects.filter(modulo=modulo).delete()
+            for f_id in funciones_ids:
+                FuncionModulo.objects.create(modulo=modulo, funcion_id=f_id)
+            return redirect('editar_modulo', id=modulo.id_modulo)
 
-        if not nombre:
-            ctx['error'] = 'El nombre del módulo es obligatorio.'
-            return render(request, 'editar_modulo.html', ctx)
+        elif action == 'edit_module':
+            nombre = request.POST.get('nombre_modulo', '').strip()
+            descripcion = request.POST.get('descripcion_modulo', '').strip()
+            estado = request.POST.get('estado_modulo') == 'true'
 
-        if not funciones_ids:
-            ctx['error'] = 'Debes seleccionar al menos una función para el módulo.'
-            return render(request, 'editar_modulo.html', ctx)
+            ctx = {'modulo': modulo, 'roles': roles, 'funciones_actuales_ids': funciones_actuales_ids}
 
-        if Modulo.objects.filter(nombre_modulo__iexact=nombre).exclude(id_modulo=id).exists():
-            ctx['error'] = 'Ya existe un módulo con ese nombre.'
-            return render(request, 'editar_modulo.html', ctx)
+            if not nombre:
+                ctx['error'] = 'El nombre del módulo es obligatorio.'
+                return render(request, 'editar_modulo.html', ctx)
 
-        modulo.nombre_modulo = nombre
-        modulo.descripcion_modulo = descripcion
-        modulo.estado_modulo = estado
-        modulo.save()
+            if Modulo.objects.filter(nombre_modulo__iexact=nombre).exclude(id_modulo=id).exists():
+                ctx['error'] = 'Ya existe un módulo con ese nombre.'
+                return render(request, 'editar_modulo.html', ctx)
 
-        # Actualizar funciones asociadas
-        FuncionModulo.objects.filter(modulo=modulo).delete()
-        for f_id in funciones_ids:
-            FuncionModulo.objects.create(modulo=modulo, funcion_id=f_id)
+            modulo.nombre_modulo = nombre
+            modulo.descripcion_modulo = descripcion
+            modulo.estado_modulo = estado
+            modulo.save()
 
-        return redirect('modulos')
+            return redirect('modulos')
 
     # Recalcular con IDs actuales para el template
     funciones_actuales_ids = set(modulo.funciones.values_list('id_funcion', flat=True))
+    # Obtener todas las funciones activas para el modal
+    todas_funciones = Funcion.objects.filter(estado_funcion=True)
     return render(request, 'editar_modulo.html', {
         'modulo': modulo,
         'roles': roles,
         'funciones_actuales_ids': funciones_actuales_ids,
+        'todas_funciones': todas_funciones,
     })
 
