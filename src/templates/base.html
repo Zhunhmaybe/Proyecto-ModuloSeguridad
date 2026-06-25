@@ -21,6 +21,7 @@
     <div class="blob blob-3"></div>
 
     {% if user.is_authenticated %}
+    {% block navbar %}
     <!-- ========== NAVBAR PERSISTENTE ========== -->
     <nav class="navbar" id="mainNavbar">
         <div class="navbar-inner">
@@ -53,6 +54,10 @@
                     <i class="fa-solid fa-cubes"></i>
                     <span>Módulos</span>
                 </a>
+                <a href="https://proyecto-moduloseguridad.onrender.com/graphql" target="_blank" class="nav-link" id="nav-tutorial">
+                    <i class="fa-solid fa-code"></i>
+                    <span>Tutorial API</span>
+                </a>
             </div>
 
             <div class="navbar-right">
@@ -79,7 +84,9 @@
             </div>
         </div>
     </nav>
+    {% endblock %}
 
+    {% block breadcrumbs_bar %}
     <!-- ========== BREADCRUMBS ========== -->
     <div class="breadcrumb-bar">
         <div class="breadcrumb-inner">
@@ -89,7 +96,7 @@
             {% block breadcrumb %}{% endblock %}
         </div>
     </div>
-
+    {% endblock %}
     {% endif %}
 
     <!-- ========== CONTENIDO PRINCIPAL ========== -->
