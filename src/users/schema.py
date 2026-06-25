@@ -1,14 +1,21 @@
+# pyrefly: ignore [missing-import]
 import strawberry
+from dataclasses import dataclass
 from typing import List, Optional
 from users.models import Usuario, Rol
 from audit.models import Auditoria
 from modules.models import Modulo, Funcion
 import os
+# pyrefly: ignore [missing-import]
 import msal
+# pyrefly: ignore [missing-import]
 import jwt
 import datetime
+# pyrefly: ignore [missing-import]
 from django.core.mail import send_mail
+# pyrefly: ignore [missing-import]
 from django.conf import settings
+# pyrefly: ignore [missing-import]
 from django.urls import reverse
 
 # --- JWT Config ---
@@ -58,12 +65,14 @@ def validate_microsoft_token(username, password):
         return False, result.get("error_description", "Error de autenticación con Microsoft")
 
 @strawberry.type
+@dataclass
 class FuncionType:
     id_funcion: int
     nombre_funcion: str
     estado_funcion: bool
 
 @strawberry.type
+@dataclass
 class RolType:
     id_rol: int
     nombre_rol: str
@@ -71,6 +80,7 @@ class RolType:
     funciones: List[FuncionType]
 
 @strawberry.type
+@dataclass
 class UsuarioType:
     id: int
     user_name: str
@@ -105,6 +115,7 @@ def map_user_to_type(u: Usuario) -> UsuarioType:
     )
 
 @strawberry.type
+@dataclass
 class LoginResponse:
     success: bool
     token: Optional[str]
@@ -113,19 +124,35 @@ class LoginResponse:
     
 #Registrar Usuario
 @strawberry.type
+@dataclass
 class RegisterResponse:
     success: bool
     message: str
 #Recuperar Contraseña
 @strawberry.type
+@dataclass
 class ForgotPasswordResponse:
     success: bool
     message: str
 
 @strawberry.type
+@dataclass
 class ResetPasswordResponse:
     success: bool
     message: str
+
+@strawberry.type
+@dataclass
+class AuditResponse:
+    success: bool
+    message: str
+
+@strawberry.type
+@dataclass
+class ListadoFuncionesResponse:
+    success: bool
+    message: Optional[str]
+    funciones: Optional[List[str]]
 
 @strawberry.type
 class Query:
@@ -211,7 +238,9 @@ class Mutation:
         password:str,
         confirm_password:str
     )-> RegisterResponse:
+        # pyrefly: ignore [missing-import]
         import re
+        # pyrefly: ignore [missing-import]
         from django.db import IntegrityError
 
         if Usuario.objects.filter(user_name=username).exists():
@@ -245,7 +274,10 @@ class Mutation:
             )
             
             from users.models import EmailVerificationToken
+        
+            # pyrefly: ignore [missing-import]
             from django.core.mail import send_mail
+            # pyrefly: ignore [missing-import]
             from django.conf import settings
             
             token = EmailVerificationToken.objects.create(usuario=user)
@@ -325,4 +357,83 @@ class Mutation:
         except PasswordResetToken.DoesNotExist:
             return ResetPasswordResponse(success=False, message="Token inválido o ya utilizado")
 
+    @strawberry.mutation
+    def create_audit_log(
+        self,
+        token: str,
+        id_funcion: int,
+        accion: str,
+        descripcion: str,
+        observacion: str,
+        ip_usuario: str
+    ) -> AuditResponse:
+        try:
+            # Validar token
+            try:
+                payload = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
+                user_id = payload.get("user_id")
+                user = Usuario.objects.get(id=user_id)
+                if not user.estado:
+                    return AuditResponse(success=False, message="Usuario inactivo o token de usuario no existente")
+            except (jwt.PyJWTError, Usuario.DoesNotExist):
+                return AuditResponse(success=False, message="Token de acceso con firma invalida o usuario no existente")
 
+            # Validar funcion
+            try:
+                funcion = Funcion.objects.get(id_funcion=id_funcion)
+            except Funcion.DoesNotExist:
+                return AuditResponse(success=False, message="id de funcion no existente")
+
+            Auditoria.objects.create(
+                username=user,
+                id_funciones=funcion,
+                accion=accion,
+                descripcion=descripcion,
+                observacion=f"IP: {ip_usuario} - {observacion}",
+                estado_auditoria=True
+            )
+            return AuditResponse(success=True, message="La acción ha sido procesada con éxito")
+        except Exception as e:
+            return AuditResponse(success=False, message=str(e))
+
+    @strawberry.mutation
+    def user_functions(self, token: str, modulo_id: int) -> ListadoFuncionesResponse:
+        user = None
+        try:
+            payload = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
+            user_id = payload.get("user_id")
+            user = Usuario.objects.get(id=user_id)
+            if not user.estado:
+                raise Exception("Usuario inactivo")
+        except Exception as e:
+            Auditoria.objects.create(
+                accion="CONSULTA FUNCIONES FALLIDA",
+                descripcion="Token invalido",
+                estado_auditoria=False
+            )
+            return ListadoFuncionesResponse(success=False, message="Token invalido", funciones=None)
+
+        try:
+            modulo = Modulo.objects.get(id_modulo=modulo_id)
+            if not modulo.estado_modulo:
+                raise Exception("Modulo inactivo")
+        except Exception as e:
+            Auditoria.objects.create(
+                username=user,
+                accion="CONSULTA FUNCIONES FALLIDA",
+                descripcion="Modulo invalido",
+                estado_auditoria=False
+            )
+            return ListadoFuncionesResponse(success=False, message="Modulo invalido", funciones=None)
+
+        funciones_usuario = Funcion.objects.filter(
+            roles__usuarios=user,
+            estado_funcion=True,
+            modulos=modulo
+        ).values_list('nombre_funcion', flat=True).distinct()
+
+        return ListadoFuncionesResponse(
+            success=True,
+            message="Exito",
+            funciones=list(funciones_usuario)
+        )
