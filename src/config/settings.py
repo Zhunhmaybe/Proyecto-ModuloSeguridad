@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+# pyrefly: ignore [missing-import]
 import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.

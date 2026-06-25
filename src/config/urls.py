@@ -1,9 +1,13 @@
+# pyrefly: ignore [missing-import]
 from django.urls import path
+# pyrefly: ignore [missing-import]
 from strawberry.django.views import GraphQLView
 from .schema import schema
+# pyrefly: ignore [missing-import]
 from django.views.decorators.csrf import csrf_exempt
 
 from users import views as user_views
+from users import reports as user_reports
 from modules import views as module_views
 
 
@@ -86,6 +90,10 @@ path(
     name='editar_funcion'
 ),
 
+# Reportes
+path('reportes/roles/', user_reports.report_roles, name='report_roles'),
+path('reportes/usuarios/', user_reports.report_usuarios, name='report_usuarios'),
+path('reportes/modulos/', user_reports.report_modulos, name='report_modulos'),
+path('reportes/auditoria/', user_reports.report_auditoria, name='report_auditoria'),
 
 ]
-
