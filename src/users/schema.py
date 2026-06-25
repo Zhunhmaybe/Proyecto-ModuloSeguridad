@@ -31,7 +31,7 @@ def generate_jwt(user):
         'email': user.email,
         'roles': roles,
         'permissions': funciones,
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=2) # Token válido por 2 horas
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30) # Token válido por 30 minutos
     }
     return jwt.encode(payload, JWT_SECRET, algorithm='HS256')
 

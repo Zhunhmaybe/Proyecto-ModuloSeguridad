@@ -1,14 +1,18 @@
 {% extends 'base.html' %}
 {% block title %}Panel de Usuario - Seguridad Centralizada{% endblock %}
 
-{% block breadcrumb %}
-<span class="breadcrumb-separator"><i class="fa-solid fa-chevron-right"></i></span>
-<span class="breadcrumb-current">Mi Panel</span>
-{% endblock %}
+{% block navbar %}{% endblock %}
+{% block breadcrumbs_bar %}{% endblock %}
 
 {% block content %}
 
-<div style="max-width:650px">
+<div style="max-width:650px; margin: 40px auto; padding: 20px; display: flex; flex-direction: column; align-items: stretch; justify-content: center; min-height: 80vh; position: relative;">
+    
+    <div style="text-align: right; margin-bottom: 20px;">
+        <a href="{% url 'logout' %}" class="btn btn-secondary" style="padding: 8px 16px; border-radius: 8px; color: var(--danger); border-color: rgba(239, 68, 68, 0.3); text-decoration: none;">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar Sesión
+        </a>
+    </div>
     <!-- Details Card -->
     <div class="card" style="margin-bottom:24px">
         <h2 style="font-size:1.1rem;font-weight:600;margin-bottom:20px;display:flex;align-items:center;gap:10px;color:var(--text-primary)">
@@ -56,6 +60,24 @@
                 <span id="btnText">Copiar Token</span>
             </button>
         </div>
+    </div>
+
+    <!-- API Tutorial Card -->
+    <div class="card" style="margin-bottom:24px">
+        <h2 style="font-size:1.1rem;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:10px;color:var(--text-primary)">
+            <i class="fa-solid fa-code"></i> ¿Cómo implementar en otros módulos?
+        </h2>
+        <p style="font-size:.85rem;color:var(--text-secondary);margin-bottom:12px">
+            Para integrar el Módulo de Seguridad en tu propio módulo (Compras, Ventas, etc.), debes consumir nuestra API GraphQL e incluir tu token JWT para autenticarte y verificar tus roles.
+        </p>
+        <div style="background:var(--input-bg);border:1px solid var(--input-border);padding:16px;border-radius:12px;font-family:ui-monospace,monospace;font-size:.8rem;color:var(--primary);margin-bottom:12px;">
+            <strong>Endpoint:</strong> https://proyecto-moduloseguridad.onrender.com/graphql<br><br>
+            <strong>Header Requerido:</strong><br>
+            Authorization: Bearer &lt;Tu_Token_JWT&gt;
+        </div>
+        <a href="https://proyecto-moduloseguridad.onrender.com/graphql" target="_blank" class="btn btn-primary" style="display:inline-block;padding:8px 16px;font-size:.82rem;text-decoration:none;">
+            <i class="fa-solid fa-flask"></i> Abrir Tutorial (GraphiQL)
+        </a>
     </div>
 
     <!-- Alert -->

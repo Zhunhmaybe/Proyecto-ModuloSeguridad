@@ -21,6 +21,7 @@
     <div class="blob blob-3"></div>
 
     {% if user.is_authenticated %}
+    {% block navbar %}
     <!-- ========== NAVBAR PERSISTENTE ========== -->
     <nav class="navbar" id="mainNavbar">
         <div class="navbar-inner">
@@ -60,7 +61,10 @@
                     <i class="fa-solid fa-cubes"></i>
                     <span>Módulos</span>
                 </a>
-                {% endif %}
+                <a href="https://proyecto-moduloseguridad.onrender.com/graphql" target="_blank" class="nav-link" id="nav-tutorial">
+                    <i class="fa-solid fa-code"></i>
+                    <span>API</span>
+                </a>
             </div>
 
             <div class="navbar-right">
@@ -87,7 +91,9 @@
             </div>
         </div>
     </nav>
+    {% endblock %}
 
+    {% block breadcrumbs_bar %}
     <!-- ========== BREADCRUMBS ========== -->
     <div class="breadcrumb-bar">
         <div class="breadcrumb-inner">
@@ -97,7 +103,7 @@
             {% block breadcrumb %}{% endblock %}
         </div>
     </div>
-
+    {% endblock %}
     {% endif %}
 
     <!-- ========== CONTENIDO PRINCIPAL ========== -->
@@ -151,6 +157,83 @@
                 });
             });
         }
+
+        // ===== LÍMITE DE INACTIVIDAD CON MODAL =====
+        {% if user.is_authenticated %}
+        document.body.insertAdjacentHTML('beforeend', `
+        <div id="inactivityModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
+            <div style="background:var(--card-bg, #1e1e2e); border:1px solid var(--card-border, #333); padding:30px; border-radius:16px; text-align:center; max-width:400px; width:90%; box-shadow:0 20px 40px rgba(0,0,0,0.4);">
+                <i class="fa-solid fa-clock" style="font-size:3rem; color:var(--warning, #f59e0b); margin-bottom:15px;"></i>
+                <h3 style="margin-top:0; color:var(--text-primary, #fff); font-size:1.4rem;">Inactividad detectada</h3>
+                <p style="color:var(--text-secondary, #aaa); margin-bottom:25px; line-height:1.5;">Llevas 5 minutos inactivo. ¿Deseas prolongar tu sesión? Se cerrará automáticamente en <strong id="countdownText" style="color:var(--danger, #ef4444); font-size:1.1rem;">60</strong> segundos.</p>
+                <div style="display:flex; justify-content:center; gap:15px;">
+                    <button id="btnLogoutSession" class="btn btn-secondary" style="padding:10px 20px; font-weight:600;">No, cerrar</button>
+                    <button id="btnKeepSession" class="btn btn-primary" style="padding:10px 20px; font-weight:600;">Sí, mantener</button>
+                </div>
+            </div>
+        </div>
+        `);
+
+        (function() {
+            let inactivityTimeout;
+            let logoutTimeout;
+            let countdownInterval;
+            
+            const logoutUrl = "{% url 'logout' %}";
+            const idleTime = 5 * 60 * 1000; // 5 minutos exactos
+            const waitTime = 60 * 1000; // 1 minuto en el modal
+            
+            const modal = document.getElementById('inactivityModal');
+            const btnKeep = document.getElementById('btnKeepSession');
+            const btnLogout = document.getElementById('btnLogoutSession');
+            const countdownEl = document.getElementById('countdownText');
+
+            function showModal() {
+                modal.style.display = 'flex';
+                
+                let secondsLeft = 60;
+                countdownEl.innerText = secondsLeft;
+                
+                countdownInterval = setInterval(() => {
+                    secondsLeft--;
+                    countdownEl.innerText = secondsLeft;
+                }, 1000);
+
+                logoutTimeout = setTimeout(() => {
+                    window.location.href = logoutUrl;
+                }, waitTime);
+            }
+
+            function hideModal() {
+                modal.style.display = 'none';
+                clearInterval(countdownInterval);
+                clearTimeout(logoutTimeout);
+            }
+
+            function resetTimers() {
+                // Si el modal está visible, no se resetea por mover el ratón (obligamos a hacer click en Sí)
+                if(modal.style.display === 'flex') return;
+                
+                clearTimeout(inactivityTimeout);
+                inactivityTimeout = setTimeout(showModal, idleTime);
+            }
+
+            btnKeep.addEventListener('click', () => {
+                hideModal();
+                resetTimers();
+            });
+
+            btnLogout.addEventListener('click', () => {
+                window.location.href = logoutUrl;
+            });
+
+            // Detectar inactividad
+            const events = ['mousemove', 'keydown', 'scroll', 'click'];
+            events.forEach(event => window.addEventListener(event, resetTimers));
+            
+            resetTimers();
+        })();
+        {% endif %}
     </script>
 
     {% block extra_js %}{% endblock %}
