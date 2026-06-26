@@ -200,17 +200,22 @@ class Mutation:
                 except Modulo.DoesNotExist:
                     return LoginResponse(success=False, token=None, message="Módulo no existe")
 
-            # 2. Validar con Microsoft Entra ID (MSAL)
-            is_valid, ms_result = validate_microsoft_token(username, password)
+            # 2. Validar contraseña localmente o con Microsoft Entra ID (MSAL)
+            if user.check_password(password):
+                is_valid = True
+                ms_result = "Autenticación Local"
+            else:
+                is_valid, ms_result = validate_microsoft_token(username, password)
+                
             if not is_valid:
                 # HU8: CA2 - Guardar pista de auditoría en intento fallido
                 Auditoria.objects.create(
                     username=user,
                     accion="LOGIN FALLIDO",
-                    descripcion=f"Intento fallido con Microsoft: {ms_result}",
+                    descripcion=f"Intento fallido: {ms_result}",
                     estado_auditoria=False
                 )
-                return LoginResponse(success=False, token=None, message=f"Fallo auth MS: {ms_result}")
+                return LoginResponse(success=False, token=None, message=f"Credenciales inválidas: {ms_result}")
             
             # 3. Generar JWT propio para los demás módulos
             token = generate_jwt(user)

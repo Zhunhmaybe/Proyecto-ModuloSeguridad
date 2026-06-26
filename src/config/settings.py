@@ -151,3 +151,7 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'ptpbbalak@gmail.com')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', 'yyyssvjzsuyjyoty')
+
+# Configuración de Sesiones
+# Forzar que la sesión expire cuando el usuario cierra el navegador/pestaña
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
