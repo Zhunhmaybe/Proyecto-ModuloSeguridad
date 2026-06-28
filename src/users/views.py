@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
-from users.models import Usuario, Rol, PasswordResetToken
+from users.models import Usuario, Rol, PasswordResetToken, ControlIP
 from audit.models import Auditoria
 from django.shortcuts import get_object_or_404
 from .models import Rol, Funcion, FuncionRol
@@ -12,8 +12,160 @@ from django.conf import settings
 from django.core.paginator import Paginator
 from django.db.models import Q
 from .schema import validate_microsoft_token, generate_jwt
+import json
+from datetime import datetime, timedelta
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+import os
+import jwt as pyjwt
 
-@login_required(login_url='login')
+# ======================================================
+# API Keys válidas por módulo externo (El Guardia)
+# En producción móvelas a variables de entorno o la BD.
+# ======================================================
+API_KEYS_VALIDAS = {
+    "dev_key_cxc_111":         "CXC",
+    "dev_key_facturacion_222": "FACTURACION",
+    "dev_key_inventario_333":  "INVENTARIO",
+    "dev_key_compras_444":     "COMPRAS",
+    "dev_key_seguridad_555":   "SEGURIDAD",
+}
+
+JWT_SECRET = os.getenv('SECRET_KEY', 'secret')
+
+
+@csrf_exempt
+@require_POST
+def api_auth_login(request):
+    """API REST de Autenticación (El Guardia).
+
+    Recibe JSON: {api_key, usuario, clave, ip}
+    Aplica lógica de bloqueo por fuerza bruta y,
+    si todo está bien, devuelve un JWT.
+    """
+    # -- 0. Parsear body JSON ------------------------------------------------
+    try:
+        body = json.loads(request.body)
+    except (json.JSONDecodeError, ValueError):
+        return _json_response(400, False, "El cuerpo de la petición no es JSON válido")
+
+    api_key = body.get('api_key')
+    usuario = body.get('usuario')
+    clave = body.get('clave')
+    ip_usuario = body.get('ip')
+
+    if not all([api_key, usuario, clave, ip_usuario]):
+        return _json_response(400, False, "Faltan parámetros (api_key, usuario, clave, ip)")
+
+    # -- 1. Validar API Key del módulo ----------------------------------------
+    modulo = API_KEYS_VALIDAS.get(api_key)
+    if not modulo:
+        return _json_response(401, False, "API Key del módulo inválida o no autorizada")
+
+    # -- 2. Control de Fuerza Bruta (El Guardia) -------------------------------
+    try:
+        registro = ControlIP.objects.get(ip_usuario=ip_usuario)
+        ahora = datetime.now()
+        # Aseguramos que ultimo_intento sea naive para la comparación
+        ultimo = registro.ultimo_intento
+        if hasattr(ultimo, 'tzinfo') and ultimo.tzinfo is not None:
+            import pytz
+            ultimo = ultimo.astimezone(pytz.utc).replace(tzinfo=None)
+
+        tiempo_pasado = ahora - ultimo
+
+        if registro.intentos_fallidos >= 5:
+            if tiempo_pasado < timedelta(minutes=3):
+                segundos_restantes = int((timedelta(minutes=3) - tiempo_pasado).total_seconds())
+                minutos = segundos_restantes // 60
+                segundos = segundos_restantes % 60
+                return _json_response(
+                    429, False,
+                    f"Demasiados intentos. Intente en {minutos}m {segundos}s."
+                )
+            else:
+                # Cumplió el castigo: reiniciar contador
+                registro.intentos_fallidos = 0
+                registro.save()
+    except ControlIP.DoesNotExist:
+        pass  # Primera vez que se ve esta IP, todo bien
+
+    # -- 3. Validar credenciales del usuario ----------------------------------
+    try:
+        user = Usuario.objects.get(user_name=usuario)
+    except Usuario.DoesNotExist:
+        # No revelamos si el usuario existe o no (seguridad)
+        _registrar_intento_fallido(ip_usuario)
+        return _json_response(401, False, "Usuario o contraseña incorrectos")
+
+    if not user.estado:
+        return _json_response(401, False, "Usuario inactivo")
+
+    es_valido = user.check_password(clave)
+
+    if not es_valido:
+        _registrar_intento_fallido(ip_usuario)
+        # Pista de auditoría: login fallido
+        Auditoria.objects.create(
+            username=user,
+            accion="LOGIN FALLIDO",
+            descripcion=f"Intento fallido desde {ip_usuario}",
+            estado_auditoria=False,
+            modulo=modulo,
+        )
+        return _json_response(401, False, "Usuario o contraseña incorrectos")
+
+    # -- 4. Login exitoso: limpiar historial de errores -----------------------
+    ControlIP.objects.filter(ip_usuario=ip_usuario).delete()
+
+    # -- 5. Pista de auditoría: login exitoso ---------------------------------
+    Auditoria.objects.create(
+        username=user,
+        accion="LOGIN EXITOSO",
+        descripcion=f"Autenticación exitosa desde {ip_usuario}",
+        estado_auditoria=True,
+        modulo=modulo,
+    )
+
+    # -- 6. Generar JWT maestro -----------------------------------------------
+    caducidad = datetime.utcnow() + timedelta(hours=8)
+    payload = {
+        "user_id": user.id,
+        "user_name": user.user_name,
+        "email": user.email,
+        "modulo_origen": modulo,
+        "exp": caducidad,
+    }
+    token = pyjwt.encode(payload, JWT_SECRET, algorithm="HS256")
+
+    return _json_response(200, True, "Autenticación exitosa", token=token)
+
+
+# -----------------------------------------------------------------------
+# Helpers privados
+# -----------------------------------------------------------------------
+
+def _registrar_intento_fallido(ip_usuario: str):
+    """Incrementa el contador de intentos fallidos para una IP."""
+    obj, created = ControlIP.objects.get_or_create(
+        ip_usuario=ip_usuario,
+        defaults={'intentos_fallidos': 0}
+    )
+    obj.intentos_fallidos += 1
+    obj.ultimo_intento = datetime.now()
+    obj.save()
+
+
+def _json_response(status_code: int, success: bool, message: str, token=None) -> JsonResponse:
+    """Helper para devolver respuestas JSON uniformes."""
+    body = {'success': success, 'message': message}
+    if token:
+        body['token'] = token
+    return JsonResponse(body, status=status_code)
+
+
+
 def roles_view(request):
     roles = Rol.objects.all()
     funciones = Funcion.objects.filter(estado_funcion=True)
