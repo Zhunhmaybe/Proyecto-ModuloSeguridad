@@ -73,6 +73,13 @@ class Rol(models.Model):
         default=True
     )
 
+    modulo = models.ForeignKey(
+        'modules.Modulo',
+        on_delete=models.CASCADE,
+        related_name='roles',
+        null=True,
+        blank=True
+    )
 
     funciones = models.ManyToManyField(
         'Funcion',

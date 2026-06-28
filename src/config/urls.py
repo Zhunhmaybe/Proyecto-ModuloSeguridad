@@ -71,6 +71,16 @@ urlpatterns = [
     name='usuarios'
 ),
 path(
+    'gestion/',
+    user_views.gestion_view,
+    name='gestion'
+),
+path(
+    'usuarios/crear/',
+    user_views.crear_usuario,
+    name='crear_usuario'
+),
+path(
     'usuarios/editar/<int:id>/',
     user_views.editar_usuario,
     name='editar_usuario'

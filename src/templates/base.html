@@ -15,7 +15,6 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- Ambient Background Blobs -->
     <div class="blob blob-1"></div>
     <div class="blob blob-2"></div>
     <div class="blob blob-3"></div>
@@ -38,30 +37,39 @@
                     <i class="fa-solid fa-chart-pie"></i>
                     <span>Dashboard</span>
                 </a>
-                {% if 'GESTIONAR_USUARIOS' in user_active_functions %}
+                {% if 'SEG_GESTION_USUARIOS' in user_active_functions %}
                 <a href="{% url 'usuarios' %}" class="nav-link {% if request.resolver_match.url_name == 'usuarios' or request.resolver_match.url_name == 'editar_usuario' %}active{% endif %}" id="nav-usuarios">
                     <i class="fa-solid fa-users"></i>
                     <span>Usuarios</span>
                 </a>
                 {% endif %}
-                {% if 'GESTIONAR_ROLES' in user_active_functions %}
-                <a href="{% url 'roles' %}" class="nav-link {% if request.resolver_match.url_name == 'roles' or request.resolver_match.url_name == 'editar_rol' %}active{% endif %}" id="nav-roles">
-                    <i class="fa-solid fa-user-shield"></i>
-                    <span>Roles</span>
+
+                <a href="{% url 'gestion' %}" class="nav-link {% if request.resolver_match.url_name == 'gestion' %}active{% endif %}" id="nav-gestion">
+                    <i class="fa-solid fa-layer-group"></i>
+                    <span>Gestión</span>
                 </a>
-                {% endif %}
-                {% if 'GESTION_FUNCIONES' in user_active_functions %}
-                <a href="{% url 'funciones' %}" class="nav-link {% if request.resolver_match.url_name == 'funciones' or request.resolver_match.url_name == 'editar_funcion' %}active{% endif %}" id="nav-funciones">
-                    <i class="fa-solid fa-bolt"></i>
-                    <span>Funciones</span>
-                </a>
-                {% endif %}
-                {% if 'GESTIONAR_MODULOS' in user_active_functions %}
+
+                {% if 'SEG_GESTION_MODULOS' in user_active_functions %}
                 <a href="{% url 'modulos' %}" class="nav-link {% if request.resolver_match.url_name == 'modulos' %}active{% endif %}" id="nav-modulos">
                     <i class="fa-solid fa-cubes"></i>
                     <span>Módulos</span>
                 </a>
                 {% endif %}
+
+                {% if 'SEG_GESTION_ROLES' in user_active_functions %}
+                <a href="{% url 'roles' %}" class="nav-link {% if request.resolver_match.url_name == 'roles' or request.resolver_match.url_name == 'editar_rol' %}active{% endif %}" id="nav-roles">
+                    <i class="fa-solid fa-user-shield"></i>
+                    <span>Roles</span>
+                </a>
+                {% endif %}
+
+                {% if 'SEG_GESTION_FUNCIONES' in user_active_functions %}
+                <a href="{% url 'funciones' %}" class="nav-link {% if request.resolver_match.url_name == 'funciones' or request.resolver_match.url_name == 'editar_funcion' %}active{% endif %}" id="nav-funciones">
+                    <i class="fa-solid fa-bolt"></i>
+                    <span>Funciones</span>
+                </a>
+                {% endif %}
+
                 <a href="https://proyecto-moduloseguridad.onrender.com/graphql" target="_blank" class="nav-link" id="nav-tutorial">
                     <i class="fa-solid fa-code"></i>
                     <span>API</span>
@@ -230,11 +238,177 @@
 
             // Detectar inactividad
             const events = ['mousemove', 'keydown', 'scroll', 'click'];
-            events.forEach(event => window.addEventListener(event, resetTimers));
+                events.forEach(event => window.addEventListener(event, resetTimers));
             
             resetTimers();
         })();
         {% endif %}
+    </script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const tables = document.querySelectorAll("table.data-table");
+        
+        tables.forEach(table => {
+            const tbody = table.querySelector("tbody");
+            if (!tbody) return;
+            
+            let allRows = Array.from(tbody.querySelectorAll("tr"));
+            let filteredRows = allRows;
+            
+            const rowsPerPage = 10;
+            let currentPage = 1;
+            let totalPages = Math.ceil(filteredRows.length / rowsPerPage) || 1;
+            
+            const paginationContainer = document.createElement("div");
+            paginationContainer.className = "pagination-controls";
+            paginationContainer.style.display = "flex";
+            paginationContainer.style.justifyContent = "center";
+            paginationContainer.style.alignItems = "center";
+            paginationContainer.style.marginTop = "25px";
+            paginationContainer.style.marginBottom = "10px";
+            
+            table.parentNode.insertBefore(paginationContainer, table.nextSibling);
+            
+            function generatePaginationButtons(current, total) {
+                const container = document.createElement("div");
+                container.style.display = "flex";
+                container.style.gap = "8px";
+                container.style.alignItems = "center";
+                container.style.background = "var(--input-bg)";
+                container.style.padding = "8px 16px";
+                container.style.borderRadius = "8px";
+                container.style.border = "1px solid var(--border)";
+                
+                function createBtn(text, pageNum, isActive, isDisabled) {
+                    const btn = document.createElement("button");
+                    btn.innerHTML = text;
+                    if (isActive) {
+                        btn.style.background = "var(--primary)";
+                        btn.style.color = "white";
+                        btn.style.border = "none";
+                    } else {
+                        btn.style.background = "transparent";
+                        btn.style.color = "var(--text-primary)";
+                        btn.style.border = "none";
+                    }
+                    btn.style.padding = "6px 12px";
+                    btn.style.fontSize = "0.9rem";
+                    btn.style.borderRadius = "6px";
+                    btn.style.cursor = isDisabled ? "not-allowed" : "pointer";
+                    btn.disabled = isDisabled;
+                    if (isDisabled) btn.style.opacity = "0.4";
+                    
+                    if (!isDisabled) {
+                        btn.addEventListener("mouseover", () => { if(!isActive) btn.style.background = "rgba(255,255,255,0.05)" });
+                        btn.addEventListener("mouseout", () => { if(!isActive) btn.style.background = "transparent" });
+                    }
+                    
+                    if (!isDisabled && pageNum !== null) {
+                        btn.addEventListener("click", (e) => {
+                            e.preventDefault();
+                            showPage(pageNum);
+                        });
+                    }
+                    return btn;
+                }
+                
+                // Prev
+                container.appendChild(createBtn("<i class='fa-solid fa-chevron-left'></i>", current - 1, false, current === 1));
+                
+                let pages = [];
+                if (total <= 7) {
+                    for(let i=1; i<=total; i++) pages.push(i);
+                } else {
+                    if (current <= 4) {
+                        pages = [1, 2, 3, 4, 5, '...', total];
+                    } else if (current >= total - 3) {
+                        pages = [1, '...', total-4, total-3, total-2, total-1, total];
+                    } else {
+                        pages = [1, '...', current-1, current, current+1, '...', total];
+                    }
+                }
+                
+                pages.forEach(p => {
+                    if (p === '...') {
+                        const span = document.createElement("span");
+                        span.innerHTML = "...";
+                        span.style.color = "var(--text-muted)";
+                        span.style.margin = "0 4px";
+                        container.appendChild(span);
+                    } else {
+                        container.appendChild(createBtn(p, p, p === current, false));
+                    }
+                });
+                
+                // Next
+                container.appendChild(createBtn("<i class='fa-solid fa-chevron-right'></i>", current + 1, false, current === total));
+                
+                return container;
+            }
+            
+            function showPage(page) {
+                currentPage = page;
+                const start = (page - 1) * rowsPerPage;
+                const end = start + rowsPerPage;
+                
+                allRows.forEach(row => row.style.display = "none");
+                
+                const visibleSlice = filteredRows.slice(start, end);
+                visibleSlice.forEach(row => row.style.display = "");
+                
+                paginationContainer.innerHTML = "";
+                if (filteredRows.length > 0) {
+                    if (totalPages > 1) {
+                        paginationContainer.appendChild(generatePaginationButtons(currentPage, totalPages));
+                    }
+                } else {
+                    paginationContainer.innerHTML = "<span style='color:var(--text-muted);font-size:0.9rem;'>No hay registros para mostrar</span>";
+                }
+            }
+            
+            // Integrar con los buscadores existentes y selectores
+            const card = table.closest('.card') || table.closest('div');
+            if (card) {
+                const searchInput = card.querySelector('input[type="text"][id^="search"]');
+                const filterSelects = card.querySelectorAll('select[id^="filter"]');
+                
+                function updateFilters() {
+                    const q = searchInput ? searchInput.value.toLowerCase().trim() : '';
+                    const filters = Array.from(filterSelects).map(s => s.value.toLowerCase().trim());
+                    
+                    filteredRows = allRows.filter(row => {
+                        const text = row.textContent.toLowerCase();
+                        if (q && !text.includes(q)) return false;
+                        for (let f of filters) {
+                            if (f && !text.includes(f)) return false;
+                        }
+                        return true;
+                    });
+                    
+                    totalPages = Math.ceil(filteredRows.length / rowsPerPage) || 1;
+                    showPage(1);
+                    
+                    const counter = card.querySelector('p[id^="contador"]');
+                    if (counter) {
+                        counter.textContent = (q || filters.some(f=>f)) ? `${filteredRows.length} resultado(s) encontrado(s)` : '';
+                    }
+                }
+                
+                if (searchInput) {
+                    searchInput.addEventListener('input', updateFilters);
+                    searchInput.removeAttribute('oninput');
+                }
+                if (filterSelects.length > 0) {
+                    filterSelects.forEach(s => {
+                        s.addEventListener('change', updateFilters);
+                        s.removeAttribute('onchange');
+                    });
+                }
+            }
+            
+            showPage(1);
+        });
+    });
     </script>
 
     {% block extra_js %}{% endblock %}

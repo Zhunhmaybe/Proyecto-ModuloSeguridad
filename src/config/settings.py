@@ -93,9 +93,6 @@ if db_url:
     DATABASES['default'] = dj_database_url.config(default=db_url, conn_max_age=600, ssl_require=True)
 
 
-# Password validation
-# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -117,7 +114,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Guayaquil'
 
 USE_I18N = True
 
@@ -155,3 +152,5 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', 'yyyssvjzsuyjyoty')
 # Configuración de Sesiones
 # Forzar que la sesión expire cuando el usuario cierra el navegador/pestaña
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_COOKIE_AGE = 300
+SESSION_SAVE_EVERY_REQUEST = True

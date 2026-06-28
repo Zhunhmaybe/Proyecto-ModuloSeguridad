@@ -181,6 +181,48 @@ class Query:
         except (jwt.PyJWTError, Usuario.DoesNotExist):
             return None
 
+    @strawberry.field
+    def user_functions(self, token: str, modulo_id: int) -> ListadoFuncionesResponse:
+        user = None
+        try:
+            payload = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
+            user_id = payload.get("user_id")
+            user = Usuario.objects.get(id=user_id)
+            if not user.estado:
+                raise Exception("Usuario inactivo")
+        except Exception as e:
+            Auditoria.objects.create(
+                accion="CONSULTA FUNCIONES FALLIDA",
+                descripcion="Token invalido",
+                estado_auditoria=False
+            )
+            return ListadoFuncionesResponse(success=False, message="Token invalido", funciones=None)
+
+        try:
+            modulo = Modulo.objects.get(id_modulo=modulo_id)
+            if not modulo.estado_modulo:
+                raise Exception("Modulo inactivo")
+        except Exception as e:
+            Auditoria.objects.create(
+                username=user,
+                accion="CONSULTA FUNCIONES FALLIDA",
+                descripcion="Modulo invalido",
+                estado_auditoria=False
+            )
+            return ListadoFuncionesResponse(success=False, message="Modulo invalido", funciones=None)
+
+        funciones_usuario = Funcion.objects.filter(
+            roles__usuarios=user,
+            estado_funcion=True,
+            modulos=modulo
+        ).values_list('nombre_funcion', flat=True).distinct()
+
+        return ListadoFuncionesResponse(
+            success=True,
+            message="Exito",
+            funciones=list(funciones_usuario)
+        )
+
 @strawberry.type
 class Mutation:
     @strawberry.mutation
@@ -401,44 +443,4 @@ class Mutation:
         except Exception as e:
             return AuditResponse(success=False, message=str(e))
 
-    @strawberry.mutation
-    def user_functions(self, token: str, modulo_id: int) -> ListadoFuncionesResponse:
-        user = None
-        try:
-            payload = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
-            user_id = payload.get("user_id")
-            user = Usuario.objects.get(id=user_id)
-            if not user.estado:
-                raise Exception("Usuario inactivo")
-        except Exception as e:
-            Auditoria.objects.create(
-                accion="CONSULTA FUNCIONES FALLIDA",
-                descripcion="Token invalido",
-                estado_auditoria=False
-            )
-            return ListadoFuncionesResponse(success=False, message="Token invalido", funciones=None)
 
-        try:
-            modulo = Modulo.objects.get(id_modulo=modulo_id)
-            if not modulo.estado_modulo:
-                raise Exception("Modulo inactivo")
-        except Exception as e:
-            Auditoria.objects.create(
-                username=user,
-                accion="CONSULTA FUNCIONES FALLIDA",
-                descripcion="Modulo invalido",
-                estado_auditoria=False
-            )
-            return ListadoFuncionesResponse(success=False, message="Modulo invalido", funciones=None)
-
-        funciones_usuario = Funcion.objects.filter(
-            roles__usuarios=user,
-            estado_funcion=True,
-            modulos=modulo
-        ).values_list('nombre_funcion', flat=True).distinct()
-
-        return ListadoFuncionesResponse(
-            success=True,
-            message="Exito",
-            funciones=list(funciones_usuario)
-        )

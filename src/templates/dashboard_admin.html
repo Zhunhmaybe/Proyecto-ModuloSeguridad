@@ -55,8 +55,22 @@
 <div style="display:grid;grid-template-columns:1fr 360px;gap:20px">
 
     <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">Últimas Pistas de Auditoría</h3>
+        <div class="card-header" style="display:flex;justify-content:flex-start;align-items:center;flex-wrap:wrap;gap:20px;">
+            <h3 class="card-title" style="margin:0;">Últimas Pistas de Auditoría</h3>
+            
+            <form method="GET" action="{% url 'dashboard_admin' %}" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;flex-grow:1;max-width:700px;">
+                <input type="hidden" name="tab" value="dashboard">
+                <div style="position:relative;flex-grow:1;min-width:180px;">
+                    <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none"></i>
+                    <input type="text" name="search_log" value="{{ request.GET.search_log|default:'' }}" placeholder="Buscar usuario o IP..." style="padding:6px 10px 6px 36px;width:100%;border-radius:6px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text-primary);font-size:.85rem;">
+                </div>
+                <input type="date" name="date_log" value="{{ request.GET.date_log|default:'' }}" style="padding:6px 10px;border-radius:6px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text-primary);font-size:.85rem;">
+                <select name="order_log" style="padding:6px 10px;border-radius:6px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text-primary);font-size:.85rem;">
+                    <option value="desc" {% if request.GET.order_log != 'asc' %}selected{% endif %}>▼ Más recientes</option>
+                    <option value="asc" {% if request.GET.order_log == 'asc' %}selected{% endif %}>▲ Más antiguos</option>
+                </select>
+                <button type="submit" class="btn btn-primary" style="padding:6px 14px;font-size:.85rem;">Filtrar</button>
+            </form>
         </div>
         <div class="table-container">
             <table class="data-table">
@@ -65,6 +79,7 @@
                         <th>Usuario</th>
                         <th>Acción</th>
                         <th>Descripción</th>
+                        <th>IP</th>
                         <th>Fecha</th>
                         <th>Estado</th>
                     </tr>
@@ -75,8 +90,15 @@
                         <td>@{{ log.username.user_name }}</td>
                         <td><span class="badge-action">{{ log.accion }}</span></td>
                         <td>{{ log.descripcion|default:"-" }}</td>
+                        <td>{{ log.observacion|default:"-" }}</td>
                         <td>{{ log.fecha_creacion|date:"Y-m-d H:i" }}</td>
-                        <td><span class="status-ok"><span class="status-dot dot-green"></span> OK</span></td>
+                        <td>
+                            {% if log.estado_auditoria %}
+                                <span class="status-ok" style="color:var(--success);"><span class="status-dot dot-green"></span> OK</span>
+                            {% else %}
+                                <span class="status-error" style="color:var(--danger);"><span class="status-dot" style="background:var(--danger);"></span> ERROR</span>
+                            {% endif %}
+                        </td>
                     </tr>
                     {% empty %}
                     <tr>
