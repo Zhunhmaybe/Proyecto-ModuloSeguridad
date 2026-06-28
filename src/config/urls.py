@@ -28,8 +28,9 @@ urlpatterns = [
     path('graphql/', csrf_exempt(GraphQLView.as_view(schema=schema))),
 
     # =====================
-    # CRUD ROLES
+    # API REST - El Guardia
     # =====================
+    path('api/auth/login/', user_views.api_auth_login, name='api_auth_login'),
     
     path(
         'roles/',

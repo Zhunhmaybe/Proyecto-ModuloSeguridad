@@ -12,6 +12,7 @@ class Auditoria(models.Model):
     observacion = models.TextField(blank=True, null=True)
     estado_auditoria = models.BooleanField(default=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
+    modulo = models.CharField(max_length=100, blank=True, null=True, help_text="Módulo externo que generó la pista (ej. INVENTARIO, FACTURACION)")
 
     class Meta:
         db_table = 'auditoria'

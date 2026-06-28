@@ -73,6 +73,13 @@ class Rol(models.Model):
         default=True
     )
 
+    modulo = models.ForeignKey(
+        'modules.Modulo',
+        on_delete=models.CASCADE,
+        related_name='roles',
+        null=True,
+        blank=True
+    )
 
     funciones = models.ManyToManyField(
         'Funcion',
@@ -176,3 +183,19 @@ class FuncionRol(models.Model):
     class Meta:
 
         db_table = 'funciones_roles'
+
+
+class ControlIP(models.Model):
+    """Tabla de control de fuerza bruta por IP.
+    Registra intentos fallidos y momentáneo del último intento
+    para aplicar bloqueos temporales.
+    """
+    ip_usuario = models.CharField(max_length=50, primary_key=True)
+    intentos_fallidos = models.IntegerField(default=0)
+    ultimo_intento = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'control_ips'
+
+    def __str__(self):
+        return f"{self.ip_usuario} - {self.intentos_fallidos} intentos"
