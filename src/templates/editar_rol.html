@@ -38,14 +38,12 @@
         <!-- Funciones agrupadas por Módulo -->
         <div class="form-group">
             <label class="form-label">
-                Funciones asignadas <span style="color:var(--danger)">*</span>
-                <small style="color:var(--text-muted);font-weight:400"> — mínimo 1</small>
+                Funciones asignadas 
             </label>
 
             <!-- Filtro de módulo -->
             <div style="margin-bottom:10px">
-                <select id="moduloFiltroEditar" onchange="filtrarPorModulo(this.value)"
-                        style="padding:7px 10px;width:100%;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text-primary);font-size:.88rem">
+                <select id="moduloFiltroEditar" class="form-select-large" onchange="filtrarPorModulo(this.value)">
                     <option value="">— Todos los Módulos —</option>
                     {% for modulo in modulos %}
                     <option value="{{ modulo.id_modulo }}">{{ modulo.nombre_modulo }}</option>
@@ -67,10 +65,10 @@
                     <p style="font-size:.8rem;font-weight:600;color:var(--text-muted);margin:8px 0 4px;text-transform:uppercase;letter-spacing:.05em">
                         {{ modulo.nombre_modulo }}
                     </p>
-                    <div class="items-grid">
+                    <div class="roles-container">
                         {% for f in modulo.funciones.all %}
                         {% if f.estado_funcion %}
-                        <label class="grid-item chk-funcion">
+                        <label class="role-pill chk-funcion">
                             <input type="checkbox" name="funciones" value="{{ f.id_funcion }}"
                                    {% if f in rol.funciones.all %}checked{% endif %}>
                             <span>{{ f.nombre_funcion }}</span>
@@ -85,7 +83,6 @@
                 <p style="color:var(--text-muted);font-style:italic;padding:8px">No hay módulos activos disponibles.</p>
                 {% endfor %}
             </div>
-            <small id="errorFuncion" style="color:var(--danger);display:none">⚠ Debes seleccionar al menos una función.</small>
         </div>
 
         <div class="form-actions">
@@ -116,13 +113,6 @@ function filtrarPorTexto() {
 }
 
 function validar() {
-    const checked = document.querySelectorAll('input[name="funciones"]:checked');
-    const errEl = document.getElementById('errorFuncion');
-    if (checked.length === 0) {
-        errEl.style.display = 'block';
-        return false;
-    }
-    errEl.style.display = 'none';
     return true;
 }
 </script>

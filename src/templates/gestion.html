@@ -1,0 +1,292 @@
+{% extends 'base.html' %}
+{% block title %}Panel de Gestión{% endblock %}
+
+{% block breadcrumb %}
+<span class="breadcrumb-separator"><i class="fa-solid fa-chevron-right"></i></span>
+<span class="breadcrumb-current">Gestión MODULOS-ROLES-FUNCIONES</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+    <h1><i class="fa-solid fa-layer-group"></i> Panel de Gestión </h1>
+    <button id="btnLimpiarFiltro" class="btn btn-secondary" style="display:none;" onclick="limpiarFiltros()">
+        <i class="fa-solid fa-rotate-left"></i> Limpiar Filtro de Búsqueda
+    </button>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+    
+    <!-- BLOQUE 1: USUARIOS (Arriba, ancho completo) -->
+    <div class="card" style="grid-column: 1 / -1;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px; flex-wrap:wrap; gap:12px;">
+            <h3 class="card-title" style="margin:0"><i class="fa-solid fa-users"></i> Usuarios</h3>
+            
+            <div style="display:flex; gap:12px; align-items:center; flex-grow:1; max-width:400px; position:relative;">
+                <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:12px; color:var(--text-muted); pointer-events:none;"></i>
+                <input type="text" id="searchUsuarios" oninput="filtrarUsuarios(this.value)"
+                       placeholder="Buscar por nombre de usuario..."
+                       style="padding:8px 12px 8px 36px; width:100%; border-radius:8px; border:1px solid var(--border); background:var(--input-bg); color:var(--text-primary)">
+            </div>
+            
+            {% if request.user.is_superuser %}
+            <a href="{% url 'crear_usuario' %}" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Nuevo Usuario</a>
+            {% endif %}
+        </div>
+        <div class="table-container" style="max-height: 400px; overflow-y: auto;">
+            <table class="data-table" id="tablaGestionUsuarios">
+                <thead>
+                    <tr><th>Usuario</th><th>Cédula</th><th>Roles</th><th>Estado</th><th>Acción</th></tr>
+                </thead>
+                <tbody>
+                    {% for u in usuarios %}
+                    <tr class="user-row" 
+                        data-user-id="{{ u.id }}" 
+                        data-username="{{ u.user_name|lower }}" 
+                        data-roles="{% for r in u.roles.all %}{{ r.id_rol }},{% endfor %}"
+                        style="cursor: pointer;"
+                        onclick="seleccionarUsuario(this)">
+                        <td><strong>{{ u.user_name }}</strong></td>
+                        <td>{{ u.cedula }}</td>
+                        <td>
+                            {% for rol in u.roles.all %}
+                            <span class="role-badge">{{ rol.nombre_rol }}</span>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% if u.estado %}
+                            <span class="estado-activo" style="padding:5px 12px;border-radius:999px;font-size:.82rem"><span class="status-dot dot-green"></span> Activo</span>
+                            {% else %}
+                            <span class="estado-inactivo" style="padding:5px 12px;border-radius:999px;font-size:.82rem"><span class="status-dot dot-red"></span> Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td onclick="event.stopPropagation();">
+                            <a href="{% url 'editar_usuario' u.id %}" class="btn btn-action-edit"><i class="fa-solid fa-pen"></i> Editar</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p id="usuariosFilterMsj" style="font-size:0.85rem; color:var(--text-muted); margin-top:8px; display:none;">
+            Mostrando resultados filtrados. <a href="#" onclick="event.preventDefault(); limpiarFiltros();" style="color:var(--primary)">Ver todos</a>
+        </p>
+    </div>
+
+    <!-- BLOQUE 2: MODULOS (Medio Izquierda) -->
+    <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h3 class="card-title" style="margin:0"><i class="fa-solid fa-cubes"></i> Módulos</h3>
+            <a href="{% url 'modulos' %}" class="btn btn-primary btn-sm"><i class="fa-solid fa-gear"></i> Gestionar Módulos</a>
+        </div>
+        <div class="table-container" style="max-height: 300px; overflow-y: auto;">
+            <table class="data-table" id="tablaGestionModulos">
+                <thead>
+                    <tr><th>Módulo</th><th>API Key</th><th>Estado</th><th>Acción</th></tr>
+                </thead>
+                <tbody>
+                    {% for m in modulos %}
+                    <tr class="modulo-row" data-modulo-id="{{ m.id_modulo }}">
+                        <td><strong>{{ m.nombre_modulo }}</strong></td>
+                        <td><code style="font-size:0.8rem;background:var(--input-bg);padding:4px;border-radius:4px;">{{ m.api_key|slice:":8" }}...</code></td>
+                        <td>
+                            {% if m.estado_modulo %}
+                            <span style="color:var(--success)"><i class="fa-solid fa-check-circle"></i> Activo</span>
+                            {% else %}
+                            <span style="color:var(--danger)"><i class="fa-solid fa-xmark-circle"></i> Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'editar_modulo' m.id_modulo %}" class="btn btn-action-edit"><i class="fa-solid fa-pen"></i> Editar</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- BLOQUE 3: ROLES (Medio Derecha) -->
+    <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h3 class="card-title" style="margin:0"><i class="fa-solid fa-user-shield"></i> Roles</h3>
+            <a href="{% url 'roles' %}" class="btn btn-primary btn-sm"><i class="fa-solid fa-gear"></i> Gestionar Roles</a>
+        </div>
+        <div class="table-container" style="max-height: 300px; overflow-y: auto;">
+            <table class="data-table" id="tablaGestionRoles">
+                <thead>
+                    <tr><th>Rol</th><th>Estado</th><th>Acción</th></tr>
+                </thead>
+                <tbody>
+                    {% for r in roles %}
+                    <tr class="rol-row" 
+                        data-rol-id="{{ r.id_rol }}"
+                        data-funciones="{% for f in r.funciones.all %}{{ f.id_funcion }},{% endfor %}">
+                        <td><strong>{{ r.nombre_rol }}</strong></td>
+                        <td>
+                            {% if r.estado_rol %}
+                            <span style="color:var(--success)"><i class="fa-solid fa-check-circle"></i> Activo</span>
+                            {% else %}
+                            <span style="color:var(--danger)"><i class="fa-solid fa-xmark-circle"></i> Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'editar_rol' r.id_rol %}" class="btn btn-action-edit"><i class="fa-solid fa-pen"></i> Editar</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- BLOQUE 5: FUNCIONES (Abajo, ancho completo) -->
+    <div class="card" style="grid-column: 1 / -1;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h3 class="card-title" style="margin:0"><i class="fa-solid fa-bolt"></i> Funciones</h3>
+            <a href="{% url 'funciones' %}" class="btn btn-primary btn-sm"><i class="fa-solid fa-gear"></i> Gestionar Funciones</a>
+        </div>
+        <div class="table-container" style="max-height: 400px; overflow-y: auto;">
+            <table class="data-table" id="tablaGestionFunciones">
+                <thead>
+                    <tr><th>Función</th><th>Descripción</th><th>Módulo Asociado</th><th>Estado</th><th>Acción</th></tr>
+                </thead>
+                <tbody>
+                    {% for f in funciones %}
+                    <tr class="funcion-row" 
+                        data-funcion-id="{{ f.id_funcion }}"
+                        data-modulos="{% for m in f.modulos.all %}{{ m.id_modulo }},{% endfor %}">
+                        <td><strong>{{ f.nombre_funcion }}</strong></td>
+                        <td><span style="font-size:0.9rem;color:var(--text-muted)">{{ f.descripcion|default:"-" }}</span></td>
+                        <td>
+                            {% for m in f.modulos.all %}
+                            <span class="role-badge" style="background:var(--border);">{{ m.nombre_modulo }}</span>
+                            {% empty %}
+                            <span style="color:var(--text-muted);font-style:italic">Ninguno</span>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% if f.estado_funcion %}
+                            <span style="color:var(--success)"><i class="fa-solid fa-check-circle"></i> Activo</span>
+                            {% else %}
+                            <span style="color:var(--danger)"><i class="fa-solid fa-xmark-circle"></i> Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'editar_funcion' f.id_funcion %}" class="btn btn-action-edit"><i class="fa-solid fa-pen"></i> Editar</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<style>
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    border-radius: 6px;
+}
+.user-row.selected {
+    background-color: rgba(99, 102, 241, 0.15) !important;
+    border-left: 3px solid var(--primary);
+}
+@media (max-width: 900px) {
+    div[style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+}
+</style>
+
+<script>
+    function filtrarUsuarios(texto) {
+        const query = texto.toLowerCase();
+        const filas = document.querySelectorAll('#tablaGestionUsuarios .user-row');
+        
+        filas.forEach(fila => {
+            const username = fila.getAttribute('data-username');
+            if (username.includes(query)) {
+                fila.style.display = '';
+            } else {
+                fila.style.display = 'none';
+            }
+        });
+    }
+
+    function seleccionarUsuario(filaElement) {
+        // Remover clase selected de todos
+        document.querySelectorAll('.user-row').forEach(f => f.classList.remove('selected'));
+        // Agregar a la seleccionada
+        filaElement.classList.add('selected');
+        
+        // Extraer IDs de roles
+        const rolesString = filaElement.getAttribute('data-roles');
+        const roleIds = rolesString.split(',').filter(id => id.trim() !== '');
+
+        // 1. Filtrar Roles
+        const filasRoles = document.querySelectorAll('.rol-row');
+        const funcionesPermitidas = new Set();
+        
+        filasRoles.forEach(fRol => {
+            const rId = fRol.getAttribute('data-rol-id');
+            if (roleIds.includes(rId)) {
+                fRol.style.display = '';
+                // Acumular funciones de este rol
+                const funcs = fRol.getAttribute('data-funciones').split(',').filter(id => id.trim() !== '');
+                funcs.forEach(fid => funcionesPermitidas.add(fid));
+            } else {
+                fRol.style.display = 'none';
+            }
+        });
+
+        // 2. Filtrar Funciones
+        const filasFunciones = document.querySelectorAll('.funcion-row');
+        const modulosPermitidos = new Set();
+
+        filasFunciones.forEach(fFunc => {
+            const fId = fFunc.getAttribute('data-funcion-id');
+            if (funcionesPermitidas.has(fId)) {
+                fFunc.style.display = '';
+                // Acumular modulos de esta función
+                const mods = fFunc.getAttribute('data-modulos').split(',').filter(id => id.trim() !== '');
+                mods.forEach(mid => modulosPermitidos.add(mid));
+            } else {
+                fFunc.style.display = 'none';
+            }
+        });
+
+        // 3. Filtrar Modulos
+        const filasModulos = document.querySelectorAll('.modulo-row');
+        filasModulos.forEach(fMod => {
+            const mId = fMod.getAttribute('data-modulo-id');
+            if (modulosPermitidos.has(mId)) {
+                fMod.style.display = '';
+            } else {
+                fMod.style.display = 'none';
+            }
+        });
+
+        // Mostrar boton de limpiar
+        document.getElementById('btnLimpiarFiltro').style.display = 'inline-flex';
+        document.getElementById('usuariosFilterMsj').style.display = 'block';
+    }
+
+    function limpiarFiltros() {
+        document.querySelectorAll('.user-row').forEach(f => {
+            f.classList.remove('selected');
+            f.style.display = '';
+        });
+        document.getElementById('searchUsuarios').value = '';
+        
+        document.querySelectorAll('.rol-row').forEach(f => f.style.display = '');
+        document.querySelectorAll('.funcion-row').forEach(f => f.style.display = '');
+        document.querySelectorAll('.modulo-row').forEach(f => f.style.display = '');
+        
+        document.getElementById('btnLimpiarFiltro').style.display = 'none';
+        document.getElementById('usuariosFilterMsj').style.display = 'none';
+    }
+</script>
+
+{% endblock %}

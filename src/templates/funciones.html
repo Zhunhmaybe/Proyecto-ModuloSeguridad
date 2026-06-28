@@ -40,23 +40,51 @@
 
 <!-- LISTA FUNCIONES -->
 <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px">
+    <div style="display:flex;justify-content:flex-start;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:24px">
         <h3 class="card-title" style="margin:0">Funciones registradas</h3>
-        <div style="position:relative;min-width:240px">
+        <div style="display:flex; gap:12px; align-items:center; flex-grow:1; max-width:800px; position:relative;">
             <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none"></i>
-            <input type="text" id="searchFunciones" oninput="filtrarFuncionesTabla()"
-                   placeholder="Buscar función o estado..."
+            <input type="text" id="searchFunciones"
+                   placeholder="Buscar función..."
                    style="padding:8px 12px 8px 36px;width:100%;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text-primary)">
+                   
+            <select id="filterModuloFunc" style="padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text-primary);min-width:180px">
+                <option value="">Todos los Módulos</option>
+                {% for modulo in modulos %}
+                <option value="{{ modulo.nombre_modulo }}">{{ modulo.nombre_modulo }}</option>
+                {% endfor %}
+            </select>
+            
+            <select id="filterRolFunc" style="padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text-primary);min-width:180px">
+                <option value="">Todos los Roles</option>
+                {% for rol in roles %}
+                <option value="{{ rol.nombre_rol }}">{{ rol.nombre_rol }}</option>
+                {% endfor %}
+            </select>
         </div>
     </div>
     <p id="contadorFunciones" style="font-size:.82rem;color:var(--text-muted);margin-bottom:8px"></p>
     <div class="table-container">
         <table class="data-table" id="tablaFunciones">
-            <thead><tr><th>Nombre</th><th>Estado</th><th>Acción</th></tr></thead>
+            <thead><tr><th>Nombre</th><th>Módulos</th><th>Roles Asociados</th><th>Estado</th><th>Acción</th></tr></thead>
             <tbody>
                 {% for funcion in funciones %}
                 <tr>
                     <td>{{funcion.nombre_funcion}}</td>
+                    <td>
+                        {% for m in funcion.modulos.all %}
+                            <span class="role-badge" style="background:var(--border)">{{ m.nombre_modulo }}</span>
+                        {% empty %}
+                            <span style="color:var(--text-muted);font-style:italic">Sin Módulo</span>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for r in funcion.roles.all %}
+                            <span class="role-badge">{{ r.nombre_rol }}</span>
+                        {% empty %}
+                            <span style="color:var(--text-muted);font-style:italic">Sin Roles</span>
+                        {% endfor %}
+                    </td>
                     <td>
                         {% if funcion.estado_funcion %}
                         <span class="estado-activo" style="padding:5px 12px;border-radius:999px;font-size:.82rem"><span class="status-dot dot-green"></span> Activo</span>
@@ -64,7 +92,7 @@
                         <span class="estado-inactivo" style="padding:5px 12px;border-radius:999px;font-size:.82rem"><span class="status-dot dot-red"></span> Inactivo</span>
                         {% endif %}
                     </td>
-                    <td><a href="{% url 'editar_funcion' funcion.id_funcion %}" class="btn btn-success" style="padding:7px 16px;font-size:.82rem">✏ Editar</a></td>
+                    <td><a href="{% url 'editar_funcion' funcion.id_funcion %}" class="btn btn-action-edit"><i class="fa-solid fa-pen"></i> Editar</a></td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -73,18 +101,5 @@
     <a href="{% url 'dashboard_admin' %}" class="btn-back">⬅ Volver al Dashboard</a>
 </div>
 
-<script>
-function filtrarFuncionesTabla() {
-    const q = document.getElementById('searchFunciones').value.toLowerCase().trim();
-    const filas = document.querySelectorAll('#tablaFunciones tbody tr');
-    let visibles = 0;
-    filas.forEach(tr => {
-        const mostrar = !q || tr.innerText.toLowerCase().includes(q);
-        tr.style.display = mostrar ? '' : 'none';
-        if (mostrar) visibles++;
-    });
-    const c = document.getElementById('contadorFunciones');
-    c.textContent = q ? `${visibles} resultado(s) encontrado(s)` : '';
-}
-</script>
+
 {% endblock %}

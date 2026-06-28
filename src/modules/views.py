@@ -56,16 +56,16 @@ def modulos_view(request):
 def editar_modulo(request, id):
     modulo = get_object_or_404(Modulo, id_modulo=id)
     roles = Rol.objects.filter(estado_rol=True).prefetch_related('funciones')
-    funciones_actuales_ids = set(modulo.funciones.values_list('id_funcion', flat=True))
+    roles_actuales_ids = set(modulo.roles.values_list('id_rol', flat=True))
 
     if request.method == "POST":
         action = request.POST.get('action', 'edit_module')
 
-        if action == 'assign_functions':
-            funciones_ids = request.POST.getlist('funciones')
-            FuncionModulo.objects.filter(modulo=modulo).delete()
-            for f_id in funciones_ids:
-                FuncionModulo.objects.create(modulo=modulo, funcion_id=f_id)
+        if action == 'assign_roles':
+            roles_ids = request.POST.getlist('roles')
+            Rol.objects.filter(modulo=modulo).update(modulo=None)
+            if roles_ids:
+                Rol.objects.filter(id_rol__in=roles_ids).update(modulo=modulo)
             return redirect('editar_modulo', id=modulo.id_modulo)
 
         elif action == 'edit_module':
@@ -73,7 +73,7 @@ def editar_modulo(request, id):
             descripcion = request.POST.get('descripcion_modulo', '').strip()
             estado = request.POST.get('estado_modulo') == 'true'
 
-            ctx = {'modulo': modulo, 'roles': roles, 'funciones_actuales_ids': funciones_actuales_ids}
+            ctx = {'modulo': modulo, 'roles': roles, 'roles_actuales_ids': roles_actuales_ids}
 
             if not nombre:
                 ctx['error'] = 'El nombre del módulo es obligatorio.'
@@ -91,13 +91,12 @@ def editar_modulo(request, id):
             return redirect('modulos')
 
     # Recalcular con IDs actuales para el template
-    funciones_actuales_ids = set(modulo.funciones.values_list('id_funcion', flat=True))
-    # Obtener todas las funciones activas para el modal
-    todas_funciones = Funcion.objects.filter(estado_funcion=True)
+    roles_actuales_ids = set(modulo.roles.values_list('id_rol', flat=True))
+    # Obtener todos los roles activos para el modal
+    todos_roles = Rol.objects.filter(estado_rol=True)
     return render(request, 'editar_modulo.html', {
         'modulo': modulo,
-        'roles': roles,
-        'funciones_actuales_ids': funciones_actuales_ids,
-        'todas_funciones': todas_funciones,
+        'roles_actuales_ids': roles_actuales_ids,
+        'todos_roles': todos_roles,
     })
 

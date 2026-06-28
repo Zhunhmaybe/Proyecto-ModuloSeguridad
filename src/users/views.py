@@ -249,8 +249,7 @@ def usuarios_view(request):
 
 
     permiso = Funcion.objects.filter(
-
-        nombre_funcion="GESTIONAR_USUARIOS",
+        nombre_funcion="SEG_GESTION_USUARIOS",
 
         roles__usuarios=request.user,
 
@@ -286,92 +285,142 @@ def usuarios_view(request):
 
     )
 
+def validar_cedula_ecuatoriana(cedula):
+    if len(cedula) != 10 or not cedula.isdigit():
+        return False
+    provincia = int(cedula[0:2])
+    if (provincia < 1 or provincia > 24) and provincia != 30:
+        return False
+    tercer_digito = int(cedula[2])
+    if tercer_digito >= 6:
+        return False
+    
+    suma = 0
+    for i in range(9):
+        digito = int(cedula[i])
+        if i % 2 == 0:
+            digito *= 2
+            if digito > 9:
+                digito -= 9
+        suma += digito
+    
+    decena_superior = ((suma // 10) + 1) * 10 if suma % 10 != 0 else suma
+    digito_verificador = decena_superior - suma
+    if digito_verificador == 10:
+        digito_verificador = 0
+        
+    return digito_verificador == int(cedula[9])
+
+@login_required(login_url='login')
+def crear_usuario(request):
+    if not request.user.is_superuser:
+        return redirect('usuarios')
+
+    error = None
+
+    if request.method == 'POST':
+        user_name = request.POST.get('user_name', '').strip()
+        email = request.POST.get('email', '').strip()
+        cedula = request.POST.get('cedula', '').strip()
+        password = request.POST.get('password')
+        estado = request.POST.get('estado') == 'on'
+
+        # Validar Usuario (solo letras)
+        if not user_name.isalpha():
+            error = "El nombre de usuario solo debe contener letras (sin espacios ni caracteres especiales)."
+        
+        # Validar Correo
+        elif not (email.endswith('@gmail.com') or email.endswith('@utn.edu.ec')):
+            error = "El correo debe ser @gmail.com o @utn.edu.ec."
+
+        # Validar Cédula Ecuatoriana
+        elif not validar_cedula_ecuatoriana(cedula):
+            error = "La cédula ingresada no es válida en Ecuador."
+            
+        # Validar Duplicados
+        elif Usuario.objects.filter(user_name=user_name).exists():
+            error = f"El usuario '{user_name}' ya existe."
+        elif Usuario.objects.filter(email=email).exists():
+            error = f"El correo '{email}' ya está registrado."
+
+        if not error:
+            nuevo_usuario = Usuario.objects.create_user(
+                user_name=user_name,
+                email=email,
+                cedula=cedula,
+                password=password
+            )
+            nuevo_usuario.estado = estado
+            nuevo_usuario.save()
+
+            roles_ids = request.POST.getlist('roles')
+            if roles_ids:
+                nuevo_usuario.roles.set(roles_ids)
+            
+            return redirect('usuarios')
+            
+    roles_list = Rol.objects.filter(estado_rol=True)
+    return render(request, 'crear_usuario.html', {
+        'roles_list': roles_list,
+        'error': error
+    })
+
 @login_required(login_url='login')
 def editar_usuario(request, id):
-
-
-    usuario = get_object_or_404(
-        Usuario,
-        id=id
-    )
-
+    usuario = get_object_or_404(Usuario, id=id)
+    error = None
 
     if request.method == "POST":
+        user_name = request.POST.get('user_name', '').strip()
+        email = request.POST.get('email', '').strip()
+        cedula = request.POST.get('cedula', '').strip()
+        password = request.POST.get('password', '').strip()
+        estado = request.POST.get('estado') == 'on'
 
+        # Validar Usuario 
+        if not user_name.isalpha():
+            error = "El nombre de usuario solo debe contener letras (sin espacios ni caracteres especiales)."
+        # Validar Correo
+        elif not (email.endswith('@gmail.com') or email.endswith('@utn.edu.ec')):
+            error = "El correo debe ser @gmail.com o @utn.edu.ec."
+        # Validar Cédula Ecuatoriana
+        elif not validar_cedula_ecuatoriana(cedula):
+            error = "La cédula ingresada no es válida en Ecuador."
+        # Validar Duplicados excluyendo el usuario actual
+        elif Usuario.objects.filter(user_name=user_name).exclude(id=id).exists():
+            error = f"El usuario '{user_name}' ya existe."
+        elif Usuario.objects.filter(email=email).exclude(id=id).exists():
+            error = f"El correo '{email}' ya está registrado."
 
-        usuario.user_name = request.POST.get(
-            'user_name'
-        )
+        if not error:
+            usuario.user_name = user_name
+            usuario.email = email
+            usuario.cedula = cedula
+            usuario.estado = estado
+            if password:
+                usuario.set_password(password)
+            usuario.save()
 
+            roles_ids = request.POST.getlist('roles')
+            usuario.roles.clear()
+            for rol_id in roles_ids:
+                rol = Rol.objects.get(id_rol=rol_id)
+                usuario.roles.add(rol)
 
-        usuario.email = request.POST.get(
-            'email'
-        )
+            return redirect('usuarios')
 
-
-        usuario.estado = True if request.POST.get(
-            'estado'
-        ) else False
-
-
-
-        usuario.save()
-
-
-
-        # actualizar roles
-
-        roles = request.POST.getlist(
-            'roles'
-        )
-
-
-        usuario.roles.clear()
-
-
-        for rol_id in roles:
-
-            rol = Rol.objects.get(
-                id_rol=rol_id
-            )
-
-            usuario.roles.add(
-                rol
-            )
-
-
-        return redirect(
-            'usuarios'
-        )
-
-
-
-    roles = Rol.objects.filter(
-        estado_rol=True
-    )
-
-
-    return render(
-
-        request,
-
-        'editar_usuario.html',
-
-        {
-
-        'usuario':usuario,
-
-        'roles':roles
-
-        }
-
-    )
+    roles = Rol.objects.filter(estado_rol=True)
+    return render(request, 'editar_usuario.html', {
+        'usuario': usuario,
+        'roles': roles,
+        'error': error
+    })
 #Funciones
 @login_required(login_url='login')
 def funciones_view(request):
 
     permiso = Funcion.objects.filter(
-        nombre_funcion="GESTIONAR_ROLES",
+        nombre_funcion="SEG_GESTION_FUNCIONES",
         roles__usuarios=request.user,
         estado_funcion=True
     ).exists()
@@ -413,12 +462,18 @@ def funciones_view(request):
         return redirect('funciones')
 
     funciones = Funcion.objects.all()
+    roles = Rol.objects.all()
+    
+    from modules.models import Modulo
+    modulos = Modulo.objects.all()
 
     return render(
         request,
         'funciones.html',
         {
-            'funciones': funciones
+            'funciones': funciones,
+            'roles': roles,
+            'modulos': modulos
         }
     )
 
@@ -490,6 +545,10 @@ def login_view(request):
             if not user.estado:
                 error = "El usuario está inactivo (borrado lógico)."
             else:
+                # Obtener IP del cliente
+                x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+                ip_usuario = x_forwarded_for.split(',')[0] if x_forwarded_for else request.META.get('REMOTE_ADDR')
+
                 # Primero intentamos validación local de contraseña
                 if user.check_password(password):
                     is_valid = True
@@ -507,6 +566,7 @@ def login_view(request):
                         username=user,
                         accion="LOGIN EXITOSO (WEB)",
                         descripcion="Acceso web correcto desde portal unificado",
+                        observacion=f"IP: {ip_usuario}",
                         estado_auditoria=True
                     )
                     
@@ -526,6 +586,7 @@ def login_view(request):
                         username=user,
                         accion="LOGIN FALLIDO (WEB)",
                         descripcion=f"Intento web fallido: {ms_result}",
+                        observacion=f"IP: {ip_usuario}",
                         estado_auditoria=False
                     )
                     error = f"Contraseña incorrecta o error de autenticación: {ms_result}"
@@ -814,11 +875,29 @@ def dashboard_admin_view(request):
     }
 
     # ==========================
-    # AUDITORÍA
+    # AUDITORÍA (LOGS)
     # ==========================
-    logs = Auditoria.objects.all().order_by(
-        '-fecha_creacion'
-    )[:10]
+    search_log = request.GET.get('search_log', '')
+    date_log = request.GET.get('date_log', '')
+    order_log = request.GET.get('order_log', 'desc')
+
+    logs_query = Auditoria.objects.all()
+
+    if search_log:
+        logs_query = logs_query.filter(
+            Q(username__user_name__icontains=search_log) |
+            Q(observacion__icontains=search_log)
+        )
+
+    if date_log:
+        logs_query = logs_query.filter(fecha_creacion__date=date_log)
+
+    if order_log == 'asc':
+        logs_query = logs_query.order_by('fecha_creacion')
+    else:
+        logs_query = logs_query.order_by('-fecha_creacion')
+
+    logs = logs_query[:1000]  # Limitar a 1000 para no saturar, la UI paginará esto
 
     # ==========================
     # FUNCIONES DEL USUARIO
@@ -898,3 +977,26 @@ def dashboard_admin_view(request):
 
         }
     )
+
+@login_required(login_url='login')
+def gestion_view(request):
+    permiso = request.user.is_superuser or Funcion.objects.filter(
+        nombre_funcion__in=["SEG_GESTION_USUARIOS", "SEG_GESTION_ROLES", "SEG_GESTION_MODULOS"],
+        roles__usuarios=request.user,
+        estado_funcion=True
+    ).exists()
+
+    if not permiso:
+        return redirect('dashboard_user')
+
+    usuarios = Usuario.objects.all()
+    roles = Rol.objects.all()
+    modulos = Modulo.objects.all()
+    funciones = Funcion.objects.all()
+
+    return render(request, 'gestion.html', {
+        'usuarios': usuarios,
+        'roles': roles,
+        'modulos': modulos,
+        'funciones': funciones
+    })

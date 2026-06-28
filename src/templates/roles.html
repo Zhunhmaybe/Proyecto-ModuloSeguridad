@@ -18,80 +18,109 @@
         <div class="alert alert-error"><i class="fa-solid fa-triangle-exclamation"></i> {{ error }}</div>
         {% endif %}
 
-        <!-- Paso 1: Seleccionar Módulo -->
-        <div class="form-group">
-            <label class="form-label">
-                Seleccionar Módulo <span style="color:var(--danger)">*</span>
-                <small style="color:var(--text-muted);font-weight:400"> — requerido para crear el rol</small>
-            </label>
-            <select id="moduloFiltroCrear" name="modulo_id" onchange="filtrarFuncionesPorModulo(this.value)">
-                <option value="">— Selecciona un Módulo —</option>
-                {% for modulo in modulos %}
-                <option value="{{ modulo.id_modulo }}">{{ modulo.nombre_modulo }}</option>
-                {% endfor %}
-            </select>
-            {% if not modulos %}
-            <small style="color:var(--text-muted);font-style:italic">No hay módulos activos. Crea un módulo primero.</small>
-            {% endif %}
-        </div>
-
-        <div id="restOfForm" style="display:none;">
-            <div class="form-group">
-                <label class="form-label">Nombre del rol <span style="color:var(--danger)">*</span></label>
-                <input type="text" name="nombre_rol" id="nombre_rol_input" placeholder="Ej: ADMIN">
-            </div>
-
-            <!-- Paso 2: Funciones del módulo seleccionado -->
-            <div class="form-group" id="panelFuncionesRol" style="display:none">
-                <label class="form-label">
-                    Funciones del Módulo <span style="color:var(--danger)">*</span>
-                    <small style="color:var(--text-muted);font-weight:400"> — mínimo 1</small>
-                </label>
-                <div class="items-box">
-                    {% for modulo in modulos %}
-                    <div class="funciones-por-modulo" data-modulo="{{ modulo.id_modulo }}" style="display:none">
-                        <div class="items-grid">
-                            {% for f in modulo.funciones.all %}
-                            {% if f.estado_funcion %}
-                            <label class="grid-item">
-                                <input type="checkbox" name="funciones" value="{{ f.id_funcion }}" class="chk-funcion-rol">
-                                <span>{{ f.nombre_funcion }}</span>
-                            </label>
-                            {% endif %}
-                            {% empty %}
-                            <p style="color:var(--text-muted);font-style:italic;padding:8px">Este módulo no tiene funciones activas asignadas.</p>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    {% endfor %}
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+            <div>
+                <div class="form-group">
+                    <label class="form-label">
+                        Seleccionar Módulo <span style="color:var(--danger)">*</span>
+                    </label>
+                    <select id="moduloFiltroCrear" name="modulo_id" class="form-select-large" onchange="filtrarFuncionesPorModulo(this.value)">
+                        <option value="">— Selecciona un Módulo —</option>
+                        {% for modulo in modulos %}
+                        <option value="{{ modulo.id_modulo }}">{{ modulo.nombre_modulo }}</option>
+                        {% endfor %}
+                    </select>
+                    {% if not modulos %}
+                    <small style="color:var(--text-muted);font-style:italic">No hay módulos activos. Crea un módulo primero.</small>
+                    {% endif %}
                 </div>
-                <small id="errorFuncionRol" style="color:var(--danger);display:none">⚠ Debes seleccionar al menos una función.</small>
+
+                <div id="restOfForm" style="display:none;">
+                    <div class="form-group">
+                        <label class="form-label">Nombre del rol <span style="color:var(--danger)">*</span></label>
+                        <input type="text" name="nombre_rol" id="nombre_rol_input" placeholder="Ej: ADMIN">
+                    </div>
+                    <button type="submit" class="btn btn-primary" onclick="return validarCrearRol()">💾 Guardar rol</button>
+                </div>
             </div>
 
-            <button type="submit" class="btn btn-primary" onclick="return validarCrearRol()">💾 Guardar rol</button>
+            <!-- COLUMNA 2: Funciones -->
+            <div>
+                <div class="form-group" id="panelFuncionesRol" style="display:none">
+                    <label class="form-label">
+                        Funciones del Módulo 
+                    </label>
+                    <div class="items-box">
+                        {% for modulo in modulos %}
+                        <div class="funciones-por-modulo" data-modulo="{{ modulo.id_modulo }}" style="display:none">
+                            <div class="roles-container">
+                                {% for f in modulo.funciones.all %}
+                                {% if f.estado_funcion %}
+                                <label class="role-pill">
+                                    <input type="checkbox" name="funciones" value="{{ f.id_funcion }}" class="chk-funcion-rol">
+                                    <span>{{ f.nombre_funcion }}</span>
+                                </label>
+                                {% endif %}
+                                {% empty %}
+                                <p style="color:var(--text-muted);font-style:italic;padding:8px">Este módulo no tiene funciones activas asignadas.</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
         </div>
     </form>
 </div>
 
 <!-- LISTA ROLES -->
 <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px">
+    <div style="display:flex;justify-content:flex-start;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:24px">
         <h3 class="card-title" style="margin:0">Roles existentes</h3>
-        <div style="position:relative;min-width:240px">
+        <div style="display:flex; gap:12px; align-items:center; flex-grow:1; max-width:600px; position:relative;">
             <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none"></i>
-            <input type="text" id="searchRoles" oninput="filtrarRoles()"
-                   placeholder="Buscar rol o función..."
+            <input type="text" id="searchRoles"
+                   placeholder="Buscar rol..."
                    style="padding:8px 12px 8px 36px;width:100%;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text-primary)">
+                   
+            <select id="filterModuloRoles" style="padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text-primary);min-width:180px">
+                <option value="">Todos los Módulos</option>
+                {% for modulo in modulos %}
+                <option value="{{ modulo.nombre_modulo }}">{{ modulo.nombre_modulo }}</option>
+                {% endfor %}
+            </select>
         </div>
+        <button onclick="ordenarRoles(this)" class="btn btn-secondary btn-sm" data-order="asc" style="margin-left:auto"><i class="fa-solid fa-arrow-down-a-z"></i> Ordenar A-Z</button>
     </div>
     <p id="contadorRoles" style="font-size:.82rem;color:var(--text-muted);margin-bottom:8px"></p>
     <div class="table-container">
         <table class="data-table" id="tablaRoles">
-            <thead><tr><th>Nombre</th><th>Funciones</th><th>Acción</th></tr></thead>
+            <thead><tr><th>Nombre</th><th>Módulo Principal</th><th>Funciones</th><th>Acción</th></tr></thead>
             <tbody>
                 {% for rol in roles %}
                 <tr>
                     <td>{{rol.nombre_rol}}</td>
+                    <td>
+                        {% if rol.funciones.first %}
+                            {% with f=rol.funciones.first %}
+                                {% for m in f.modulos.all %}
+                                    {% if forloop.first %}
+                                        <span class="role-badge" style="background:var(--border)">{{ m.nombre_modulo }}</span>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endwith %}
+                            <span style="display:none;">
+                                {% for func in rol.funciones.all %}
+                                    {% for mod in func.modulos.all %}
+                                        {{ mod.nombre_modulo }}
+                                    {% endfor %}
+                                {% endfor %}
+                            </span>
+                        {% else %}
+                            <span style="color:var(--text-muted);font-style:italic">Sin Módulo</span>
+                        {% endif %}
+                    </td>
                     <td>
                         {% for f in rol.funciones.all %}
                         <span class="role-badge">{{f.nombre_funcion}}</span>
@@ -99,7 +128,7 @@
                         <span style="color:var(--text-muted);font-size:.82rem">Sin funciones</span>
                         {% endfor %}
                     </td>
-                    <td><a href="{% url 'editar_rol' rol.id_rol %}" class="btn btn-success" style="padding:7px 16px;font-size:.82rem">✏ Editar</a></td>
+                    <td><a href="{% url 'editar_rol' rol.id_rol %}" class="btn btn-action-edit"><i class="fa-solid fa-pen"></i> Editar</a></td>
                 </tr>
                 {% empty %}
                 <tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:30px">No existen roles registrados</td></tr>
@@ -134,24 +163,56 @@ function filtrarFuncionesPorModulo(moduloId) {
 }
 function validarCrearRol() {
     const moduloSel = document.getElementById('moduloFiltroCrear').value;
-    const errEl = document.getElementById('errorFuncionRol');
     if (!moduloSel) { alert('Debes seleccionar al menos un Módulo.'); return false; }
-    const checked = document.querySelectorAll(`.funciones-por-modulo[data-modulo="${moduloSel}"] input[type=checkbox]:checked`);
-    if (checked.length === 0) { errEl.style.display = 'block'; return false; }
-    errEl.style.display = 'none';
     return true;
 }
-function filtrarRoles() {
-    const q = document.getElementById('searchRoles').value.toLowerCase().trim();
-    const filas = document.querySelectorAll('#tablaRoles tbody tr');
-    let visibles = 0;
-    filas.forEach(tr => {
-        const mostrar = !q || tr.innerText.toLowerCase().includes(q);
-        tr.style.display = mostrar ? '' : 'none';
-        if (mostrar) visibles++;
+function ordenarRoles(btn) {
+    const tbody = document.querySelector('#tablaRoles tbody');
+    const filas = Array.from(tbody.querySelectorAll('tr'));
+    
+    // Ignorar si no hay filas reales (mensaje "No existen roles")
+    if (filas.length <= 1 && filas[0].cells.length === 1) return;
+    
+    const order = btn.getAttribute('data-order');
+    
+    filas.sort((a, b) => {
+        const valA = a.cells[0].innerText.toLowerCase();
+        const valB = b.cells[0].innerText.toLowerCase();
+        if(order === 'asc') return valA.localeCompare(valB);
+        return valB.localeCompare(valA);
     });
-    const c = document.getElementById('contadorRoles');
-    c.textContent = q ? `${visibles} resultado(s) encontrado(s)` : '';
+    
+    filas.forEach(f => tbody.appendChild(f));
+    
+    if(order === 'asc') {
+        btn.setAttribute('data-order', 'desc');
+        btn.innerHTML = '<i class="fa-solid fa-arrow-down-z-a"></i> Ordenar Z-A';
+    } else {
+        btn.setAttribute('data-order', 'asc');
+        btn.innerHTML = '<i class="fa-solid fa-arrow-down-a-z"></i> Ordenar A-Z';
+    }
 }
 </script>
+
+<style>
+.form-select-large {
+    padding: 10px 14px;
+    background: var(--input-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    width: 100%;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+.form-select-large:focus {
+    border-color: var(--primary);
+    outline: none;
+}
+@media (max-width: 900px) {
+    form[id="formCrearRol"] > div {
+        grid-template-columns: 1fr !important;
+    }
+}
+</style>
 {% endblock %}
