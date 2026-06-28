@@ -7,32 +7,32 @@
 {% endblock %}
 
 {% block content %}
-<div class="page-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+<div class="page-header flex-between-wrap">
     <h1><i class="fa-solid fa-layer-group"></i> Panel de Gestión </h1>
     <button id="btnLimpiarFiltro" class="btn btn-secondary" style="display:none;" onclick="limpiarFiltros()">
         <i class="fa-solid fa-rotate-left"></i> Limpiar Filtro de Búsqueda
     </button>
 </div>
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+<div class="grid-2-cols">
     
     <!-- BLOQUE 1: USUARIOS (Arriba, ancho completo) -->
-    <div class="card" style="grid-column: 1 / -1;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px; flex-wrap:wrap; gap:12px;">
-            <h3 class="card-title" style="margin:0"><i class="fa-solid fa-users"></i> Usuarios</h3>
+    <div class="card grid-span-all">
+        <div class="flex-between-wrap mb-16">
+            <h3 class="card-title m-0"><i class="fa-solid fa-users"></i> Usuarios</h3>
             
-            <div style="display:flex; gap:12px; align-items:center; flex-grow:1; max-width:400px; position:relative;">
-                <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:12px; color:var(--text-muted); pointer-events:none;"></i>
+            <div class="search-wrapper search-wrapper-max flex-row-gap">
+                <i class="fa-solid fa-magnifying-glass search-icon-absolute"></i>
                 <input type="text" id="searchUsuarios" oninput="filtrarUsuarios(this.value)"
                        placeholder="Buscar por nombre de usuario..."
-                       style="padding:8px 12px 8px 36px; width:100%; border-radius:8px; border:1px solid var(--border); background:var(--input-bg); color:var(--text-primary)">
+                       class="search-input-styled">
             </div>
             
             {% if request.user.is_superuser %}
             <a href="{% url 'crear_usuario' %}" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Nuevo Usuario</a>
             {% endif %}
         </div>
-        <div class="table-container" style="max-height: 400px; overflow-y: auto;">
+        <div class="table-container h-400-scroll">
             <table class="data-table" id="tablaGestionUsuarios">
                 <thead>
                     <tr><th>Usuario</th><th>Cédula</th><th>Roles</th><th>Estado</th><th>Acción</th></tr>
@@ -43,7 +43,7 @@
                         data-user-id="{{ u.id }}" 
                         data-username="{{ u.user_name|lower }}" 
                         data-roles="{% for r in u.roles.all %}{{ r.id_rol }},{% endfor %}"
-                        style="cursor: pointer;"
+                        class="cursor-pointer"
                         onclick="seleccionarUsuario(this)">
                         <td><strong>{{ u.user_name }}</strong></td>
                         <td>{{ u.cedula }}</td>
@@ -54,9 +54,9 @@
                         </td>
                         <td>
                             {% if u.estado %}
-                            <span class="estado-activo" style="padding:5px 12px;border-radius:999px;font-size:.82rem"><span class="status-dot dot-green"></span> Activo</span>
+                            <span class="estado-activo status-badge"><span class="status-dot dot-green"></span> Activo</span>
                             {% else %}
-                            <span class="estado-inactivo" style="padding:5px 12px;border-radius:999px;font-size:.82rem"><span class="status-dot dot-red"></span> Inactivo</span>
+                            <span class="estado-inactivo status-badge"><span class="status-dot dot-red"></span> Inactivo</span>
                             {% endif %}
                         </td>
                         <td onclick="event.stopPropagation();">
@@ -67,18 +67,18 @@
                 </tbody>
             </table>
         </div>
-        <p id="usuariosFilterMsj" style="font-size:0.85rem; color:var(--text-muted); margin-top:8px; display:none;">
-            Mostrando resultados filtrados. <a href="#" onclick="event.preventDefault(); limpiarFiltros();" style="color:var(--primary)">Ver todos</a>
+        <p id="usuariosFilterMsj" class="text-muted-sm mt-8 hidden">
+            Mostrando resultados filtrados. <a href="#" onclick="event.preventDefault(); limpiarFiltros();" class="text-primary">Ver todos</a>
         </p>
     </div>
 
     <!-- BLOQUE 2: MODULOS (Medio Izquierda) -->
     <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-            <h3 class="card-title" style="margin:0"><i class="fa-solid fa-cubes"></i> Módulos</h3>
+        <div class="flex-between mb-16">
+            <h3 class="card-title m-0"><i class="fa-solid fa-cubes"></i> Módulos</h3>
             <a href="{% url 'modulos' %}" class="btn btn-primary btn-sm"><i class="fa-solid fa-gear"></i> Gestionar Módulos</a>
         </div>
-        <div class="table-container" style="max-height: 300px; overflow-y: auto;">
+        <div class="table-container h-300-scroll">
             <table class="data-table" id="tablaGestionModulos">
                 <thead>
                     <tr><th>Módulo</th><th>API Key</th><th>Estado</th><th>Acción</th></tr>
@@ -87,12 +87,12 @@
                     {% for m in modulos %}
                     <tr class="modulo-row" data-modulo-id="{{ m.id_modulo }}">
                         <td><strong>{{ m.nombre_modulo }}</strong></td>
-                        <td><code style="font-size:0.8rem;background:var(--input-bg);padding:4px;border-radius:4px;">{{ m.api_key|slice:":8" }}...</code></td>
+                        <td><code class="code-styled">{{ m.api_key|slice:":8" }}...</code></td>
                         <td>
                             {% if m.estado_modulo %}
-                            <span style="color:var(--success)"><i class="fa-solid fa-check-circle"></i> Activo</span>
+                            <span class="text-success"><i class="fa-solid fa-check-circle"></i> Activo</span>
                             {% else %}
-                            <span style="color:var(--danger)"><i class="fa-solid fa-xmark-circle"></i> Inactivo</span>
+                            <span class="text-danger"><i class="fa-solid fa-xmark-circle"></i> Inactivo</span>
                             {% endif %}
                         </td>
                         <td>
@@ -107,11 +107,11 @@
 
     <!-- BLOQUE 3: ROLES (Medio Derecha) -->
     <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-            <h3 class="card-title" style="margin:0"><i class="fa-solid fa-user-shield"></i> Roles</h3>
+        <div class="flex-between mb-16">
+            <h3 class="card-title m-0"><i class="fa-solid fa-user-shield"></i> Roles</h3>
             <a href="{% url 'roles' %}" class="btn btn-primary btn-sm"><i class="fa-solid fa-gear"></i> Gestionar Roles</a>
         </div>
-        <div class="table-container" style="max-height: 300px; overflow-y: auto;">
+        <div class="table-container h-300-scroll">
             <table class="data-table" id="tablaGestionRoles">
                 <thead>
                     <tr><th>Rol</th><th>Estado</th><th>Acción</th></tr>
@@ -124,9 +124,9 @@
                         <td><strong>{{ r.nombre_rol }}</strong></td>
                         <td>
                             {% if r.estado_rol %}
-                            <span style="color:var(--success)"><i class="fa-solid fa-check-circle"></i> Activo</span>
+                            <span class="text-success"><i class="fa-solid fa-check-circle"></i> Activo</span>
                             {% else %}
-                            <span style="color:var(--danger)"><i class="fa-solid fa-xmark-circle"></i> Inactivo</span>
+                            <span class="text-danger"><i class="fa-solid fa-xmark-circle"></i> Inactivo</span>
                             {% endif %}
                         </td>
                         <td>
@@ -140,12 +140,12 @@
     </div>
 
     <!-- BLOQUE 5: FUNCIONES (Abajo, ancho completo) -->
-    <div class="card" style="grid-column: 1 / -1;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-            <h3 class="card-title" style="margin:0"><i class="fa-solid fa-bolt"></i> Funciones</h3>
+    <div class="card grid-span-all">
+        <div class="flex-between mb-16">
+            <h3 class="card-title m-0"><i class="fa-solid fa-bolt"></i> Funciones</h3>
             <a href="{% url 'funciones' %}" class="btn btn-primary btn-sm"><i class="fa-solid fa-gear"></i> Gestionar Funciones</a>
         </div>
-        <div class="table-container" style="max-height: 400px; overflow-y: auto;">
+        <div class="table-container h-400-scroll">
             <table class="data-table" id="tablaGestionFunciones">
                 <thead>
                     <tr><th>Función</th><th>Descripción</th><th>Módulo Asociado</th><th>Estado</th><th>Acción</th></tr>
@@ -156,19 +156,19 @@
                         data-funcion-id="{{ f.id_funcion }}"
                         data-modulos="{% for m in f.modulos.all %}{{ m.id_modulo }},{% endfor %}">
                         <td><strong>{{ f.nombre_funcion }}</strong></td>
-                        <td><span style="font-size:0.9rem;color:var(--text-muted)">{{ f.descripcion|default:"-" }}</span></td>
+                        <td><span class="text-muted-sm">{{ f.descripcion|default:"-" }}</span></td>
                         <td>
                             {% for m in f.modulos.all %}
-                            <span class="role-badge" style="background:var(--border);">{{ m.nombre_modulo }}</span>
+                            <span class="role-badge badge-border">{{ m.nombre_modulo }}</span>
                             {% empty %}
-                            <span style="color:var(--text-muted);font-style:italic">Ninguno</span>
+                            <span class="text-muted-sm text-italic">Ninguno</span>
                             {% endfor %}
                         </td>
                         <td>
                             {% if f.estado_funcion %}
-                            <span style="color:var(--success)"><i class="fa-solid fa-check-circle"></i> Activo</span>
+                            <span class="text-success"><i class="fa-solid fa-check-circle"></i> Activo</span>
                             {% else %}
-                            <span style="color:var(--danger)"><i class="fa-solid fa-xmark-circle"></i> Inactivo</span>
+                            <span class="text-danger"><i class="fa-solid fa-xmark-circle"></i> Inactivo</span>
                             {% endif %}
                         </td>
                         <td>

@@ -41,18 +41,18 @@
 
                 <div class="form-group">
                     <label for="password">Contraseña</label>
-                    <div class="input-wrapper" style="position: relative;">
+                    <div class="input-wrapper pos-relative">
                         <i class="fa-solid fa-lock"></i>
                         <input type="password" id="password" name="password" class="form-input" placeholder="••••••••" required autocomplete="current-password">
-                        <i class="fa-regular fa-eye" onclick="togglePasswordVisibility('password', this)" style="cursor: pointer; position: absolute; right: 15px; color: var(--text-secondary);"></i>
+                        <i class="fa-regular fa-eye icon-eye" onclick="togglePasswordVisibility('password', this)"></i>
                     </div>
                 </div>
 
-                <div style="text-align: right; margin-bottom: 20px;">
-                    <a href="javascript:void(0)" onclick="toggleAuthMode('forgot')" style="font-size: 0.85rem; color: var(--primary); text-decoration: none; font-weight: 500;">¿Olvidaste tu contraseña?</a>
+                <div class="text-right mb-20">
+                    <a href="javascript:void(0)" onclick="toggleAuthMode('forgot')" class="text-primary text-decoration-none font-w500 text-xs">¿Olvidaste tu contraseña?</a>
                 </div>
 
-                <button type="submit" class="btn btn-primary" style="width:100%">
+                <button type="submit" class="btn btn-primary w-100">
                     <span>Ingresar al Sistema</span>
                     <i class="fa-solid fa-arrow-right-to-bracket"></i>
                 </button>
@@ -68,11 +68,11 @@
 
         <!-- FORMULARIO DE RECUPERACIÓN DE CONTRASEÑA -->
         <div id="forgot-box" class="auth-container" {% if not show_forgot %}style="display:none"{% endif %}>
-            <div class="logo-area" style="margin-bottom: 20px;">
-                <div class="logo-icon" style="width: 55px; height: 55px; font-size: 1.5rem; background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);">
+            <div class="logo-area mb-20">
+                <div class="logo-icon logo-icon-lg bg-gradient-warning">
                     <i class="fa-solid fa-key"></i>
                 </div>
-                <h1 class="auth-title" style="font-size: 1.5rem;">Recuperar Acceso</h1>
+                <h1 class="auth-title text-xl">Recuperar Acceso</h1>
                 <p class="auth-subtitle">Te enviaremos un enlace a tu correo</p>
             </div>
 
@@ -85,21 +85,21 @@
 
             <form method="POST" action="{% url 'forgot_password' %}">
                 {% csrf_token %}
-                <div class="form-group" style="margin-bottom: 20px;">
+                <div class="form-group mb-20">
                     <div class="input-wrapper">
                         <i class="fa-regular fa-envelope"></i>
                         <input type="email" name="email" class="form-input" placeholder="Correo Institucional" required>
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary" style="width:100%;background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);">
+                <button type="submit" class="btn btn-primary w-100 bg-gradient-warning">
                     <span>Enviar Enlace</span>
                     <i class="fa-solid fa-paper-plane"></i>
                 </button>
             </form>
 
             <div class="toggle-link">
-                <a href="javascript:void(0)" onclick="toggleAuthMode('login')" style="color: var(--text-secondary);"><i class="fa-solid fa-arrow-left"></i> Volver al Login</a>
+                <a href="javascript:void(0)" onclick="toggleAuthMode('login')" class="text-secondary"><i class="fa-solid fa-arrow-left"></i> Volver al Login</a>
             </div>
         </div>
     </div>

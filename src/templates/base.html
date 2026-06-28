@@ -170,14 +170,14 @@
         // ===== LÍMITE DE INACTIVIDAD CON MODAL =====
         {% if user.is_authenticated %}
         document.body.insertAdjacentHTML('beforeend', `
-        <div id="inactivityModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
-            <div style="background:var(--card-bg, #1e1e2e); border:1px solid var(--card-border, #333); padding:30px; border-radius:16px; text-align:center; max-width:400px; width:90%; box-shadow:0 20px 40px rgba(0,0,0,0.4);">
-                <i class="fa-solid fa-clock" style="font-size:3rem; color:var(--warning, #f59e0b); margin-bottom:15px;"></i>
-                <h3 style="margin-top:0; color:var(--text-primary, #fff); font-size:1.4rem;">Inactividad detectada</h3>
-                <p style="color:var(--text-secondary, #aaa); margin-bottom:25px; line-height:1.5;">Llevas 5 minutos inactivo. ¿Deseas prolongar tu sesión? Se cerrará automáticamente en <strong id="countdownText" style="color:var(--danger, #ef4444); font-size:1.1rem;">60</strong> segundos.</p>
-                <div style="display:flex; justify-content:center; gap:15px;">
-                    <button id="btnLogoutSession" class="btn btn-secondary" style="padding:10px 20px; font-weight:600;">No, cerrar</button>
-                    <button id="btnKeepSession" class="btn btn-primary" style="padding:10px 20px; font-weight:600;">Sí, mantener</button>
+        <div id="inactivityModal" class="inactivity-modal hidden">
+            <div class="inactivity-modal-content">
+                <i class="fa-solid fa-clock inactivity-modal-icon"></i>
+                <h3 class="inactivity-modal-title">Inactividad detectada</h3>
+                <p class="inactivity-modal-text">Llevas 5 minutos inactivo. ¿Deseas prolongar tu sesión? Se cerrará automáticamente en <strong id="countdownText" class="text-danger text-lg">60</strong> segundos.</p>
+                <div class="flex-center gap-15">
+                    <button id="btnLogoutSession" class="btn btn-secondary font-w600 px-20-py-10">No, cerrar</button>
+                    <button id="btnKeepSession" class="btn btn-primary font-w600 px-20-py-10">Sí, mantener</button>
                 </div>
             </div>
         </div>
@@ -358,9 +358,7 @@
                 
                 paginationContainer.innerHTML = "";
                 if (filteredRows.length > 0) {
-                    if (totalPages > 1) {
-                        paginationContainer.appendChild(generatePaginationButtons(currentPage, totalPages));
-                    }
+                    paginationContainer.appendChild(generatePaginationButtons(currentPage, totalPages));
                 } else {
                     paginationContainer.innerHTML = "<span style='color:var(--text-muted);font-size:0.9rem;'>No hay registros para mostrar</span>";
                 }

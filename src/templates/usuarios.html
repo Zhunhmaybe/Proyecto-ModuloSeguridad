@@ -10,23 +10,23 @@
 <div class="page-header"><h1>👥 Gestión de Usuarios</h1></div>
 
 <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px">
-        <h3 class="card-title" style="margin:0">Usuarios registrados</h3>
-        <div style="position:relative;min-width:260px;display:flex;gap:12px;">
-            <div style="position:relative;flex-grow:1;">
-                <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none"></i>
+    <div class="flex-between-wrap mb-16">
+        <h3 class="card-title m-0">Usuarios registrados</h3>
+        <div class="search-wrapper flex-row-gap">
+            <div class="search-wrapper">
+                <i class="fa-solid fa-magnifying-glass search-icon-absolute"></i>
                 <input type="text" id="searchUsuarios" oninput="filtrarTabla('searchUsuarios','tablaUsuarios')"
                        placeholder="Buscar por usuario, cédula, correo, rol..."
-                       style="padding:8px 12px 8px 36px;width:100%;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text-primary)">
+                       class="search-input-styled">
             </div>
             {% if request.user.is_superuser %}
-            <a href="{% url 'crear_usuario' %}" class="btn btn-primary" style="white-space:nowrap;display:flex;align-items:center;gap:6px;">
+            <a href="{% url 'crear_usuario' %}" class="btn btn-primary flex-row-gap-sm nowrap">
                 <i class="fa-solid fa-plus"></i> Nuevo Usuario
             </a>
             {% endif %}
         </div>
     </div>
-    <p id="contadorUsuarios" style="font-size:.82rem;color:var(--text-muted);margin-bottom:8px"></p>
+    <p id="contadorUsuarios" class="text-muted-sm mb-8"></p>
     <div class="table-container">
         <table class="data-table" id="tablaUsuarios">
             <thead>
@@ -41,7 +41,7 @@
                     <td>
                         <div class="user-cell">
                             <div class="user-avatar">{{ usuario.user_name|slice:":2"|upper }}</div>
-                            <span style="font-weight:500">{{ usuario.user_name }}</span>
+                            <span class="font-w500">{{ usuario.user_name }}</span>
                         </div>
                     </td>
                     <td>{{ usuario.cedula }}</td>
@@ -50,14 +50,14 @@
                         {% for rol in usuario.roles.all %}
                         <span class="role-badge">{{ rol.nombre_rol }}</span>
                         {% empty %}
-                        <span style="color:var(--text-muted);font-size:.82rem">Sin rol</span>
+                        <span class="text-muted-sm">Sin rol</span>
                         {% endfor %}
                     </td>
                     <td>
                         {% if usuario.estado %}
-                        <span class="estado-activo" style="padding:5px 12px;border-radius:999px;font-size:.82rem"><span class="status-dot dot-green"></span> Activo</span>
+                        <span class="estado-activo status-badge"><span class="status-dot dot-green"></span> Activo</span>
                         {% else %}
-                        <span class="estado-inactivo" style="padding:5px 12px;border-radius:999px;font-size:.82rem"><span class="status-dot dot-red"></span> Inactivo</span>
+                        <span class="estado-inactivo status-badge"><span class="status-dot dot-red"></span> Inactivo</span>
                         {% endif %}
                     </td>
                     <td>
@@ -65,7 +65,7 @@
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:40px">No existen usuarios registrados</td></tr>
+                <tr><td colspan="6" class="text-center-p40">No existen usuarios registrados</td></tr>
                 {% endfor %}
             </tbody>
         </table>

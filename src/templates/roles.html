@@ -10,7 +10,7 @@
 <div class="page-header"><h1>🔐 Gestión de Roles</h1></div>
 
 <!-- CREAR ROL -->
-<div class="card" style="margin-bottom:24px">
+<div class="card mb-24">
     <div class="card-header"><h3 class="card-title">Crear Rol</h3></div>
     <form method="POST" id="formCrearRol">
         {% csrf_token %}
@@ -18,7 +18,7 @@
         <div class="alert alert-error"><i class="fa-solid fa-triangle-exclamation"></i> {{ error }}</div>
         {% endif %}
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <div class="grid-2-cols">
             <div>
                 <div class="form-group">
                     <label class="form-label">
@@ -31,7 +31,7 @@
                         {% endfor %}
                     </select>
                     {% if not modulos %}
-                    <small style="color:var(--text-muted);font-style:italic">No hay módulos activos. Crea un módulo primero.</small>
+                    <small class="text-muted-sm text-italic">No hay módulos activos. Crea un módulo primero.</small>
                     {% endif %}
                 </div>
 
@@ -62,7 +62,7 @@
                                 </label>
                                 {% endif %}
                                 {% empty %}
-                                <p style="color:var(--text-muted);font-style:italic;padding:8px">Este módulo no tiene funciones activas asignadas.</p>
+                                <p class="text-muted-sm text-italic">Este módulo no tiene funciones activas asignadas.</p>
                                 {% endfor %}
                             </div>
                         </div>
@@ -76,24 +76,24 @@
 
 <!-- LISTA ROLES -->
 <div class="card">
-    <div style="display:flex;justify-content:flex-start;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:24px">
-        <h3 class="card-title" style="margin:0">Roles existentes</h3>
-        <div style="display:flex; gap:12px; align-items:center; flex-grow:1; max-width:600px; position:relative;">
-            <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none"></i>
+    <div class="flex-start mb-16 flex-row-gap">
+        <h3 class="card-title m-0">Roles existentes</h3>
+        <div class="search-wrapper search-wrapper-large flex-row-gap">
+            <i class="fa-solid fa-magnifying-glass search-icon-absolute"></i>
             <input type="text" id="searchRoles"
                    placeholder="Buscar rol..."
-                   style="padding:8px 12px 8px 36px;width:100%;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text-primary)">
+                   class="search-input-styled">
                    
-            <select id="filterModuloRoles" style="padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text-primary);min-width:180px">
+            <select id="filterModuloRoles" class="select-styled">
                 <option value="">Todos los Módulos</option>
                 {% for modulo in modulos %}
                 <option value="{{ modulo.nombre_modulo }}">{{ modulo.nombre_modulo }}</option>
                 {% endfor %}
             </select>
         </div>
-        <button onclick="ordenarRoles(this)" class="btn btn-secondary btn-sm" data-order="asc" style="margin-left:auto"><i class="fa-solid fa-arrow-down-a-z"></i> Ordenar A-Z</button>
+        <button onclick="ordenarRoles(this)" class="btn btn-secondary btn-sm ml-auto" data-order="asc"><i class="fa-solid fa-arrow-down-a-z"></i> Ordenar A-Z</button>
     </div>
-    <p id="contadorRoles" style="font-size:.82rem;color:var(--text-muted);margin-bottom:8px"></p>
+    <p id="contadorRoles" class="text-muted-sm mb-8"></p>
     <div class="table-container">
         <table class="data-table" id="tablaRoles">
             <thead><tr><th>Nombre</th><th>Módulo Principal</th><th>Funciones</th><th>Acción</th></tr></thead>
@@ -106,11 +106,11 @@
                             {% with f=rol.funciones.first %}
                                 {% for m in f.modulos.all %}
                                     {% if forloop.first %}
-                                        <span class="role-badge" style="background:var(--border)">{{ m.nombre_modulo }}</span>
+                                        <span class="role-badge badge-border">{{ m.nombre_modulo }}</span>
                                     {% endif %}
                                 {% endfor %}
                             {% endwith %}
-                            <span style="display:none;">
+                            <span class="hidden">
                                 {% for func in rol.funciones.all %}
                                     {% for mod in func.modulos.all %}
                                         {{ mod.nombre_modulo }}
@@ -118,20 +118,20 @@
                                 {% endfor %}
                             </span>
                         {% else %}
-                            <span style="color:var(--text-muted);font-style:italic">Sin Módulo</span>
+                            <span class="text-muted-sm text-italic">Sin Módulo</span>
                         {% endif %}
                     </td>
                     <td>
                         {% for f in rol.funciones.all %}
                         <span class="role-badge">{{f.nombre_funcion}}</span>
                         {% empty %}
-                        <span style="color:var(--text-muted);font-size:.82rem">Sin funciones</span>
+                        <span class="text-muted-sm">Sin funciones</span>
                         {% endfor %}
                     </td>
                     <td><a href="{% url 'editar_rol' rol.id_rol %}" class="btn btn-action-edit"><i class="fa-solid fa-pen"></i> Editar</a></td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:30px">No existen roles registrados</td></tr>
+                <tr><td colspan="3" class="text-center-p30">No existen roles registrados</td></tr>
                 {% endfor %}
             </tbody>
         </table>
