@@ -23,17 +23,17 @@
 
         <div class="form-group">
             <label class="form-label">Usuario</label>
-            <input type="text" name="user_name" placeholder="Ej: JuanPerez" required minlength="8" maxlength="16" pattern="[A-Za-z]+" title="Solo letras, sin espacios ni caracteres especiales" class="form-input-styled">
+            <input type="text" name="user_name" placeholder="Ej: JuanPerez" value="{{ old_data.user_name|default:'' }}" required minlength="8" maxlength="16" pattern="[A-Za-z]+" title="Solo letras, sin espacios ni caracteres especiales" class="form-input-styled">
         </div>
 
         <div class="form-group">
             <label class="form-label">Correo</label>
-            <input type="email" name="email" placeholder="ejemplo@correo.com" required class="form-input-styled">
+            <input type="email" name="email" placeholder="ejemplo@correo.com" value="{{ old_data.email|default:'' }}" required class="form-input-styled">
         </div>
 
         <div class="form-group">
             <label class="form-label">Cédula</label>
-            <input type="text" name="cedula" placeholder="1002003004" required maxlength="10" class="form-input-styled">
+            <input type="text" name="cedula" placeholder="1002003004" value="{{ old_data.cedula|default:'' }}" required maxlength="10" class="form-input-styled">
         </div>
 
         <div class="form-group">
@@ -60,7 +60,7 @@
             <div class="roles-container">
                 {% for rol in roles_list %}
                 <label class="role-pill">
-                    <input type="checkbox" name="roles" value="{{ rol.id_rol }}">
+                    <input type="checkbox" name="roles" value="{{ rol.id_rol }}" {% if rol.id_rol|stringformat:"s" in old_data.roles %}checked{% endif %}>
                     <span>{{ rol.nombre_rol }}</span>
                 </label>
                 {% empty %}

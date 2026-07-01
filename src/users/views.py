@@ -342,6 +342,8 @@ def crear_usuario(request):
             error = f"El usuario '{user_name}' ya existe."
         elif Usuario.objects.filter(email=email).exists():
             error = f"El correo '{email}' ya está registrado."
+        elif Usuario.objects.filter(cedula=cedula).exists():
+            error = f"La cédula '{cedula}' ya está registrada."
 
         if not error:
             nuevo_usuario = Usuario.objects.create_user(
@@ -358,6 +360,18 @@ def crear_usuario(request):
                 nuevo_usuario.roles.set(roles_ids)
             
             return redirect('usuarios')
+            
+        roles_list = Rol.objects.filter(estado_rol=True)
+        return render(request, 'crear_usuario.html', {
+            'roles_list': roles_list,
+            'error': error,
+            'old_data': {
+                'user_name': user_name,
+                'email': email,
+                'cedula': cedula,
+                'roles': request.POST.getlist('roles')
+            }
+        })
             
     roles_list = Rol.objects.filter(estado_rol=True)
     return render(request, 'crear_usuario.html', {

@@ -112,10 +112,8 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     class Meta:
         db_table = 'usuarios'
     
-    # Required for Django admin
     is_staff = models.BooleanField(default=False)
     
-    # Relación muchos a muchos con Roles
     roles = models.ManyToManyField(Rol, related_name='usuarios', blank=True)
 
     objects = UsuarioManager()
@@ -143,6 +141,15 @@ class Funcion(models.Model):
 
     estado_funcion = models.BooleanField(
         default=True
+    )
+
+    modulo = models.ForeignKey(
+        'modules.Modulo',
+        on_delete=models.CASCADE,
+        related_name='funciones',
+        null=True,
+        blank=True,
+        db_column='modulo_id'
     )
 
 

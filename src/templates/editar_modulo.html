@@ -11,115 +11,211 @@
 {% block content %}
 <div class="page-header"><h1>✏️ Editar Módulo</h1></div>
 
-<div class="card" style="max-width:640px;margin:0 auto">
-    {% if error %}
-    <div class="alert alert-error"><i class="fa-solid fa-triangle-exclamation"></i> {{ error }}</div>
-    {% endif %}
+{% if error %}
+<div class="alert alert-error" style="max-width: 1000px; margin: 0 auto 20px;"><i class="fa-solid fa-triangle-exclamation"></i> {{ error }}</div>
+{% endif %}
 
-    <form method="POST" id="formEditarModulo">
-        {% csrf_token %}
+<form method="POST" id="formEditarModulo">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="edit_module">
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 1100px; margin: 0 auto;">
+        
+        <!-- Columna 1: Info del Módulo -->
+        <div class="card" style="margin: 0;">
+            <h3 class="card-title mb-16">Información General</h3>
+            
+            <div class="form-group">
+                <label class="form-label">Nombre del Módulo <span style="color:var(--danger)">*</span></label>
+                <input type="text" name="nombre_modulo" value="{{ modulo.nombre_modulo }}"
+                       required maxlength="100" placeholder="Ej: Facturación" class="form-input-styled">
+            </div>
 
-        <div class="form-group">
-            <label class="form-label">Nombre del Módulo <span style="color:var(--danger)">*</span></label>
-            <input type="text" name="nombre_modulo" value="{{ modulo.nombre_modulo }}"
-                   required maxlength="100" placeholder="Ej: Facturación">
+            <div class="form-group">
+                <label class="form-label">Descripción</label>
+                <textarea name="descripcion_modulo" rows="3" maxlength="255"
+                          placeholder="Descripción del módulo..." class="form-input-styled">{{ modulo.descripcion_modulo }}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Estado</label>
+                <div class="toggle-wrapper">
+                    <label class="toggle">
+                        <input type="checkbox" name="estado_modulo" value="true" {% if modulo.estado_modulo %}checked{% endif %}>
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="toggle-label">Activo</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Roles asignados al Módulo</label>
+                <div class="items-box" style="max-height:200px;overflow-y:auto;padding:12px;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;">
+                    {% if modulo.roles.all %}
+                    <div class="roles-container">
+                        {% for r in modulo.roles.all %}
+                        <span class="role-badge" style="padding:6px 12px; font-size:.85rem;">{{ r.nombre_rol }}</span>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p style="color:var(--text-muted);font-style:italic;font-size:.85rem;margin:0">Este módulo no tiene roles asignados aún.</p>
+                    {% endif %}
+                </div>
+                <div style="margin-top:10px;">
+                    <button type="button" class="btn btn-info" style="padding:6px 14px;font-size:.85rem" onclick="openModal('assignRolesModal')">🔗 Asignar Roles</button>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 16px;">
+                <label class="form-label">Funciones asignadas al Módulo</label>
+                <div class="items-box" style="min-height:80px; max-height:200px; overflow-y:auto; padding:12px; background:var(--input-bg); border:1px solid var(--border); border-radius:8px;">
+                    <div id="funcionesSeleccionadasContainer" class="roles-container">
+                        <p id="noFuncionesMsg" style="color:var(--text-muted);font-style:italic;font-size:.85rem;margin:0">Este módulo no tiene funciones asignadas aún.</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label class="form-label">Descripción</label>
-            <textarea name="descripcion_modulo" rows="3" maxlength="255"
-                      placeholder="Descripción del módulo...">{{ modulo.descripcion_modulo }}</textarea>
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">Estado</label>
-            <select name="estado_modulo">
-                <option value="true" {% if modulo.estado_modulo %}selected{% endif %}>✅ Activo</option>
-                <option value="false" {% if not modulo.estado_modulo %}selected{% endif %}>🚫 Inactivo</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">Roles asignados al Módulo</label>
-            <div class="items-box" style="max-height:280px;overflow-y:auto;padding:12px">
-                {% if modulo.roles.all %}
-                <div class="roles-container">
-                    {% for r in modulo.roles.all %}
-                    <span class="role-badge" style="padding:6px 12px; font-size:.85rem;">{{ r.nombre_rol }}</span>
+        <!-- Columna 2: Funciones -->
+        <div class="card" style="margin: 0; display: flex; flex-direction: column;">
+            <h3 class="card-title mb-16">Asignar Funciones</h3>
+            
+            <div style="position:relative;margin-bottom:10px">
+                <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none;font-size:.85rem"></i>
+                <input type="text" id="buscadorFunciones" oninput="filtrarFunciones(this.value)"
+                       placeholder="Buscar función..."
+                       class="form-input-styled" style="padding-left:32px;">
+            </div>
+            
+            <div class="items-box" style="flex-grow: 1; overflow-y:auto; padding:12px; background:var(--bg-color); border:1px solid var(--border); border-radius:8px; min-height: 250px;">
+                <div class="roles-container" id="gridFunciones">
+                    {% for f in todas_funciones %}
+                    <label class="role-pill chk-label-funcion">
+                        <input type="checkbox" name="funciones" value="{{ f.id_funcion }}" 
+                            {% if f.id_funcion in funciones_actuales_ids %}checked{% endif %}>
+                        <span>{{ f.nombre_funcion }}</span>
+                    </label>
+                    {% empty %}
+                    <p style="color:var(--text-muted);font-style:italic;padding:8px">No hay funciones activas disponibles.</p>
                     {% endfor %}
                 </div>
-                {% else %}
-                <p style="color:var(--text-muted);font-style:italic;font-size:.85rem;margin:0">Este módulo no tiene roles asignados aún.</p>
-                {% endif %}
-            </div>
-            <div style="margin-top:10px;">
-                <button type="button" class="btn btn-info" style="padding:6px 14px;font-size:.85rem" onclick="openModal('assignModal_{{ modulo.id_modulo }}')">🔗 Asignar Roles</button>
             </div>
         </div>
-        <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:24px">
-            <a href="{% url 'modulos' %}" class="btn btn-secondary">Cancelar</a>
-            <button type="submit" class="btn btn-primary">💾 Guardar Cambios</button>
-        </div>
-    </form>
-</div>
 
+    </div>
+    
+    <div style="display:flex;justify-content:flex-end;gap:12px; max-width: 1100px; margin: 24px auto 0;">
+        <a href="{% url 'modulos' %}" class="btn btn-secondary">Cancelar</a>
+        <button type="submit" class="btn btn-primary">💾 Guardar Cambios</button>
+    </div>
+</form>
 
-<!-- Modal de Asignación de Funciones -->
-<div id="assignModal_{{ modulo.id_modulo }}" class="modal-backdrop hidden">
+<!-- Modal de Asignación de Roles (Verdadero) -->
+<div id="assignRolesModal" class="modal-backdrop hidden">
     <div class="modal-box" style="max-width:560px">
         <div class="modal-header">
-            <span>Asignar Funciones a: {{ modulo.nombre_modulo }}</span>
-            <span class="close-btn" onclick="closeModal('assignModal_{{ modulo.id_modulo }}')">×</span>
+            <span>Asignar Roles a: {{ modulo.nombre_modulo }}</span>
+            <span class="close-btn" onclick="closeModal('assignRolesModal')">×</span>
         </div>
         <form method="POST">
             {% csrf_token %}
-            <input type="hidden" name="action" value="assign_functions">
-            <input type="hidden" name="module_id" value="{{ modulo.id_modulo }}">
-
+            <input type="hidden" name="action" value="assign_roles">
+            
             <div class="form-group">
-                <label class="form-label">
-                    Funciones Disponibles
-                </label>
-                <!-- Buscador rápido dentro del modal -->
-                <div style="position:relative;margin-bottom:10px">
-                    <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none;font-size:.85rem"></i>
-                    <input type="text" oninput="filtrarFuncionesAsignar('{{ modulo.id_modulo }}', this.value)"
-                           placeholder="Buscar función..."
-                           style="padding:7px 10px 7px 32px;width:100%;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text-primary);font-size:.88rem">
-                </div>
-                <div class="items-box" style="max-height:220px;overflow-y:auto">
-                    <div class="items-grid" id="gridAsignar_{{ modulo.id_modulo }}">
-                        {% for f in todas_funciones %}
-                        <label class="grid-item chk-label-asignar">
-                            <input type="checkbox" name="funciones" value="{{ f.id_funcion }}" 
-                                {% if f.id_funcion in funciones_actuales_ids %}checked{% endif %}>
-                            <span>{{ f.nombre_funcion }}</span>
+                <label class="form-label">Roles Disponibles</label>
+                <div class="items-box" style="max-height:250px;overflow-y:auto; padding:12px; background:var(--input-bg); border:1px solid var(--border); border-radius:8px;">
+                    <div class="items-grid">
+                        {% for r in todos_roles %}
+                        <label class="grid-item chk-label-rol" style="display:flex; align-items:center; gap:8px; padding:6px; cursor:pointer;">
+                            <input type="checkbox" name="roles" value="{{ r.id_rol }}" 
+                                {% if r.id_rol in roles_actuales_ids %}checked{% endif %}>
+                            <span style="font-size:.9rem">{{ r.nombre_rol }}</span>
                         </label>
                         {% empty %}
-                        <p style="color:var(--text-muted);font-style:italic;padding:8px">No hay funciones activas disponibles.</p>
+                        <p style="color:var(--text-muted);font-style:italic;padding:8px">No hay roles activos disponibles.</p>
                         {% endfor %}
                     </div>
                 </div>
             </div>
 
             <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:15px">
-                <button type="button" class="btn btn-secondary" onclick="closeModal('assignModal_{{ modulo.id_modulo }}')">Cancelar</button>
-                <button type="submit" class="btn btn-primary">Guardar Asignación</button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal('assignRolesModal')">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Guardar Roles</button>
             </div>
         </form>
     </div>
 </div>
 
 <script>
-function filtrarFuncionesAsignar(moduloId, q) {
+function filtrarFunciones(q) {
     q = q.toLowerCase().trim();
-    const grid = document.getElementById('gridAsignar_' + moduloId);
+    const grid = document.getElementById('gridFunciones');
     if (!grid) return;
-    grid.querySelectorAll('.chk-label-asignar').forEach(label => {
+    grid.querySelectorAll('.chk-label-funcion').forEach(label => {
         const nombre = label.querySelector('span').textContent.toLowerCase();
-        label.style.display = !q || nombre.includes(q) ? '' : 'none';
+        const isChecked = label.querySelector('input[type="checkbox"]').checked;
+        
+        if (isChecked) {
+            label.style.display = 'none';
+        } else if (q && !nombre.includes(q)) {
+            label.style.display = 'none';
+        } else {
+            label.style.display = '';
+        }
     });
 }
+
+function updateSelectedFunciones() {
+    const container = document.getElementById('funcionesSeleccionadasContainer');
+    const msg = document.getElementById('noFuncionesMsg');
+    
+    // Manually hide checked elements in the right panel and apply search filter
+    const q = document.getElementById('buscadorFunciones') ? document.getElementById('buscadorFunciones').value.toLowerCase().trim() : '';
+    document.querySelectorAll('.chk-label-funcion').forEach(label => {
+        const chk = label.querySelector('input[type="checkbox"]');
+        const nombre = label.querySelector('span').textContent.toLowerCase();
+        if (chk.checked) {
+            label.style.display = 'none';
+        } else if (q && !nombre.includes(q)) {
+            label.style.display = 'none';
+        } else {
+            label.style.display = '';
+        }
+    });
+
+    const checkboxes = document.querySelectorAll('.chk-label-funcion input[type="checkbox"]:checked');
+    
+    container.querySelectorAll('.role-badge').forEach(b => b.remove());
+    
+    if (checkboxes.length === 0) {
+        msg.style.display = 'block';
+    } else {
+        msg.style.display = 'none';
+        checkboxes.forEach(chk => {
+            const span = document.createElement('span');
+            span.className = 'role-badge assigned-function-badge';
+            span.style.cursor = 'pointer'; // Make the whole badge look clickable
+            
+            // Add a little hover effect via inline events if needed, but standard badge is fine
+            span.onmouseover = () => span.style.opacity = '0.8';
+            span.onmouseout = () => span.style.opacity = '1';
+            
+            span.textContent = chk.nextElementSibling.textContent;
+            
+            span.onclick = function() {
+                chk.checked = false;
+                updateSelectedFunciones();
+            };
+            
+            container.appendChild(span);
+        });
+    }
+}
+
+document.querySelectorAll('.chk-label-funcion input[type="checkbox"]').forEach(chk => {
+    chk.addEventListener('change', updateSelectedFunciones);
+});
+document.addEventListener('DOMContentLoaded', updateSelectedFunciones);
 
 function openModal(id) {
     const el = document.getElementById(id);

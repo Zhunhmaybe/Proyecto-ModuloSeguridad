@@ -43,7 +43,7 @@
 
             <!-- Filtro de módulo -->
             <div style="margin-bottom:10px">
-                <select id="moduloFiltroEditar" class="form-select-large" onchange="filtrarPorModulo(this.value)">
+                <select id="moduloFiltroEditar" class="select-styled" onchange="filtrarPorModulo(this.value)">
                     <option value="">— Todos los Módulos —</option>
                     {% for modulo in modulos %}
                     <option value="{{ modulo.id_modulo }}">{{ modulo.nombre_modulo }}</option>

@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Modulo, FuncionModulo
+from .models import Modulo
 from users.models import Funcion, Rol
 
 
@@ -32,8 +32,8 @@ def modulos_view(request):
                 descripcion_modulo=descripcion,
                 estado_modulo=True
             )
-            for f_id in funciones_ids:
-                FuncionModulo.objects.get_or_create(modulo=modulo, funcion_id=f_id)
+            if funciones_ids:
+                Funcion.objects.filter(id_funcion__in=funciones_ids).update(modulo=modulo)
 
         elif action == 'toggle_module_status':
             mod_id = request.POST.get('module_id')
@@ -72,6 +72,7 @@ def editar_modulo(request, id):
             nombre = request.POST.get('nombre_modulo', '').strip()
             descripcion = request.POST.get('descripcion_modulo', '').strip()
             estado = request.POST.get('estado_modulo') == 'true'
+            funciones_ids = request.POST.getlist('funciones')
 
             ctx = {'modulo': modulo, 'roles': roles, 'roles_actuales_ids': roles_actuales_ids}
 
@@ -87,6 +88,10 @@ def editar_modulo(request, id):
             modulo.descripcion_modulo = descripcion
             modulo.estado_modulo = estado
             modulo.save()
+            
+            Funcion.objects.filter(modulo=modulo).update(modulo=None)
+            if funciones_ids:
+                Funcion.objects.filter(id_funcion__in=funciones_ids).update(modulo=modulo)
 
             return redirect('modulos')
 
@@ -94,9 +99,15 @@ def editar_modulo(request, id):
     roles_actuales_ids = set(modulo.roles.values_list('id_rol', flat=True))
     # Obtener todos los roles activos para el modal
     todos_roles = Rol.objects.filter(estado_rol=True)
+    
+    todas_funciones = Funcion.objects.filter(estado_funcion=True)
+    funciones_actuales_ids = set(modulo.funciones.values_list('id_funcion', flat=True))
+    
     return render(request, 'editar_modulo.html', {
         'modulo': modulo,
         'roles_actuales_ids': roles_actuales_ids,
         'todos_roles': todos_roles,
+        'todas_funciones': todas_funciones,
+        'funciones_actuales_ids': funciones_actuales_ids,
     })
 

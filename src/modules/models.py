@@ -24,17 +24,6 @@ class Modulo(models.Model):
     )
 
 
-    funciones = models.ManyToManyField(
-
-        Funcion,
-
-        through='FuncionModulo',
-
-        related_name='modulos'
-
-    )
-
-
     class Meta:
 
         db_table = 'modulos'
@@ -44,35 +33,3 @@ class Modulo(models.Model):
 
         return self.nombre_modulo
 
-class FuncionModulo(models.Model):
-
-    id = models.AutoField(
-        primary_key=True
-    )
-
-
-    funcion = models.ForeignKey(
-
-        Funcion,
-
-        on_delete=models.CASCADE,
-
-        db_column='funcion_id'
-
-    )
-
-
-    modulo = models.ForeignKey(
-
-        'Modulo',
-
-        on_delete=models.CASCADE,
-
-        db_column='modulo_id'
-
-    )
-
-
-    class Meta:
-
-        db_table = 'funciones_modulos'
