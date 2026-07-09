@@ -228,7 +228,7 @@ def editar_rol(request, id):
             return render(request, 'editar_rol.html', ctx)
 
         rol.nombre_rol = nombre
-        rol.estado_rol = bool(request.POST.get('estado_rol'))
+        rol.estado_rol = request.POST.get('estado_rol') in ['on', 'True', 'true', '1']
         rol.save()
 
         rol.funciones.clear()

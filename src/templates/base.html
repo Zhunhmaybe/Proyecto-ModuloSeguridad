@@ -37,38 +37,30 @@
                     <i class="fa-solid fa-chart-pie"></i>
                     <span>Dashboard</span>
                 </a>
-                {% if 'SEG_GESTION_USUARIOS' in user_active_functions %}
                 <a href="{% url 'usuarios' %}" class="nav-link {% if request.resolver_match.url_name == 'usuarios' or request.resolver_match.url_name == 'editar_usuario' %}active{% endif %}" id="nav-usuarios">
                     <i class="fa-solid fa-users"></i>
                     <span>Usuarios</span>
                 </a>
-                {% endif %}
 
                 <a href="{% url 'gestion' %}" class="nav-link {% if request.resolver_match.url_name == 'gestion' %}active{% endif %}" id="nav-gestion">
                     <i class="fa-solid fa-layer-group"></i>
                     <span>Gestión</span>
                 </a>
 
-                {% if 'SEG_GESTION_MODULOS' in user_active_functions %}
                 <a href="{% url 'modulos' %}" class="nav-link {% if request.resolver_match.url_name == 'modulos' %}active{% endif %}" id="nav-modulos">
                     <i class="fa-solid fa-cubes"></i>
                     <span>Módulos</span>
                 </a>
-                {% endif %}
 
-                {% if 'SEG_GESTION_ROLES' in user_active_functions %}
                 <a href="{% url 'roles' %}" class="nav-link {% if request.resolver_match.url_name == 'roles' or request.resolver_match.url_name == 'editar_rol' %}active{% endif %}" id="nav-roles">
                     <i class="fa-solid fa-user-shield"></i>
                     <span>Roles</span>
                 </a>
-                {% endif %}
 
-                {% if 'SEG_GESTION_FUNCIONES' in user_active_functions %}
                 <a href="{% url 'funciones' %}" class="nav-link {% if request.resolver_match.url_name == 'funciones' or request.resolver_match.url_name == 'editar_funcion' %}active{% endif %}" id="nav-funciones">
                     <i class="fa-solid fa-bolt"></i>
                     <span>Funciones</span>
                 </a>
-                {% endif %}
 
                 <a href="https://proyecto-moduloseguridad.onrender.com/graphql" target="_blank" class="nav-link" id="nav-tutorial">
                     <i class="fa-solid fa-code"></i>
@@ -255,7 +247,7 @@
             let allRows = Array.from(tbody.querySelectorAll("tr"));
             let filteredRows = allRows;
             
-            const rowsPerPage = 10;
+            const rowsPerPage = parseInt(table.getAttribute('data-rows-per-page')) || 10;
             let currentPage = 1;
             let totalPages = Math.ceil(filteredRows.length / rowsPerPage) || 1;
             

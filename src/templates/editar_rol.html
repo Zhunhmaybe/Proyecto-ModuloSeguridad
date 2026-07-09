@@ -28,59 +28,41 @@
             <label class="form-label">Estado</label>
             <div class="toggle-wrapper">
                 <label class="toggle">
-                    <input type="checkbox" name="estado_rol" {% if rol.estado_rol %}checked{% endif %}>
+                    <input type="checkbox" name="estado_rol" {% if rol.estado_rol %}checked="checked"{% endif %}>
                     <span class="toggle-slider"></span>
                 </label>
                 <span class="toggle-label">Rol activo</span>
             </div>
         </div>
 
-        <!-- Funciones agrupadas por Módulo -->
+        <!-- Funciones Asignadas y Botón -->
         <div class="form-group">
-            <label class="form-label">
-                Funciones asignadas 
-            </label>
-
-            <!-- Filtro de módulo -->
-            <div style="margin-bottom:10px">
-                <select id="moduloFiltroEditar" class="select-styled" onchange="filtrarPorModulo(this.value)">
-                    <option value="">— Todos los Módulos —</option>
-                    {% for modulo in modulos %}
-                    <option value="{{ modulo.id_modulo }}">{{ modulo.nombre_modulo }}</option>
-                    {% endfor %}
-                </select>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <label class="form-label" style="margin-bottom:0;">
+                    Funciones asignadas
+                </label>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="abrirModalFunciones()">
+                    <i class="fa-solid fa-plus"></i> Seleccionar funciones
+                </button>
             </div>
 
-            <!-- Buscador de funciones -->
-            <div style="position:relative;margin-bottom:10px">
-                <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none;font-size:.85rem"></i>
-                <input type="text" id="searchFunciones" oninput="filtrarPorTexto()"
-                       placeholder="Buscar función..."
-                       style="padding:7px 10px 7px 32px;width:100%;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text-primary);font-size:.88rem">
-            </div>
-
-            <div class="items-box" style="max-height:320px;overflow-y:auto">
-                {% for modulo in modulos %}
-                <div class="grupo-modulo" data-modulo="{{ modulo.id_modulo }}">
-                    <p style="font-size:.8rem;font-weight:600;color:var(--text-muted);margin:8px 0 4px;text-transform:uppercase;letter-spacing:.05em">
-                        {{ modulo.nombre_modulo }}
-                    </p>
-                    <div class="roles-container">
-                        {% for f in modulo.funciones.all %}
-                        {% if f.estado_funcion %}
-                        <label class="role-pill chk-funcion">
-                            <input type="checkbox" name="funciones" value="{{ f.id_funcion }}"
-                                   {% if f in rol.funciones.all %}checked{% endif %}>
-                            <span>{{ f.nombre_funcion }}</span>
-                        </label>
-                        {% endif %}
-                        {% empty %}
-                        <p style="color:var(--text-muted);font-style:italic;font-size:.82rem;padding:4px 8px">Sin funciones activas en este módulo.</p>
-                        {% endfor %}
-                    </div>
-                </div>
+            <!-- Contenedor visual de las funciones asignadas -->
+            <div id="funcionesAsignadasContainer" style="display:flex; flex-wrap:wrap; gap:8px; padding: 15px; border: 1px solid var(--border); border-radius: 8px; background: var(--input-bg); min-height: 50px;">
+                {% for f in rol.funciones.all %}
+                <span class="role-badge">{{ f.nombre_funcion }}</span>
                 {% empty %}
-                <p style="color:var(--text-muted);font-style:italic;padding:8px">No hay módulos activos disponibles.</p>
+                <span class="text-muted-sm">No hay funciones asignadas.</span>
+                {% endfor %}
+            </div>
+
+            <!-- Contenedor oculto para los inputs que se enviarán en el POST -->
+            <div id="hiddenInputsContainer" style="display:none;">
+                {% for modulo in modulos %}
+                    {% for f in modulo.funciones.all %}
+                        {% if f.estado_funcion %}
+                        <input type="checkbox" name="funciones" value="{{ f.id_funcion }}" id="hidden-func-{{ f.id_funcion }}" data-nombre="{{ f.nombre_funcion }}" {% if f in rol.funciones.all %}checked{% endif %}>
+                        {% endif %}
+                    {% endfor %}
                 {% endfor %}
             </div>
         </div>
@@ -92,24 +74,94 @@
     </form>
 </div>
 
+<div id="modalFunciones" class="inactivity-modal" style="display:none;">
+    <div class="inactivity-modal-content" style="max-width: 650px; width: 90%;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+            <h3 class="inactivity-modal-title" style="margin:0;">Seleccionar Funciones</h3>
+            <button type="button" onclick="cerrarModalFunciones()" style="background:none; border:none; color:var(--text-primary); font-size:1.2rem; cursor:pointer;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        
+        <table class="data-table" data-rows-per-page="6">
+            <thead>
+                <tr>
+                    <th>Módulo</th>
+                    <th>Función</th>
+                    <th style="text-align:center;">Asignada</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for modulo in modulos %}
+                    {% for f in modulo.funciones.all %}
+                        {% if f.estado_funcion %}
+                        <tr>
+                            <td>{{ modulo.nombre_modulo }}</td>
+                            <td>{{ f.nombre_funcion }}</td>
+                            <td style="text-align:center;">
+                                <input type="checkbox" style="transform:scale(1.3); cursor:pointer;" onchange="syncFunciones(this)" data-id="{{ f.id_funcion }}" {% if f in rol.funciones.all %}checked{% endif %}>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <div style="margin-top: 20px; text-align: right;">
+            <button type="button" class="btn btn-primary" onclick="cerrarModalFunciones()">Aceptar</button>
+        </div>
+    </div>
+</div>
+
 <script>
-function filtrarPorModulo(moduloId) {
-    document.querySelectorAll('.grupo-modulo').forEach(g => {
-        g.style.display = (!moduloId || g.dataset.modulo === moduloId) ? 'block' : 'none';
-    });
-    document.getElementById('searchFunciones').value = '';
-    filtrarPorTexto();
+function abrirModalFunciones() {
+    document.getElementById('modalFunciones').style.display = 'flex';
+    // Ocultar el navbar y breadcrumbs
+    const navbar = document.getElementById('mainNavbar');
+    if (navbar) navbar.style.display = 'none';
+    const breadcrumb = document.querySelector('.breadcrumb-bar');
+    if (breadcrumb) breadcrumb.style.display = 'none';
 }
 
-function filtrarPorTexto() {
-    const q = document.getElementById('searchFunciones').value.toLowerCase().trim();
-    document.querySelectorAll('.grupo-modulo').forEach(grupo => {
-        if (grupo.style.display === 'none') return;
-        grupo.querySelectorAll('.chk-funcion').forEach(label => {
-            const nombre = label.querySelector('span').textContent.toLowerCase();
-            label.style.display = !q || nombre.includes(q) ? '' : 'none';
-        });
+function cerrarModalFunciones() {
+    document.getElementById('modalFunciones').style.display = 'none';
+    // Mostrar el navbar y breadcrumbs
+    const navbar = document.getElementById('mainNavbar');
+    if (navbar) navbar.style.display = '';
+    const breadcrumb = document.querySelector('.breadcrumb-bar');
+    if (breadcrumb) breadcrumb.style.display = '';
+    
+    actualizarBadges();
+}
+
+function syncFunciones(chk) {
+    const id = chk.getAttribute('data-id');
+    const hiddenChk = document.getElementById('hidden-func-' + id);
+    if (hiddenChk) {
+        hiddenChk.checked = chk.checked;
+    }
+}
+
+function actualizarBadges() {
+    const container = document.getElementById('funcionesAsignadasContainer');
+    const hiddenInputs = document.querySelectorAll('#hiddenInputsContainer input[type="checkbox"]');
+    let html = '';
+    let count = 0;
+    
+    hiddenInputs.forEach(input => {
+        if (input.checked) {
+            const nombre = input.getAttribute('data-nombre');
+            html += `<span class="role-badge">${nombre}</span> `;
+            count++;
+        }
     });
+    
+    if (count === 0) {
+        html = '<span class="text-muted-sm">No hay funciones asignadas.</span>';
+    }
+    
+    container.innerHTML = html;
 }
 
 function validar() {
