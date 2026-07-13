@@ -26,6 +26,7 @@ urlpatterns = [
     path('dashboard/user/', user_views.dashboard_user_view, name='dashboard_user'),
     path('dashboard/admin/', user_views.dashboard_admin_view, name='dashboard_admin'),
     path('logout/', user_views.logout_view, name='logout'),
+    path('exportar-reporte/<str:tipo>/', user_views.exportar_reporte_excel, name='exportar_reporte_excel'),
     path('graphql/', csrf_exempt(GraphQLView.as_view(schema=schema))),
 
     # =====================

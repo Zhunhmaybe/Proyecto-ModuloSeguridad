@@ -359,24 +359,19 @@ class Mutation:
     def forgot_password(self, info: strawberry.Info, email: str) -> ForgotPasswordResponse:
         try:
             user = Usuario.objects.get(email=email)
-            from users.models import PasswordResetToken
-            token = PasswordResetToken.objects.create(usuario=user)
-            
-            request = info.context.get("request")
-            if request:
-                reset_url = request.build_absolute_uri(reverse('reset_password', args=[str(token.token)]))
-            else:
-                reset_url = f"http://localhost:8000/reset-password/{token.token}/"
+            from users.models import PasswordResetToken, generar_codigo_6_digitos
+            PasswordResetToken.objects.filter(usuario=user, usado=False).update(usado=True)
+            token = PasswordResetToken.objects.create(usuario=user, codigo=generar_codigo_6_digitos())
 
             try:
                 send_mail(
-                    subject='Recuperación de Contraseña - Seguridad Centralizada',
-                    message=f'Hola {user.user_name},\n\nHaz clic en el siguiente enlace para restablecer tu contraseña:\n{reset_url}\n\nSi no solicitaste esto, ignora este correo.',
+                    subject='Código de Recuperación - Seguridad Centralizada',
+                    message=f'Hola {user.user_name},\n\nTu código de recuperación de 6 dígitos es:\n{token.codigo}\n\nIngresa este código en la aplicación para restablecer tu contraseña. Si no solicitaste esto, ignora este correo.',
                     from_email=settings.EMAIL_HOST_USER,
                     recipient_list=[email],
                     fail_silently=False,
                 )
-                return ForgotPasswordResponse(success=True, message="Enlace enviado al correo.")
+                return ForgotPasswordResponse(success=True, message="Código enviado al correo.")
             except Exception as e:
                 return ForgotPasswordResponse(success=False, message=f"Fallo al enviar correo: {str(e)}")
 
@@ -384,16 +379,21 @@ class Mutation:
             return ForgotPasswordResponse(success=False, message="Correo no registrado")
 
     @strawberry.mutation
-    def reset_password(self, token: str, password: str, confirm_password: str) -> ResetPasswordResponse:
+    def reset_password(self, email: str, codigo: str, password: str, confirm_password: str) -> ResetPasswordResponse:
         from users.models import PasswordResetToken
         try:
-            reset_token = PasswordResetToken.objects.get(token=token, usado=False)
+            codigo = codigo.upper().strip()
+            user = Usuario.objects.get(email=email)
+            reset_token = PasswordResetToken.objects.filter(usuario=user, codigo=codigo, usado=False).first()
+            
+            if not reset_token:
+                return ResetPasswordResponse(success=False, message="Código inválido o expirado")
+                
             if password != confirm_password:
                 return ResetPasswordResponse(success=False, message="Las contraseñas no coinciden")
             if len(password) < 8:
                 return ResetPasswordResponse(success=False, message="La contraseña debe tener al menos 8 caracteres")
                 
-            user = reset_token.usuario
             user.set_password(password)
             user.save()
             
@@ -401,8 +401,8 @@ class Mutation:
             reset_token.save()
             
             return ResetPasswordResponse(success=True, message="Contraseña actualizada exitosamente")
-        except PasswordResetToken.DoesNotExist:
-            return ResetPasswordResponse(success=False, message="Token inválido o ya utilizado")
+        except Usuario.DoesNotExist:
+            return ResetPasswordResponse(success=False, message="Usuario no encontrado")
 
     @strawberry.mutation
     def create_audit_log(

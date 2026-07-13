@@ -56,7 +56,10 @@
 
     <div class="card">
         <div class="card-header" style="display:flex;justify-content:flex-start;align-items:center;flex-wrap:wrap;gap:20px;">
-            <h3 class="card-title" style="margin:0;">Últimas Pistas de Auditoría</h3>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <h3 class="card-title" style="margin:0;">Últimas Pistas de Auditoría</h3>
+                <a href="{% url 'exportar_reporte_excel' 'auditoria' %}" class="btn btn-secondary btn-sm" style="padding:4px 8px;font-size:0.8rem;"><i class="fa-solid fa-file-excel"></i> Reporte</a>
+            </div>
             
             <form method="GET" action="{% url 'dashboard_admin' %}" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;flex-grow:1;max-width:700px;">
                 <input type="hidden" name="tab" value="dashboard">

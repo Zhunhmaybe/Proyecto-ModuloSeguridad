@@ -9,9 +9,17 @@
 {% block content %}
 <div class="page-header flex-between-wrap">
     <h1><i class="fa-solid fa-layer-group"></i> Panel de Gestión </h1>
-    <button id="btnLimpiarFiltro" class="btn btn-secondary" style="display:none;" onclick="limpiarFiltros()">
-        <i class="fa-solid fa-rotate-left"></i> Limpiar Filtro de Búsqueda
-    </button>
+    <div style="display:flex; gap: 10px; align-items:center;">
+        <select id="filtroModuloGeneral" class="search-input-styled" style="padding: 6px 12px;" onchange="filtrarPorModulo(this.value)">
+            <option value="">-- Filtrar por Módulo --</option>
+            {% for m in modulos %}
+            <option value="{{ m.id_modulo }}">{{ m.nombre_modulo }}</option>
+            {% endfor %}
+        </select>
+        <button id="btnLimpiarFiltro" class="btn btn-secondary" style="display:none;" onclick="limpiarFiltros()">
+            <i class="fa-solid fa-rotate-left"></i> Limpiar Filtro
+        </button>
+    </div>
 </div>
 
 <div class="grid-2-cols">
@@ -19,7 +27,10 @@
     <!-- BLOQUE 1: USUARIOS (Arriba, ancho completo) -->
     <div class="card grid-span-all">
         <div class="flex-between-wrap mb-16">
-            <h3 class="card-title m-0"><i class="fa-solid fa-users"></i> Usuarios</h3>
+            <div style="display:flex; align-items:center; gap: 10px;">
+                <h3 class="card-title m-0"><i class="fa-solid fa-users"></i> Usuarios</h3>
+                <a href="{% url 'exportar_reporte_excel' 'usuarios' %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-file-excel"></i> Reporte</a>
+            </div>
             
             <div class="search-wrapper search-wrapper-max flex-row-gap">
                 <i class="fa-solid fa-magnifying-glass search-icon-absolute"></i>
@@ -75,7 +86,10 @@
     <!-- BLOQUE 2: MODULOS (Medio Izquierda) -->
     <div class="card">
         <div class="flex-between mb-16">
-            <h3 class="card-title m-0"><i class="fa-solid fa-cubes"></i> Módulos</h3>
+            <div style="display:flex; align-items:center; gap: 10px;">
+                <h3 class="card-title m-0"><i class="fa-solid fa-cubes"></i> Módulos</h3>
+                <a href="{% url 'exportar_reporte_excel' 'modulos' %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-file-excel"></i> Reporte</a>
+            </div>
             <a href="{% url 'modulos' %}" class="btn btn-primary btn-sm"><i class="fa-solid fa-gear"></i> Gestionar Módulos</a>
         </div>
         <div class="table-container h-300-scroll">
@@ -108,7 +122,10 @@
     <!-- BLOQUE 3: ROLES (Medio Derecha) -->
     <div class="card">
         <div class="flex-between mb-16">
-            <h3 class="card-title m-0"><i class="fa-solid fa-user-shield"></i> Roles</h3>
+            <div style="display:flex; align-items:center; gap: 10px;">
+                <h3 class="card-title m-0"><i class="fa-solid fa-user-shield"></i> Roles</h3>
+                <a href="{% url 'exportar_reporte_excel' 'roles' %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-file-excel"></i> Reporte</a>
+            </div>
             <a href="{% url 'roles' %}" class="btn btn-primary btn-sm"><i class="fa-solid fa-gear"></i> Gestionar Roles</a>
         </div>
         <div class="table-container h-300-scroll">
@@ -142,7 +159,10 @@
     <!-- BLOQUE 5: FUNCIONES (Abajo, ancho completo) -->
     <div class="card grid-span-all">
         <div class="flex-between mb-16">
-            <h3 class="card-title m-0"><i class="fa-solid fa-bolt"></i> Funciones</h3>
+            <div style="display:flex; align-items:center; gap: 10px;">
+                <h3 class="card-title m-0"><i class="fa-solid fa-bolt"></i> Funciones</h3>
+                <a href="{% url 'exportar_reporte_excel' 'funciones' %}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-file-excel"></i> Reporte</a>
+            </div>
             <a href="{% url 'funciones' %}" class="btn btn-primary btn-sm"><i class="fa-solid fa-gear"></i> Gestionar Funciones</a>
         </div>
         <div class="table-container h-400-scroll">
@@ -271,6 +291,65 @@
         // Mostrar boton de limpiar
         document.getElementById('btnLimpiarFiltro').style.display = 'inline-flex';
         document.getElementById('usuariosFilterMsj').style.display = 'block';
+    }
+
+    function filtrarPorModulo(moduloId) {
+        if (!moduloId) {
+            limpiarFiltros();
+            return;
+        }
+
+        // 1. Filtrar Funciones asociadas al módulo
+        const filasFunciones = document.querySelectorAll('.funcion-row');
+        const funcionesPermitidas = new Set();
+        filasFunciones.forEach(fFunc => {
+            const mods = fFunc.getAttribute('data-modulos').split(',').filter(id => id.trim() !== '');
+            if (mods.includes(moduloId)) {
+                fFunc.style.display = '';
+                funcionesPermitidas.add(fFunc.getAttribute('data-funcion-id'));
+            } else {
+                fFunc.style.display = 'none';
+            }
+        });
+
+        // 2. Filtrar Roles que tengan alguna de estas funciones
+        const filasRoles = document.querySelectorAll('.rol-row');
+        const rolesPermitidos = new Set();
+        filasRoles.forEach(fRol => {
+            const funcs = fRol.getAttribute('data-funciones').split(',').filter(id => id.trim() !== '');
+            const tieneFuncion = funcs.some(f => funcionesPermitidas.has(f));
+            if (tieneFuncion) {
+                fRol.style.display = '';
+                rolesPermitidos.add(fRol.getAttribute('data-rol-id'));
+            } else {
+                fRol.style.display = 'none';
+            }
+        });
+
+        // 3. Filtrar Usuarios que tengan alguno de estos roles
+        const filasUsuarios = document.querySelectorAll('.user-row');
+        filasUsuarios.forEach(fUser => {
+            const rols = fUser.getAttribute('data-roles').split(',').filter(id => id.trim() !== '');
+            const tieneRol = rols.some(r => rolesPermitidos.has(r));
+            if (tieneRol) {
+                fUser.style.display = '';
+            } else {
+                fUser.style.display = 'none';
+            }
+        });
+
+        // 4. Modulos (Mostrar solo el seleccionado)
+        document.querySelectorAll('.modulo-row').forEach(fMod => {
+            if (fMod.getAttribute('data-modulo-id') === moduloId) {
+                fMod.style.display = '';
+            } else {
+                fMod.style.display = 'none';
+            }
+        });
+
+        document.getElementById('btnLimpiarFiltro').style.display = 'inline-flex';
+        document.getElementById('usuariosFilterMsj').style.display = 'block';
+        document.getElementById('usuariosFilterMsj').innerHTML = 'Mostrando resultados del módulo seleccionado. <a href="#" onclick="event.preventDefault(); document.getElementById(\'filtroModuloGeneral\').value=\'\'; limpiarFiltros();" class="text-primary">Ver todos</a>';
     }
 
     function limpiarFiltros() {
