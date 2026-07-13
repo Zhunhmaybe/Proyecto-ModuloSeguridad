@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
-from users.models import Usuario, Rol, PasswordResetToken, ControlIP
+from users.models import Usuario, Rol, PasswordResetToken, ControlIP, generar_codigo_6_digitos
 from audit.models import Auditoria
 from django.shortcuts import get_object_or_404
 from .models import Rol, Funcion, FuncionRol
@@ -732,34 +732,59 @@ def logout_view(request):
     response.delete_cookie('jwt_token')
     return response
 
+def custom_csrf_failure(request, reason=""):
+    return render(request, 'login.html', {
+        'register_error': 'La solicitud ha expirado o es inválida por seguridad (CSRF). Por favor, intenta de nuevo.',
+        'show_forgot': True
+    })
+
 def forgot_password_view(request):
     if request.method == 'POST':
         email = request.POST.get('email')
         try:
             user = Usuario.objects.get(email=email)
-            token = PasswordResetToken.objects.create(usuario=user)
+            PasswordResetToken.objects.filter(usuario=user, usado=False).update(usado=True)
+            token = PasswordResetToken.objects.create(usuario=user, codigo=generar_codigo_6_digitos())
             
-            # Construir URL de reseteo
-            reset_url = request.build_absolute_uri(reverse('reset_password', args=[str(token.token)]))
-            
-            # Enviar correo
             try:
                 send_mail(
-                    subject='Recuperación de Contraseña - Seguridad Centralizada',
-                    message=f'Hola {user.user_name},\n\nHaz clic en el siguiente enlace para restablecer tu contraseña:\n{reset_url}\n\nSi no solicitaste esto, ignora este correo.',
+                    subject='Código de Recuperación - Seguridad Centralizada',
+                    message=f'Hola {user.user_name},\n\nTu código de recuperación de 6 dígitos es:\n{token.codigo}\n\nIngresa este código en la aplicación para restablecer tu contraseña. Si no solicitaste esto, ignora este correo.',
                     from_email=settings.EMAIL_HOST_USER,
                     recipient_list=[email],
                     fail_silently=False,
                 )
-                success = "Te hemos enviado un enlace de recuperación a tu correo."
+                success = "Te hemos enviado un código de 6 dígitos a tu correo."
+                return render(request, 'verify_code.html', {'email': email, 'success': success})
             except Exception as e:
-                success = f"El token se generó ({reset_url}) pero falló el envío de email: {str(e)}"
+                success = f"Simulación local (envío de email fallido). Tu código es: {token.codigo}"
+                return render(request, 'verify_code.html', {'email': email, 'success': success})
                 
-            return render(request, 'login.html', {'register_success': success, 'show_forgot': True})
-            
         except Usuario.DoesNotExist:
             error = "No existe ningún usuario con este correo institucional."
             return render(request, 'login.html', {'register_error': error, 'show_forgot': True})
+            
+    return redirect('login')
+
+def verify_reset_code_view(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        codigo = request.POST.get('codigo')
+        if codigo:
+            codigo = codigo.upper().strip()
+        
+        try:
+            user = Usuario.objects.get(email=email)
+            reset_token = PasswordResetToken.objects.filter(usuario=user, codigo=codigo, usado=False).first()
+            
+            if reset_token:
+                request.session['reset_authorized_email'] = email
+                request.session['reset_token_id'] = reset_token.id
+                return redirect('reset_password')
+            else:
+                return render(request, 'verify_code.html', {'email': email, 'error': 'El código es inválido o ya expiró.'})
+        except Usuario.DoesNotExist:
+            return render(request, 'login.html', {'register_error': 'Usuario no válido.', 'show_forgot': True})
             
     return redirect('login')
 
@@ -782,34 +807,43 @@ def verify_email_view(request, token):
             'error': 'El enlace de verificación es inválido o ya fue utilizado.'
         })
 
-def reset_password_view(request, token):
+def reset_password_view(request):
+    email = request.session.get('reset_authorized_email')
+    token_id = request.session.get('reset_token_id')
+    
+    if not email or not token_id:
+        return redirect('login')
+        
     try:
-        reset_token = PasswordResetToken.objects.get(token=token, usado=False)
+        reset_token = PasswordResetToken.objects.get(id=token_id, usado=False)
     except PasswordResetToken.DoesNotExist:
-        return render(request, 'reset_password.html', {'error': 'El enlace de recuperación es inválido o ya fue utilizado.'})
+        return redirect('login')
 
     if request.method == 'POST':
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
         
         if password != confirm_password:
-            return render(request, 'reset_password.html', {'error': 'Las contraseñas no coinciden.', 'token': token})
+            return render(request, 'reset_password.html', {'error': 'Las contraseñas no coinciden.'})
         
         if len(password) < 8:
-            return render(request, 'reset_password.html', {'error': 'La contraseña debe tener al menos 8 caracteres.', 'token': token})
+            return render(request, 'reset_password.html', {'error': 'La contraseña debe tener al menos 8 caracteres.'})
             
-        # Actualizar contraseña
         user = reset_token.usuario
         user.set_password(password)
         user.save()
         
-        # Marcar token como usado
         reset_token.usado = True
         reset_token.save()
         
+        if 'reset_authorized_email' in request.session:
+            del request.session['reset_authorized_email']
+        if 'reset_token_id' in request.session:
+            del request.session['reset_token_id']
+        
         return render(request, 'login.html', {'register_success': 'Contraseña actualizada con éxito. Ahora puedes iniciar sesión.'})
 
-    return render(request, 'reset_password.html', {'token': token})
+    return render(request, 'reset_password.html')
 
 @login_required(login_url='login')
 def dashboard_user_view(request):
@@ -1014,3 +1048,87 @@ def gestion_view(request):
         'modulos': modulos,
         'funciones': funciones
     })
+
+@csrf_exempt
+@require_POST
+def api_forgot_password(request):
+    try:
+        body = json.loads(request.body)
+        email = body.get('email')
+        if not email:
+            return _json_response(400, False, 'Falta email')
+        
+        user = Usuario.objects.get(email=email)
+        PasswordResetToken.objects.filter(usuario=user, usado=False).update(usado=True)
+        token = PasswordResetToken.objects.create(usuario=user, codigo=generar_codigo_6_digitos())
+        
+        try:
+            send_mail(
+                subject='Código de Recuperación - API',
+                message=f'Hola {user.user_name},\n\nTu código de recuperación es:\n{token.codigo}',
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[email],
+                fail_silently=False,
+            )
+            return _json_response(200, True, 'Código enviado al correo')
+        except Exception as e:
+            return _json_response(200, True, f'Simulación local. Tu código es: {token.codigo}')
+    except Usuario.DoesNotExist:
+        return _json_response(404, False, 'Usuario no encontrado')
+    except Exception as e:
+        return _json_response(500, False, str(e))
+
+@csrf_exempt
+@require_POST
+def api_verify_code(request):
+    try:
+        body = json.loads(request.body)
+        email = body.get('email')
+        codigo = body.get('codigo')
+        if not email or not codigo:
+            return _json_response(400, False, 'Faltan parámetros')
+        
+        codigo = codigo.upper().strip()
+        user = Usuario.objects.get(email=email)
+        token = PasswordResetToken.objects.filter(usuario=user, codigo=codigo, usado=False).first()
+        
+        if token:
+            return _json_response(200, True, 'Código válido')
+        else:
+            return _json_response(400, False, 'Código inválido o expirado')
+    except Usuario.DoesNotExist:
+        return _json_response(404, False, 'Usuario no encontrado')
+    except Exception as e:
+        return _json_response(500, False, str(e))
+
+@csrf_exempt
+@require_POST
+def api_reset_password(request):
+    try:
+        body = json.loads(request.body)
+        email = body.get('email')
+        codigo = body.get('codigo')
+        new_password = body.get('new_password')
+        if not email or not codigo or not new_password:
+            return _json_response(400, False, 'Faltan parámetros')
+        
+        codigo = codigo.upper().strip()
+        user = Usuario.objects.get(email=email)
+        token = PasswordResetToken.objects.filter(usuario=user, codigo=codigo, usado=False).first()
+        
+        if not token:
+            return _json_response(400, False, 'Código inválido o expirado')
+        
+        if len(new_password) < 8:
+            return _json_response(400, False, 'La contraseña debe tener al menos 8 caracteres')
+        
+        user.set_password(new_password)
+        user.save()
+        token.usado = True
+        token.save()
+        
+        return _json_response(200, True, 'Contraseña actualizada con éxito')
+    except Usuario.DoesNotExist:
+        return _json_response(404, False, 'Usuario no encontrado')
+    except Exception as e:
+        return _json_response(500, False, str(e))

@@ -3,7 +3,11 @@ import uuid
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.core.validators import MinLengthValidator
 from django.core.exceptions import ValidationError
+import string
+import random
 
+def generar_codigo_6_digitos():
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
 def validate_email_domain(value):
     if not value.endswith('@utn.edu.ec') and not value.endswith('@gmail.com'):
         raise ValidationError('El correo debe terminar en @utn.edu.ec o @gmail.com')
@@ -35,9 +39,11 @@ class PasswordResetToken(models.Model):
         on_delete=models.CASCADE
     )
 
-    token = models.UUIDField(
-        default=uuid.uuid4,
-        unique=True
+    codigo = models.CharField(
+        max_length=6,
+        unique=True,
+        null=True,
+        blank=True
     )
 
     usado = models.BooleanField(default=False)

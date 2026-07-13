@@ -20,7 +20,8 @@ urlpatterns = [
     # Registro público deshabilitado - redirige al login
     path('register/', user_views.login_view, name='register'),
     path('forgot-password/', user_views.forgot_password_view, name='forgot_password'),
-    path('reset-password/<uuid:token>/', user_views.reset_password_view, name='reset_password'),
+    path('verify-code/', user_views.verify_reset_code_view, name='verify_reset_code'),
+    path('reset-password/', user_views.reset_password_view, name='reset_password'),
     path('verify-email/<uuid:token>/', user_views.verify_email_view, name='verify_email'),
     path('dashboard/user/', user_views.dashboard_user_view, name='dashboard_user'),
     path('dashboard/admin/', user_views.dashboard_admin_view, name='dashboard_admin'),
@@ -31,6 +32,9 @@ urlpatterns = [
     # API REST - El Guardia
     # =====================
     path('api/auth/login/', user_views.api_auth_login, name='api_auth_login'),
+    path('api/auth/forgot-password/', user_views.api_forgot_password, name='api_forgot_password'),
+    path('api/auth/verify-code/', user_views.api_verify_code, name='api_verify_code'),
+    path('api/auth/reset-password/', user_views.api_reset_password, name='api_reset_password'),
     
     path(
         'roles/',

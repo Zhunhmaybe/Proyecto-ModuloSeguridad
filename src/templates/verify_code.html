@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Verificar Código - Seguridad Centralizada{% endblock %}
+
+{% block content %}
+    <div class="auth-wrapper">
+        <div class="auth-container">
+            <div class="logo-area mb-20">
+                <div class="logo-icon logo-icon-lg bg-gradient-warning">
+                    <i class="fa-solid fa-envelope-open-text"></i>
+                </div>
+                <h1 class="auth-title text-xl">Verificar Código</h1>
+                <p class="auth-subtitle">Ingresa el código de 6 dígitos que enviamos a tu correo</p>
+            </div>
+
+            {% if error %}
+                <div class="alert alert-error">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span>{{ error }}</span>
+                </div>
+            {% endif %}
+
+            {% if success %}
+                <div class="alert alert-success">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span>{{ success }}</span>
+                </div>
+            {% endif %}
+
+            <form method="POST" action="{% url 'verify_reset_code' %}">
+                {% csrf_token %}
+                
+                <input type="hidden" name="email" value="{{ email }}">
+                
+                <div class="form-group mb-24">
+                    <div class="input-wrapper" style="text-align: center;">
+                        <input type="text" name="codigo" class="form-input" 
+                               placeholder="EJ: A4B9Z1" 
+                               required 
+                               maxlength="6" 
+                               style="text-transform: uppercase; text-align: center; font-size: 1.5rem; letter-spacing: 0.2rem; padding: 12px; font-weight: bold;">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 bg-gradient-warning">
+                    <span>Verificar Código</span>
+                    <i class="fa-solid fa-check"></i>
+                </button>
+            </form>
+
+            <div class="mt-20 text-center" style="margin-top:20px;">
+                <a href="{% url 'login' %}" class="text-secondary text-decoration-none font-w500 text-xs hover-text-primary">
+                    <i class="fa-solid fa-arrow-left"></i> Volver al Login
+                </a>
+            </div>
+        </div>
+    </div>
+
+<style>
+.hover-text-primary:hover {
+    color: var(--primary);
+}
+</style>
+{% endblock %}
