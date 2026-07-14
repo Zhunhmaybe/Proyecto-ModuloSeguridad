@@ -721,6 +721,7 @@ def dashboard_admin_view(request):
     search_log = request.GET.get('search_log', '')
     date_log = request.GET.get('date_log', '')
     order_log = request.GET.get('order_log', 'desc')
+    role_log = request.GET.get('role_log', '')
     logs_query = Auditoria.objects.all()
     if search_log:
         logs_query = logs_query.filter(
@@ -729,11 +730,13 @@ def dashboard_admin_view(request):
         )
     if date_log:
         logs_query = logs_query.filter(fecha_creacion__date=date_log)
+    if role_log:
+        logs_query = logs_query.filter(username__roles__id_rol=role_log)
     if order_log == 'asc':
         logs_query = logs_query.order_by('fecha_creacion')
     else:
         logs_query = logs_query.order_by('-fecha_creacion')
-    logs = logs_query[:1000]  # Limitar a 1000 para no saturar, la UI paginará esto
+    logs = logs_query.distinct()[:1000]  # Añadimos distinct para evitar logs duplicados al filtrar por roles
     # ==========================
     # FUNCIONES DEL USUARIO
     # ==========================

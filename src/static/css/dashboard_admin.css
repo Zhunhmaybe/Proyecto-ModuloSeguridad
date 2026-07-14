@@ -9,7 +9,7 @@ body {
 /* Layout structure */
 .sidebar {
     width: 280px;
-    background: rgba(15, 23, 42, 0.4);
+    background: rgba(30, 30, 30, 0.4);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-right: 1px solid rgba(255, 255, 255, 0.05);
@@ -50,7 +50,7 @@ body {
     justify-content: center;
     color: white;
     font-size: 1.3rem;
-    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 4px 15px rgba(209, 10, 17, 0.3);
 }
 
 .brand-name {
@@ -223,7 +223,7 @@ body {
     font-size: 1.1rem;
 }
 
-.stat-icon.primary { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
+.stat-icon.primary { background: rgba(209, 10, 17, 0.15); color: #f87171; }
 .stat-icon.success { background: rgba(16, 185, 129, 0.15); color: #34d399; }
 .stat-icon.secondary { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
 .stat-icon.warning { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
@@ -317,7 +317,7 @@ body {
     padding: 12px 16px;
     font-family: 'Courier New', Courier, monospace;
     font-size: 0.78rem;
-    color: #93c5fd;
+    color: #e5e7eb;
     white-space: pre-wrap;
     word-break: break-all;
     overflow-x: auto;

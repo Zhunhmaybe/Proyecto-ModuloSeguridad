@@ -4,51 +4,67 @@
    ============================================ */
 
 /* === TEMA OSCURO (default) === */
+/* Colores UTN: Rojo #d10a11 | Gris #706f6f | Blanco #ffffff */
 :root,
 [data-theme="dark"] {
-    --bg-color: #0b0f19;
-    --bg-surface: #0d0d1a;
-    --bg-card: rgba(17, 24, 39, 0.95);
-    --card-border: rgba(255, 255, 255, 0.08);
-    --text-primary: #f8fafc;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
-    --primary: #6366f1;
-    --primary-hover: #4f46e5;
-    --secondary: #a855f7;
-    --accent: #ec4899;
+    --bg-color: #111111;
+    --bg-surface: #1c1c1c;
+    --bg-card: rgba(28, 28, 28, 0.97);
+    --card-border: rgba(255, 255, 255, 0.07);
+    --text-primary: #f5f5f5;
+    --text-secondary: #b0b0b0;
+    --text-muted: #706f6f;
+    /* Marca UTN */
+    --primary: #d10a11;
+    --primary-hover: #a6080d;
+    --primary-light: rgba(209, 10, 17, 0.12);
+    --primary-border: rgba(209, 10, 17, 0.3);
+    --secondary: #706f6f;
+    --secondary-light: rgba(112, 111, 111, 0.15);
+    --accent: #d10a11;
     --success: #10b981;
-    --danger: #ef4444;
+    --danger: #dc2626;
     --warning: #f59e0b;
-    --input-bg: #1e293b;
-    --input-border: #334155;
-    --navbar-bg: rgba(13, 13, 26, 0.95);
-    --navbar-border: #1a1a2e;
-    --breadcrumb-bg: rgba(15, 23, 42, 0.6);
-    --table-hover: rgba(59, 130, 246, 0.08);
-    --table-border: #334155;
-    --blob-opacity: 0.45;
-    --shadow-color: rgba(0, 0, 0, 0.35);
+    --input-bg: #252525;
+    --input-border: #3a3a3a;
+    --navbar-bg: rgba(17, 17, 17, 0.97);
+    --navbar-border: #2a2a2a;
+    --breadcrumb-bg: rgba(28, 28, 28, 0.7);
+    --table-hover: rgba(209, 10, 17, 0.06);
+    --table-border: #3a3a3a;
+    --blob-opacity: 0.3;
+    --shadow-color: rgba(0, 0, 0, 0.45);
 }
 
 /* === TEMA CLARO === */
 [data-theme="light"] {
-    --bg-color: #f1f5f9;
+    --bg-color: #f5f5f5;
     --bg-surface: #ffffff;
-    --bg-card: rgba(255, 255, 255, 0.95);
-    --card-border: rgba(0, 0, 0, 0.08);
-    --text-primary: #0f172a;
-    --text-secondary: #475569;
-    --text-muted: #94a3b8;
-    --input-bg: #f8fafc;
-    --input-border: #cbd5e1;
-    --navbar-bg: rgba(255, 255, 255, 0.92);
-    --navbar-border: #e2e8f0;
-    --breadcrumb-bg: rgba(241, 245, 249, 0.8);
-    --table-hover: rgba(59, 130, 246, 0.05);
-    --table-border: #e2e8f0;
-    --blob-opacity: 0.15;
-    --shadow-color: rgba(0, 0, 0, 0.08);
+    --bg-card: rgba(255, 255, 255, 0.97);
+    --card-border: rgba(0, 0, 0, 0.07);
+    --text-primary: #1a1a1a;
+    --text-secondary: #4a4a4a;
+    --text-muted: #706f6f;
+    /* Marca UTN */
+    --primary: #d10a11;
+    --primary-hover: #a6080d;
+    --primary-light: rgba(209, 10, 17, 0.08);
+    --primary-border: rgba(209, 10, 17, 0.25);
+    --secondary: #706f6f;
+    --secondary-light: rgba(112, 111, 111, 0.1);
+    --accent: #d10a11;
+    --success: #059669;
+    --danger: #dc2626;
+    --warning: #d97706;
+    --input-bg: #fafafa;
+    --input-border: #d4d4d4;
+    --navbar-bg: rgba(255, 255, 255, 0.95);
+    --navbar-border: #e5e5e5;
+    --breadcrumb-bg: rgba(245, 245, 245, 0.9);
+    --table-hover: rgba(209, 10, 17, 0.04);
+    --table-border: #e5e5e5;
+    --blob-opacity: 0.12;
+    --shadow-color: rgba(0, 0, 0, 0.07);
 }
 
 /* === RESET === */
@@ -206,18 +222,18 @@ a {
 
 .nav-link:hover {
     color: var(--text-primary);
-    background: rgba(99, 102, 241, 0.08);
+    background: rgba(209, 10, 17, 0.08);
 }
 
 .nav-link.active {
-    color: #a5b4fc;
-    background: rgba(99, 102, 241, 0.12);
+    color: #fca5a5;
+    background: rgba(209, 10, 17, 0.12);
     font-weight: 600;
 }
 
 [data-theme="light"] .nav-link.active {
     color: var(--primary);
-    background: rgba(99, 102, 241, 0.1);
+    background: rgba(209, 10, 17, 0.1);
 }
 
 .navbar-right {
@@ -244,7 +260,7 @@ a {
 }
 
 .theme-toggle:hover {
-    background: rgba(99, 102, 241, 0.1);
+    background: rgba(209, 10, 17, 0.1);
     color: var(--primary);
 }
 
@@ -265,14 +281,14 @@ a {
 .nav-avatar {
     width: 32px;
     height: 32px;
-    background: linear-gradient(135deg, #312e81, #4338ca);
+    background: linear-gradient(135deg, #80060a, #d10a11);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 11px;
     font-weight: 700;
-    color: #c7d2fe;
+    color: #fecaca;
     flex-shrink: 0;
 }
 
@@ -378,7 +394,7 @@ a {
 }
 
 .card:hover {
-    border-color: rgba(99, 102, 241, 0.2);
+    border-color: rgba(209, 10, 17, 0.2);
 }
 
 .card-header {
@@ -496,7 +512,7 @@ input[type="password"]:focus,
 textarea:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    box-shadow: 0 0 0 3px rgba(209, 10, 17, 0.2);
 }
 
 textarea {
@@ -541,12 +557,12 @@ textarea {
 .btn-primary {
     background: linear-gradient(135deg, var(--primary), var(--secondary));
     color: white;
-    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.25);
+    box-shadow: 0 6px 16px rgba(209, 10, 17, 0.25);
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 24px rgba(99, 102, 241, 0.4);
+    box-shadow: 0 10px 24px rgba(209, 10, 17, 0.4);
 }
 
 .btn-secondary {
@@ -629,16 +645,16 @@ textarea {
 }
 
 .badge-info {
-    background: rgba(99, 102, 241, 0.15);
-    color: #818cf8;
-    border: 1px solid rgba(99, 102, 241, 0.3);
+    background: rgba(209, 10, 17, 0.15);
+    color: #f87171;
+    border: 1px solid rgba(209, 10, 17, 0.3);
 }
 
 .role-badge {
     display: inline-block;
-    background: rgba(59, 130, 246, 0.12);
-    color: #93c5fd;
-    border: 1px solid rgba(59, 130, 246, 0.25);
+    background: rgba(112, 111, 111, 0.12);
+    color: #e5e7eb;
+    border: 1px solid rgba(112, 111, 111, 0.25);
     padding: 3px 10px;
     border-radius: 999px;
     font-size: .8rem;
@@ -647,7 +663,7 @@ textarea {
 }
 
 [data-theme="light"] .role-badge {
-    color: #2563eb;
+    color: #4b5563;
 }
 
 .status-dot {
@@ -759,8 +775,8 @@ textarea {
 }
 
 .grid-item:hover {
-    background: rgba(99, 102, 241, 0.08);
-    border-color: rgba(99, 102, 241, 0.3);
+    background: rgba(209, 10, 17, 0.08);
+    border-color: rgba(209, 10, 17, 0.3);
 }
 
 .grid-item input[type="checkbox"] {
@@ -787,14 +803,14 @@ textarea {
 .user-avatar {
     width: 34px;
     height: 34px;
-    background: linear-gradient(135deg, #312e81, #4338ca);
+    background: linear-gradient(135deg, #80060a, #d10a11);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 12px;
     font-weight: 700;
-    color: #c7d2fe;
+    color: #fecaca;
     flex-shrink: 0;
 }
 
@@ -912,7 +928,7 @@ textarea {
 }
 
 .stat-card:hover {
-    border-color: rgba(99, 102, 241, 0.3);
+    border-color: rgba(209, 10, 17, 0.3);
     transform: translateY(-2px);
 }
 
@@ -940,7 +956,7 @@ textarea {
 }
 
 .ic-blue {
-    background: rgba(99, 102, 241, 0.15);
+    background: rgba(209, 10, 17, 0.15);
 }
 
 .ic-green {
@@ -957,8 +973,8 @@ textarea {
 
 /* === AUDIT TABLE === */
 .badge-action {
-    background: rgba(99, 102, 241, 0.12);
-    color: #a5b4fc;
+    background: rgba(209, 10, 17, 0.12);
+    color: #fca5a5;
     padding: 3px 10px;
     border-radius: 12px;
     font-size: 11px;
@@ -1040,7 +1056,7 @@ textarea {
     font-size: 2.2rem;
     color: white;
     margin-bottom: 15px;
-    box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+    box-shadow: 0 10px 25px rgba(209, 10, 17, 0.4);
     position: relative;
     overflow: hidden;
 }

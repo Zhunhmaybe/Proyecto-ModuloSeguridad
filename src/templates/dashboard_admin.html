@@ -67,12 +67,23 @@
                     <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none"></i>
                     <input type="text" name="search_log" value="{{ request.GET.search_log|default:'' }}" placeholder="Buscar usuario o IP..." style="padding:6px 10px 6px 36px;width:100%;border-radius:6px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text-primary);font-size:.85rem;">
                 </div>
+                <select name="role_log" style="padding:6px 10px;border-radius:6px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text-primary);font-size:.85rem;">
+                    <option value="">Todos los roles</option>
+                    {% for r in roles_list %}
+                    <option value="{{ r.id_rol }}" {% if request.GET.role_log == r.id_rol|stringformat:"s" %}selected{% endif %}>{{ r.nombre_rol }}</option>
+                    {% endfor %}
+                </select>
                 <input type="date" name="date_log" value="{{ request.GET.date_log|default:'' }}" style="padding:6px 10px;border-radius:6px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text-primary);font-size:.85rem;">
                 <select name="order_log" style="padding:6px 10px;border-radius:6px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text-primary);font-size:.85rem;">
                     <option value="desc" {% if request.GET.order_log != 'asc' %}selected{% endif %}>▼ Más recientes</option>
                     <option value="asc" {% if request.GET.order_log == 'asc' %}selected{% endif %}>▲ Más antiguos</option>
                 </select>
-                <button type="submit" class="btn btn-primary" style="padding:6px 14px;font-size:.85rem;">Filtrar</button>
+                <div style="display:flex;gap:6px;">
+                    <button type="submit" class="btn btn-primary" style="padding:6px 14px;font-size:.85rem;">Filtrar</button>
+                    <a href="{% url 'dashboard_admin' %}?tab=dashboard" class="btn btn-secondary" style="padding:6px 14px;font-size:.85rem;" title="Limpiar filtros">
+                        <i class="fa-solid fa-eraser"></i> Limpiar
+                    </a>
+                </div>
             </form>
         </div>
         <div class="table-container">

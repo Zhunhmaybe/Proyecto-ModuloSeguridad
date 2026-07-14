@@ -39,7 +39,7 @@ body {
     font-weight: 700;
     font-size: 1.2rem;
     color: white;
-    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 4px 15px rgba(209, 10, 17, 0.3);
 }
 
 .welcome-text h1 {
@@ -140,7 +140,7 @@ body {
     padding: 12px;
     font-family: monospace;
     font-size: 0.8rem;
-    color: #818cf8;
+    color: #f87171;
     word-break: break-all;
     max-height: 120px;
     overflow-y: auto;
@@ -163,7 +163,7 @@ body {
 }
 
 .copy-btn:hover {
-    background: #4f46e5;
+    background: #a6080d;
 }
 
 .alert-banner {

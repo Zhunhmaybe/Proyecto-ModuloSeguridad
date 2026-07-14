@@ -37,14 +37,14 @@
                     <i class="fa-solid fa-chart-pie"></i>
                     <span>Dashboard</span>
                 </a>
-                <a href="{% url 'usuarios' %}" class="nav-link {% if request.resolver_match.url_name == 'usuarios' or request.resolver_match.url_name == 'editar_usuario' %}active{% endif %}" id="nav-usuarios">
-                    <i class="fa-solid fa-users"></i>
-                    <span>Usuarios</span>
-                </a>
-
                 <a href="{% url 'gestion' %}" class="nav-link {% if request.resolver_match.url_name == 'gestion' %}active{% endif %}" id="nav-gestion">
                     <i class="fa-solid fa-layer-group"></i>
                     <span>Gestión</span>
+                </a>
+
+                <a href="{% url 'usuarios' %}" class="nav-link {% if request.resolver_match.url_name == 'usuarios' or request.resolver_match.url_name == 'editar_usuario' %}active{% endif %}" id="nav-usuarios">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Usuarios</span>
                 </a>
 
                 <a href="{% url 'modulos' %}" class="nav-link {% if request.resolver_match.url_name == 'modulos' %}active{% endif %}" id="nav-modulos">
