@@ -722,7 +722,12 @@ def dashboard_admin_view(request):
     date_log = request.GET.get('date_log', '')
     order_log = request.GET.get('order_log', 'desc')
     role_log = request.GET.get('role_log', '')
-    logs_query = Auditoria.objects.all()
+    funcion_log = request.GET.get('funcion_log', '')
+    modulo_log = request.GET.get('modulo_log', '')
+    logs_query = Auditoria.objects.select_related('username', 'id_funciones').prefetch_related(
+        'username__roles',
+        'username__roles__modulo'
+    )
     if search_log:
         logs_query = logs_query.filter(
             Q(username__user_name__icontains=search_log) |
@@ -732,11 +737,15 @@ def dashboard_admin_view(request):
         logs_query = logs_query.filter(fecha_creacion__date=date_log)
     if role_log:
         logs_query = logs_query.filter(username__roles__id_rol=role_log)
+    if funcion_log:
+        logs_query = logs_query.filter(id_funciones__id_funcion=funcion_log)
+    if modulo_log:
+        logs_query = logs_query.filter(modulo__iexact=modulo_log)
     if order_log == 'asc':
         logs_query = logs_query.order_by('fecha_creacion')
     else:
         logs_query = logs_query.order_by('-fecha_creacion')
-    logs = logs_query.distinct()[:1000]  # Añadimos distinct para evitar logs duplicados al filtrar por roles
+    logs = logs_query.distinct()[:1000]
     # ==========================
     # FUNCIONES DEL USUARIO
     # ==========================
@@ -771,6 +780,8 @@ def dashboard_admin_view(request):
     # ROLES
     # ==========================
     roles_list = Rol.objects.all()
+    funciones_list = Funcion.objects.all().order_by('nombre_funcion')
+    modulos_list = Modulo.objects.all().order_by('nombre_modulo')
     # ==========================
     # TAB ACTIVA
     # ==========================
@@ -789,6 +800,8 @@ def dashboard_admin_view(request):
             'funciones': funciones,
             'page_obj': page_obj,
             'roles_list': roles_list,
+            'funciones_list': funciones_list,
+            'modulos_list': modulos_list,
             'search_query': search_query,
             'active_tab': active_tab
         }

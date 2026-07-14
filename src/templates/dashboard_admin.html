@@ -61,22 +61,40 @@
                 <a href="{% url 'exportar_reporte_excel' 'auditoria' %}" class="btn btn-secondary btn-sm" style="padding:4px 8px;font-size:0.8rem;"><i class="fa-solid fa-file-excel"></i> Reporte</a>
             </div>
             
-            <form method="GET" action="{% url 'dashboard_admin' %}" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;flex-grow:1;max-width:700px;">
+            <form method="GET" action="{% url 'dashboard_admin' %}" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;flex-grow:1;">
                 <input type="hidden" name="tab" value="dashboard">
-                <div style="position:relative;flex-grow:1;min-width:180px;">
-                    <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none"></i>
-                    <input type="text" name="search_log" value="{{ request.GET.search_log|default:'' }}" placeholder="Buscar usuario o IP..." style="padding:6px 10px 6px 36px;width:100%;border-radius:6px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text-primary);font-size:.85rem;">
+                <!-- Búsqueda libre -->
+                <div style="position:relative;flex-grow:1;min-width:160px;">
+                    <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none"></i>
+                    <input type="text" name="search_log" value="{{ request.GET.search_log|default:'' }}" placeholder="Usuario o IP..." style="padding:6px 10px 6px 32px;width:100%;border-radius:6px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text-primary);font-size:.85rem;">
                 </div>
-                <select name="role_log" style="padding:6px 10px;border-radius:6px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text-primary);font-size:.85rem;">
+                <!-- Filtro por Rol -->
+                <select name="role_log" style="padding:6px 10px;border-radius:6px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text-primary);font-size:.85rem;min-width:130px;">
                     <option value="">Todos los roles</option>
                     {% for r in roles_list %}
                     <option value="{{ r.id_rol }}" {% if request.GET.role_log == r.id_rol|stringformat:"s" %}selected{% endif %}>{{ r.nombre_rol }}</option>
                     {% endfor %}
                 </select>
+                <!-- Filtro por Función -->
+                <select name="funcion_log" style="padding:6px 10px;border-radius:6px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text-primary);font-size:.85rem;min-width:140px;">
+                    <option value="">Todas las funciones</option>
+                    {% for f in funciones_list %}
+                    <option value="{{ f.id_funcion }}" {% if request.GET.funcion_log == f.id_funcion|stringformat:"s" %}selected{% endif %}>{{ f.nombre_funcion }}</option>
+                    {% endfor %}
+                </select>
+                <!-- Filtro por Módulo -->
+                <select name="modulo_log" style="padding:6px 10px;border-radius:6px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text-primary);font-size:.85rem;min-width:130px;">
+                    <option value="">Todos los módulos</option>
+                    {% for m in modulos_list %}
+                    <option value="{{ m.nombre_modulo }}" {% if request.GET.modulo_log == m.nombre_modulo %}selected{% endif %}>{{ m.nombre_modulo }}</option>
+                    {% endfor %}
+                </select>
+                <!-- Fecha -->
                 <input type="date" name="date_log" value="{{ request.GET.date_log|default:'' }}" style="padding:6px 10px;border-radius:6px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text-primary);font-size:.85rem;">
+                <!-- Orden -->
                 <select name="order_log" style="padding:6px 10px;border-radius:6px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text-primary);font-size:.85rem;">
-                    <option value="desc" {% if request.GET.order_log != 'asc' %}selected{% endif %}>▼ Más recientes</option>
-                    <option value="asc" {% if request.GET.order_log == 'asc' %}selected{% endif %}>▲ Más antiguos</option>
+                    <option value="desc" {% if request.GET.order_log != 'asc' %}selected{% endif %}>▼ Recientes</option>
+                    <option value="asc" {% if request.GET.order_log == 'asc' %}selected{% endif %}>▲ Antiguos</option>
                 </select>
                 <div style="display:flex;gap:6px;">
                     <button type="submit" class="btn btn-primary" style="padding:6px 14px;font-size:.85rem;">Filtrar</button>
@@ -91,6 +109,8 @@
                 <thead>
                     <tr>
                         <th>Usuario</th>
+                        <th>Rol(es)</th>
+                        <th>Módulo</th>
                         <th>Acción</th>
                         <th>Descripción</th>
                         <th>IP</th>
@@ -102,6 +122,28 @@
                     {% for log in logs %}
                     <tr>
                         <td>@{{ log.username.user_name }}</td>
+                        <!-- Roles del usuario -->
+                        <td>
+                            {% if log.username %}
+                                {% for rol in log.username.roles.all %}
+                                    <span class="role-badge">{{ rol.nombre_rol }}</span>
+                                {% empty %}
+                                    <span style="color:var(--text-muted)">-</span>
+                                {% endfor %}
+                            {% else %}-{% endif %}
+                        </td>
+                        <!-- Funciones del usuario (eliminado) -->
+                        <td style="max-width:180px;">
+                            {% if log.username %}
+                                {% for rol in log.username.roles.all %}
+                                    {% if rol.modulo %}
+                                        <span class="badge" style="margin:1px;font-size:.72rem;background:rgba(112,111,111,0.15);color:var(--secondary);border:1px solid rgba(112,111,111,0.3);">{{ rol.modulo.nombre_modulo }}</span>
+                                    {% endif %}
+                                {% empty %}
+                                    <span style="color:var(--text-muted)">-</span>
+                                {% endfor %}
+                            {% else %}-{% endif %}
+                        </td>
                         <td><span class="badge-action">{{ log.accion }}</span></td>
                         <td>{{ log.descripcion|default:"-" }}</td>
                         <td>{{ log.observacion|default:"-" }}</td>
@@ -116,7 +158,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px">
+                        <td colspan="8" style="text-align:center;color:var(--text-muted);padding:24px">
                             Sin registros de auditoría
                         </td>
                     </tr>
