@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Third party
     'corsheaders',
+    'anymail',
     # Local apps
     'users',
     'modules',
@@ -141,13 +142,14 @@ CORS_ALLOW_ALL_ORIGINS = True # Change in production
 # Static files (Fix)
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
-# Email Configuration (SMTP Gmail)
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'ptpbbalak@gmail.com')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', 'yyyssvjzsuyjyoty')
+# Email Configuration (Brevo/Sendinblue via Anymail HTTP API)
+ANYMAIL = {
+    "SENDINBLUE_API_KEY": os.getenv("BREVO_API_KEY"),
+}
+EMAIL_BACKEND = "anymail.backends.sendinblue.EmailBackend"
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "ptpbbalak@gmail.com")
+# Se mantiene esta variable para no romper el código en schema.py
+EMAIL_HOST_USER = DEFAULT_FROM_EMAIL
 
 # Configuración de Sesiones
 # Forzar que la sesión expire cuando el usuario cierra el navegador/pestaña
