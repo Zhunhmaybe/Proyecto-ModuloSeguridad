@@ -101,7 +101,7 @@
 
 <!-- Modal de Asignación de Roles (Verdadero) -->
 <div id="assignRolesModal" class="modal-backdrop hidden">
-    <div class="modal-box" style="max-width:560px">
+    <div class="modal-box" style="max-width:850px; width:90%;">
         <div class="modal-header">
             <span>Asignar Roles a: {{ modulo.nombre_modulo }}</span>
             <span class="close-btn" onclick="closeModal('assignRolesModal')">×</span>
@@ -110,24 +110,43 @@
             {% csrf_token %}
             <input type="hidden" name="action" value="assign_roles">
             
-            <div class="form-group">
-                <label class="form-label">Roles Disponibles</label>
-                <div class="items-box" style="max-height:250px;overflow-y:auto; padding:12px; background:var(--input-bg); border:1px solid var(--border); border-radius:8px;">
-                    <div class="items-grid">
+            <div class="grid-2-cols" style="gap: 20px;">
+                <!-- Roles Asignados -->
+                <div>
+                    <label class="form-label text-center" style="display:block; border-bottom: 1px solid var(--border); padding-bottom:10px; margin-bottom:10px;">
+                        <i class="fa-solid fa-check-circle" style="color:var(--success)"></i> Roles Asignados
+                    </label>
+                    <div class="items-box" style="height:350px; overflow-y:auto; padding:15px; background:var(--input-bg); border:1px solid var(--border); border-radius:8px; display:flex; flex-wrap:wrap; align-content:flex-start; gap:10px;" id="rolesAsignadosContainer">
                         {% for r in todos_roles %}
-                        <label class="grid-item chk-label-rol" style="display:flex; align-items:center; gap:8px; padding:6px; cursor:pointer;">
-                            <input type="checkbox" name="roles" value="{{ r.id_rol }}" 
-                                {% if r.id_rol in roles_actuales_ids %}checked{% endif %}>
-                            <span style="font-size:.9rem">{{ r.nombre_rol }}</span>
-                        </label>
-                        {% empty %}
-                        <p style="color:var(--text-muted);font-style:italic;padding:8px">No hay roles activos disponibles.</p>
+                            {% if r.id_rol in roles_actuales_ids %}
+                            <label class="role-pill-interactive" style="cursor:pointer; display:inline-flex; align-items:center; background:var(--bg-surface); border:1px solid var(--border); border-radius:20px; padding:6px 14px; transition:all 0.2s; user-select:none;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
+                                <input type="checkbox" name="roles" value="{{ r.id_rol }}" checked onchange="moverRol(this)" style="display:none;">
+                                <span style="font-size:0.85rem; font-weight:600; color:var(--text-primary)">{{ r.nombre_rol }}</span>
+                            </label>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Roles Disponibles -->
+                <div>
+                    <label class="form-label text-center" style="display:block; border-bottom: 1px solid var(--border); padding-bottom:10px; margin-bottom:10px;">
+                        <i class="fa-solid fa-circle-minus" style="color:var(--text-muted)"></i> Roles Disponibles
+                    </label>
+                    <div class="items-box" style="height:350px; overflow-y:auto; padding:15px; background:var(--input-bg); border:1px solid var(--border); border-radius:8px; display:flex; flex-wrap:wrap; align-content:flex-start; gap:10px;" id="rolesDisponiblesContainer">
+                        {% for r in todos_roles %}
+                            {% if r.id_rol not in roles_actuales_ids %}
+                            <label class="role-pill-interactive" style="cursor:pointer; display:inline-flex; align-items:center; background:var(--bg-surface); border:1px solid var(--border); border-radius:20px; padding:6px 14px; transition:all 0.2s; user-select:none;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
+                                <input type="checkbox" name="roles" value="{{ r.id_rol }}" onchange="moverRol(this)" style="display:none;">
+                                <span style="font-size:0.85rem; font-weight:600; color:var(--text-primary)">{{ r.nombre_rol }}</span>
+                            </label>
+                            {% endif %}
                         {% endfor %}
                     </div>
                 </div>
             </div>
 
-            <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:15px">
+            <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px">
                 <button type="button" class="btn btn-secondary" onclick="closeModal('assignRolesModal')">Cancelar</button>
                 <button type="submit" class="btn btn-primary">Guardar Roles</button>
             </div>
@@ -137,7 +156,7 @@
 
 <!-- Modal de Funciones -->
 <div id="modalFunciones" class="inactivity-modal" style="display:none;">
-    <div class="inactivity-modal-content" style="max-width: 650px; width: 90%;">
+    <div class="inactivity-modal-content" style="max-width: 850px; width: 95%;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
             <h3 class="inactivity-modal-title" style="margin:0;">Seleccionar Funciones</h3>
             <button type="button" onclick="cerrarModalFunciones()" style="background:none; border:none; color:var(--text-primary); font-size:1.2rem; cursor:pointer;">
@@ -145,28 +164,41 @@
             </button>
         </div>
         
-        <table class="data-table" data-rows-per-page="6">
-            <thead>
-                <tr>
-                    <th>Función</th>
-                    <th style="text-align:center;">Asignada</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for f in todas_funciones %}
-                <tr>
-                    <td>{{ f.nombre_funcion }}</td>
-                    <td style="text-align:center;">
-                        <input type="checkbox" style="transform:scale(1.3); cursor:pointer;" onchange="syncFunciones(this)" data-id="{{ f.id_funcion }}" {% if f.id_funcion in funciones_actuales_ids %}checked{% endif %}>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="2" style="text-align:center; padding: 20px; color: var(--text-muted);">No hay funciones disponibles.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="grid-2-cols" style="gap: 20px; text-align:left;">
+            <!-- Funciones Asignadas -->
+            <div>
+                <label class="form-label text-center" style="display:block; border-bottom: 1px solid var(--border); padding-bottom:10px; margin-bottom:10px;">
+                    <i class="fa-solid fa-check-circle" style="color:var(--success)"></i> Funciones Asignadas
+                </label>
+                <div class="items-box" style="height:350px; overflow-y:auto; padding:15px; background:var(--input-bg); border:1px solid var(--border); border-radius:8px; display:flex; flex-wrap:wrap; align-content:flex-start; gap:10px;" id="funcionesAsignadasList">
+                    {% for f in todas_funciones %}
+                        {% if f.id_funcion in funciones_actuales_ids %}
+                        <label class="role-pill-interactive" style="cursor:pointer; display:inline-flex; align-items:center; background:var(--bg-surface); border:1px solid var(--border); border-radius:20px; padding:6px 14px; transition:all 0.2s; user-select:none;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
+                            <input type="checkbox" style="display:none;" onchange="moverFuncion(this)" data-id="{{ f.id_funcion }}" checked>
+                            <span style="font-size:.85rem; font-weight:600; color:var(--text-primary)">{{ f.nombre_funcion }}</span>
+                        </label>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Funciones Disponibles -->
+            <div>
+                <label class="form-label text-center" style="display:block; border-bottom: 1px solid var(--border); padding-bottom:10px; margin-bottom:10px;">
+                    <i class="fa-solid fa-circle-minus" style="color:var(--text-muted)"></i> Funciones Disponibles
+                </label>
+                <div class="items-box" style="height:350px; overflow-y:auto; padding:15px; background:var(--input-bg); border:1px solid var(--border); border-radius:8px; display:flex; flex-wrap:wrap; align-content:flex-start; gap:10px;" id="funcionesDisponiblesList">
+                    {% for f in todas_funciones %}
+                        {% if f.id_funcion not in funciones_actuales_ids %}
+                        <label class="role-pill-interactive" style="cursor:pointer; display:inline-flex; align-items:center; background:var(--bg-surface); border:1px solid var(--border); border-radius:20px; padding:6px 14px; transition:all 0.2s; user-select:none;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
+                            <input type="checkbox" style="display:none;" onchange="moverFuncion(this)" data-id="{{ f.id_funcion }}">
+                            <span style="font-size:.85rem; font-weight:600; color:var(--text-primary)">{{ f.nombre_funcion }}</span>
+                        </label>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
         
         <div style="margin-top: 20px; text-align: right;">
             <button type="button" class="btn btn-primary" onclick="cerrarModalFunciones()">Aceptar</button>
@@ -200,6 +232,25 @@ function syncFunciones(chk) {
     const hiddenChk = document.getElementById('hidden-func-' + id);
     if (hiddenChk) {
         hiddenChk.checked = chk.checked;
+    }
+}
+
+function moverFuncion(chk) {
+    const label = chk.closest('label');
+    if (chk.checked) {
+        document.getElementById('funcionesAsignadasList').appendChild(label);
+    } else {
+        document.getElementById('funcionesDisponiblesList').appendChild(label);
+    }
+    syncFunciones(chk);
+}
+
+function moverRol(chk) {
+    const label = chk.closest('label');
+    if (chk.checked) {
+        document.getElementById('rolesAsignadosContainer').appendChild(label);
+    } else {
+        document.getElementById('rolesDisponiblesContainer').appendChild(label);
     }
 }
 

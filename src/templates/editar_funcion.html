@@ -21,6 +21,11 @@
         </div>
 
         <div class="form-group">
+            <label class="form-label">Descripción</label>
+            <textarea name="descripcion" class="form-input" rows="3">{{ funcion.descripcion|default:'' }}</textarea>
+        </div>
+
+        <div class="form-group">
             <label class="form-label">Estado</label>
             <div class="toggle-wrapper">
                 <label class="toggle">

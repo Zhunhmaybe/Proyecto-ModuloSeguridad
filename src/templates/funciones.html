@@ -24,6 +24,11 @@
         </div>
 
         <div class="form-group">
+            <label class="form-label">Descripción</label>
+            <textarea name="descripcion" class="form-input" placeholder="Breve descripción de la función..." rows="2"></textarea>
+        </div>
+
+        <div class="form-group">
             <label class="form-label">Estado</label>
             <div class="toggle-wrapper">
                 <label class="toggle">
@@ -72,11 +77,11 @@
                 <tr>
                     <td>{{funcion.nombre_funcion}}</td>
                     <td>
-                        {% for m in funcion.modulos.all %}
-                            <span class="role-badge badge-border">{{ m.nombre_modulo }}</span>
-                        {% empty %}
+                        {% if funcion.modulo %}
+                            <span class="role-badge badge-border">{{ funcion.modulo.nombre_modulo }}</span>
+                        {% else %}
                             <span class="text-muted-sm text-italic">Sin Módulo</span>
-                        {% endfor %}
+                        {% endif %}
                     </td>
                     <td>
                         {% for r in funcion.roles.all %}

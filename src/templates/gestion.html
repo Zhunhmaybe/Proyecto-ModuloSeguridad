@@ -174,15 +174,15 @@
                     {% for f in funciones %}
                     <tr class="funcion-row" 
                         data-funcion-id="{{ f.id_funcion }}"
-                        data-modulos="{% for m in f.modulos.all %}{{ m.id_modulo }},{% endfor %}">
+                        data-modulos="{% if f.modulo %}{{ f.modulo.id_modulo }},{% endif %}">
                         <td><strong>{{ f.nombre_funcion }}</strong></td>
                         <td><span class="text-muted-sm">{{ f.descripcion|default:"-" }}</span></td>
                         <td>
-                            {% for m in f.modulos.all %}
-                            <span class="role-badge badge-border">{{ m.nombre_modulo }}</span>
-                            {% empty %}
+                            {% if f.modulo %}
+                            <span class="role-badge badge-border">{{ f.modulo.nombre_modulo }}</span>
+                            {% else %}
                             <span class="text-muted-sm text-italic">Ninguno</span>
-                            {% endfor %}
+                            {% endif %}
                         </td>
                         <td>
                             {% if f.estado_funcion %}

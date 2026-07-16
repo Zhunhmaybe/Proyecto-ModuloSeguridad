@@ -25,7 +25,7 @@
                         Seleccionar Módulo <span style="color:var(--danger)">*</span>
                     </label>
                     <select id="moduloFiltroCrear" name="modulo_id" class="form-select-large" onchange="filtrarFuncionesPorModulo(this.value)">
-                        <option value="">— Selecciona un Módulo —</option>
+                        <option value="">Selecciona un Módulo</option>
                         {% for modulo in modulos %}
                         <option value="{{ modulo.id_modulo }}">{{ modulo.nombre_modulo }}</option>
                         {% endfor %}
@@ -102,21 +102,10 @@
                 <tr>
                     <td>{{rol.nombre_rol}}</td>
                     <td>
-                        {% if rol.funciones.first %}
-                            {% with f=rol.funciones.first %}
-                                {% for m in f.modulos.all %}
-                                    {% if forloop.first %}
-                                        <span class="role-badge badge-border">{{ m.nombre_modulo }}</span>
-                                    {% endif %}
-                                {% endfor %}
-                            {% endwith %}
-                            <span class="hidden">
-                                {% for func in rol.funciones.all %}
-                                    {% for mod in func.modulos.all %}
-                                        {{ mod.nombre_modulo }}
-                                    {% endfor %}
-                                {% endfor %}
-                            </span>
+                        {% if rol.modulo %}
+                            <span class="role-badge badge-border">{{ rol.modulo.nombre_modulo }}</span>
+                        {% elif rol.funciones.first and rol.funciones.first.modulo %}
+                            <span class="role-badge badge-border">{{ rol.funciones.first.modulo.nombre_modulo }}</span>
                         {% else %}
                             <span class="text-muted-sm text-italic">Sin Módulo</span>
                         {% endif %}

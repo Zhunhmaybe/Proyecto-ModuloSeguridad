@@ -156,7 +156,12 @@ def roles_view(request):
         if Rol.objects.filter(nombre_rol__iexact=nombre).exists():
             ctx['error'] = 'El rol ya existe.'
             return render(request, 'roles.html', ctx)
-        rol = Rol.objects.create(nombre_rol=nombre, estado_rol=True)
+        modulo_id = request.POST.get('modulo_id')
+        rol = Rol.objects.create(
+            nombre_rol=nombre, 
+            estado_rol=True,
+            modulo_id=modulo_id if modulo_id else None
+        )
         for f in funciones_seleccionadas:
             if not FuncionRol.objects.filter(rol=rol, funcion_id=f).exists():
                 FuncionRol.objects.create(rol=rol, funcion_id=f)
@@ -355,6 +360,9 @@ def funciones_view(request):
         estado = True if request.POST.get(
             'estado'
         ) else False
+        descripcion = request.POST.get(
+            'descripcion', ''
+        )
         # VALIDACIÓN DE FUNCIÓN DUPLICADA
         if Funcion.objects.filter(
             nombre_funcion__iexact=nombre
@@ -370,6 +378,7 @@ def funciones_view(request):
             )
         Funcion.objects.create(
             nombre_funcion=nombre,
+            descripcion=descripcion,
             estado_funcion=estado
         )
         return redirect('funciones')
@@ -395,6 +404,9 @@ def editar_funcion(request,id):
     if request.method == "POST":
         funcion.nombre_funcion = request.POST.get(
             'nombre_funcion'
+        )
+        funcion.descripcion = request.POST.get(
+            'descripcion', ''
         )
         funcion.estado_funcion = True if request.POST.get(
             'estado'

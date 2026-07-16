@@ -144,6 +144,12 @@ class Funcion(models.Model):
         unique=True
     )
 
+    descripcion = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True
+    )
+
 
     estado_funcion = models.BooleanField(
         default=True
