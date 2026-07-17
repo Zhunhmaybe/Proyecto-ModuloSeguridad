@@ -139,7 +139,10 @@ def _json_response(status_code: int, success: bool, message: str, token=None) ->
     if token:
         body['token'] = token
     return JsonResponse(body, status=status_code)
+@login_required(login_url='login')
 def roles_view(request):
+    if not request.user.is_superuser:
+        return redirect('dashboard_user')
     roles = Rol.objects.all()
     funciones = Funcion.objects.filter(estado_funcion=True)
     modulos = Modulo.objects.filter(estado_modulo=True).prefetch_related('funciones')
@@ -173,6 +176,8 @@ def roles_view(request):
     })
 @login_required(login_url='login')
 def editar_rol(request, id):
+    if not request.user.is_superuser:
+        return redirect('dashboard_user')
     rol = get_object_or_404(Rol, id_rol=id)
     funciones = Funcion.objects.filter(estado_funcion=True)
     modulos = Modulo.objects.filter(estado_modulo=True).prefetch_related('funciones')
@@ -204,15 +209,8 @@ def editar_rol(request, id):
 #Usuarios
 @login_required(login_url='login')
 def usuarios_view(request):
-    permiso = Funcion.objects.filter(
-        nombre_funcion="SEG_GESTION_USUARIOS",
-        roles__usuarios=request.user,
-        estado_funcion=True
-    ).exists()
-    if not permiso:
-        return redirect(
-            'dashboard_user'
-        )
+    if not request.user.is_superuser:
+        return redirect('dashboard_user')
     usuarios = Usuario.objects.all()
     return render(
         request,
@@ -301,6 +299,8 @@ def crear_usuario(request):
     })
 @login_required(login_url='login')
 def editar_usuario(request, id):
+    if not request.user.is_superuser:
+        return redirect('dashboard_user')
     usuario = get_object_or_404(Usuario, id=id)
     error = None
     if request.method == "POST":
@@ -346,12 +346,7 @@ def editar_usuario(request, id):
 #Funciones
 @login_required(login_url='login')
 def funciones_view(request):
-    permiso = Funcion.objects.filter(
-        nombre_funcion="SEG_GESTION_FUNCIONES",
-        roles__usuarios=request.user,
-        estado_funcion=True
-    ).exists()
-    if not permiso:
+    if not request.user.is_superuser:
         return redirect('dashboard_user')
     if request.method == "POST":
         nombre = request.POST.get(
@@ -397,6 +392,8 @@ def funciones_view(request):
     )
 @login_required(login_url='login')
 def editar_funcion(request,id):
+    if not request.user.is_superuser:
+        return redirect('dashboard_user')
     funcion = get_object_or_404(
         Funcion,
         id_funcion=id
@@ -425,7 +422,7 @@ def editar_funcion(request,id):
 #Login
 def login_view(request):
     if request.user.is_authenticated:
-        is_admin = request.user.roles.filter(nombre_rol__icontains='admin').exists() or request.user.roles.filter(nombre_rol__icontains='seguridad').exists() or request.user.is_superuser
+        is_admin = request.user.is_superuser
         return redirect('dashboard_admin' if is_admin else 'dashboard_user')
     error = None
     if request.method == 'POST':
@@ -460,7 +457,7 @@ def login_view(request):
                     # Generar JWT propio para consumo
                     token = generate_jwt(user)
                     # Determinar si el usuario posee roles administrativos
-                    is_admin = user.roles.filter(nombre_rol__icontains='admin').exists() or user.roles.filter(nombre_rol__icontains='seguridad').exists() or user.is_superuser
+                    is_admin = user.is_superuser
                     response = redirect('dashboard_admin' if is_admin else 'dashboard_user')
                     # Guardar token JWT en cookies para poder leerlo desde el cliente/API
                     response.set_cookie('jwt_token', token, max_age=7200, httponly=False)
@@ -482,6 +479,8 @@ def login_view(request):
 from modules.models import Modulo
 @login_required(login_url='login')
 def modulos_view(request):
+    if not request.user.is_superuser:
+        return redirect('dashboard_user')
     if request.method == "POST":
         action = request.POST.get('action')
         if action == 'create_module':
@@ -684,11 +683,7 @@ def dashboard_user_view(request):
 @login_required(login_url='login')
 def dashboard_admin_view(request):
     # Validar si el usuario tiene rol administrativo
-    is_admin = (
-        request.user.roles.filter(nombre_rol__icontains='admin').exists()
-        or request.user.roles.filter(nombre_rol__icontains='seguridad').exists()
-        or request.user.is_superuser
-    )
+    is_admin = request.user.is_superuser
     if not is_admin:
         return redirect('dashboard_user')
     token = request.COOKIES.get('jwt_token')
@@ -820,12 +815,7 @@ def dashboard_admin_view(request):
     )
 @login_required(login_url='login')
 def gestion_view(request):
-    permiso = request.user.is_superuser or Funcion.objects.filter(
-        nombre_funcion__in=["SEG_GESTION_USUARIOS", "SEG_GESTION_ROLES", "SEG_GESTION_MODULOS"],
-        roles__usuarios=request.user,
-        estado_funcion=True
-    ).exists()
-    if not permiso:
+    if not request.user.is_superuser:
         return redirect('dashboard_user')
     usuarios = Usuario.objects.all()
     roles = Rol.objects.all()
@@ -914,7 +904,7 @@ from openpyxl.styles import Font, Alignment, PatternFill
 from django.http import HttpResponse
 @login_required(login_url='login')
 def exportar_reporte_excel(request, tipo):
-    if not (request.user.roles.filter(nombre_rol__icontains='admin').exists() or request.user.roles.filter(nombre_rol__icontains='seguridad').exists() or request.user.is_superuser):
+    if not request.user.is_superuser:
         return redirect('dashboard_user')
     wb = openpyxl.Workbook()
     ws = wb.active
